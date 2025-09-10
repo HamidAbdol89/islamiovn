@@ -6,8 +6,7 @@ import IconTab from '@/Pages/Home/IconTab';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import BottomNav from '@/components/BottomNavbar/BottomNav';
-import Footer from '@/components/Footer/Footer';
-import { ROUTES, TAB_ROUTES, UTILITY_ROUTES } from '@/lib/routes';
+  import { ROUTES, TAB_ROUTES, UTILITY_ROUTES } from '@/lib/routes';
 import { ChevronRight, MessageCircle, MapPin } from 'lucide-react';
 
 const Utilities: React.FC = () => {
@@ -35,7 +34,7 @@ const Utilities: React.FC = () => {
     else if (path.startsWith(ROUTES.NEWS)) setActiveTab('news');
     else if (path.startsWith(ROUTES.AI)) setActiveTab('ai');
     else if (path.startsWith(ROUTES.VIDEO)) setActiveTab('video');
-    else if (path.startsWith(ROUTES.PROFILE)) setActiveTab('profile');
+    else if (path.startsWith(ROUTES.SETTING)) setActiveTab('setting');
   }, [location]);
 
   // Sample images for the carousel
@@ -141,13 +140,14 @@ const Utilities: React.FC = () => {
                 {/* Content - Simplified and cleaner */}
                 <div className="absolute bottom-0 left-0 right-0 p-4">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center mb-1">
-                        <MapPin size={14} className="mr-1.5 text-white" />
-                        <h3 className="text-white font-semibold text-sm">Khám phá Masjid</h3>
-                      </div>
-                      <p className="text-white/80 text-xs">Thánh đường Hồi giáo tại VN</p>
-                    </div>
+                <div className="pb-2">
+  <div className="flex items-center mb-1">
+    <MapPin size={14} className="mr-1.5 text-white" />
+    <h3 className="text-white font-semibold text-sm">Khám phá Masjid</h3>
+  </div>
+  <p className="text-white/80 text-xs">Thánh đường Hồi giáo tại VN</p>
+</div>
+
                     
                  <Button
   onClick={handleExploreMasjids}
@@ -281,8 +281,7 @@ const Utilities: React.FC = () => {
       {/* Bottom Navigation */}
       <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
 
-      {/* Footer */}
-      <Footer />
+    
     </div>
   );
 };

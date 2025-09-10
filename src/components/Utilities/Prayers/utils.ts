@@ -1,7 +1,7 @@
 // src/components/Utilities/Prayers/utils.ts
 
 import type { Location, PrayerTimes, CalculationMethod, PrayerInfo } from './types';
-import { PRAYER_NAMES_VIETNAMESE, PRAYER_ICONS, INTERNATIONAL_LOCATIONS } from './constants';
+import {  INTERNATIONAL_LOCATIONS } from './constants';
 
 export const calculateHaversineDistance = (
   lat1: number, 

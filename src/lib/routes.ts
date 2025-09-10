@@ -4,7 +4,7 @@ export const ROUTES = {
   NEWS: '/news',
   AI: '/ai',
   VIDEO: '/video',
-  PROFILE: '/profile',
+  SETTING: '/setting',
   CHAT: '/chat',
   UTILITIES: {
     PRAYERS: '/utilities/prayers',
@@ -27,7 +27,7 @@ export const TAB_ROUTES = {
   'news': ROUTES.NEWS,
   'ai': ROUTES.AI,
   'video': ROUTES.VIDEO,
-  'profile': ROUTES.PROFILE,
+  'setting': ROUTES.SETTING,
 };
 
 export const UTILITY_ROUTES = {

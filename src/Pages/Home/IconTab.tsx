@@ -165,7 +165,6 @@ UtilityButton.displayName = 'UtilityButton';
 const IconTab: React.FC<IconTabProps> = ({
   onUtilityClick,
   activeUtility,
-  mode = 'compact'
 }) => {
   
   // Memoized utilities array with Vietnamese labels

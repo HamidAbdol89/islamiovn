@@ -1,7 +1,7 @@
 // src/components/Utilities/Prayers/components.tsx
 
 import React from 'react';
-import { MapPin, Moon, Settings, Compass, X, Info } from 'lucide-react';
+import { MapPin, Settings, Compass, Info } from 'lucide-react';
 import type { Location, PrayerTimes } from './types';
 import { INTERNATIONAL_LOCATIONS, CALCULATION_METHODS, PRAYER_NAMES_VIETNAMESE, PRAYER_ICONS } from './constants';
 
@@ -19,7 +19,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

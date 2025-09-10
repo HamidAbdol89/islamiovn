@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import BackButton from "@/components/ui/BackButton";
+import { useState, useEffect } from 'react';
 import {
   Header,
   CurrentTimeCard,
@@ -11,7 +10,6 @@ import {
 } from './components';
 import { useLocation, usePrayerTimes, useNextPrayer } from './hooks';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { INTERNATIONAL_LOCATIONS } from './constants';
 
 export default function PrayerTimesCalculator() {
   // Sử dụng localStorage để lưu các thiết lập

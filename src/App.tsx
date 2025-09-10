@@ -1,26 +1,49 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
-import { ROUTES } from '@/lib/routes';
+import { ROUTES, TAB_ROUTES } from '@/lib/routes';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Transition } from 'framer-motion';
+import BottomNav from '@/components/BottomNavbar/BottomNav';
 
-// Import main components
+// Preload components để tránh khựng khi chuyển tab
+const preloadComponents = () => {
+  const components = [
+    import('@/Pages/Home/Utilities'),
+    import('@/Pages/Setting/Setting'),
+    import('@/components/Utilities/Prayers/PrayerTimes'),
+    import('@/components/Utilities/Qiblah/QiblahFinder'),
+    import('@/components/Utilities/Calendar/HijriCalendar'),
+    import('@/components/Utilities/Masjid/Masjid'),
+    import('@/components/Utilities/Tasbih/Tasbih'),
+    import('@/components/Utilities/Duas/Dua'),
+    import('@/components/Utilities/NameAllah/NameAllah'),
+    import('@/components/Utilities/Podcast/Podcast'),
+    import('@/components/Utilities/Zakat/ZakatCalculator')
+  ];
+  
+  // Preload tất cả components
+  components.forEach(component => component.catch(() => {}));
+};
+
+// Gọi preload khi app khởi chạy
+if (typeof window !== 'undefined') {
+  // Preload sau một khoảng thời gian ngắn để không ảnh hưởng đến initial load
+  setTimeout(preloadComponents, 1000);
+}
+
+// Import main components với preload
 const Utilities = lazy(() => import('@/Pages/Home/Utilities'));
-
-// Import utility components
 const Prayers = lazy(() => import('@/components/Utilities/Prayers/PrayerTimes'));
 const Qiblah = lazy(() => import('@/components/Utilities/Qiblah/QiblahFinder'));
 const Calendar = lazy(() => import('@/components/Utilities/Calendar/HijriCalendar'));
-//const Quran = lazy(() => import('@/components/Utilities/Quran/Quran'));
 const Masjid = lazy(() => import('@/components/Utilities/Masjid/Masjid'));
 const Tasbih = lazy(() => import('@/components/Utilities/Tasbih/Tasbih'));
 const Duas = lazy(() => import('@/components/Utilities/Duas/Dua'));
-//const Hadith = lazy(() => import('@/components/Utilities/Hadith/Hadith'));
 const NameAllah = lazy(() => import('@/components/Utilities/NameAllah/NameAllah'));
 const Podcast = lazy(() => import('@/components/Utilities/Podcast/Podcast'));
-//const Study = lazy(() => import('@/components/Utilities/Study/Study'));
 const Zakat = lazy(() => import('@/components/Utilities/Zakat/ZakatCalculator'));
+const Setting = lazy(() => import('@/Pages/Setting/Setting'));
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component<
@@ -140,13 +163,9 @@ const pageVariants = {
 
 const pageTransition: Transition = {
   type: "tween",
-  ease: [0.4, 0, 0.2, 1], // smooth ease, gần giống anticipate
+  ease: [0.4, 0, 0.2, 1],
   duration: 0.5
 };
-
-
-
-
 
 // Wrapper component với animation
 const AnimatedPage: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -164,6 +183,39 @@ const AnimatedPage: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   );
 };
 
+// Layout với BottomNav (chỉ dùng cho các tab chính)
+const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Xác định tab active dựa trên route hiện tại
+  const getActiveTab = () => {
+    const path = location.pathname;
+    for (const [tab, route] of Object.entries(TAB_ROUTES)) {
+      if (path === route) return tab;
+    }
+    return 'home';
+  };
+
+  const activeTab = getActiveTab();
+
+  const handleTabChange = (tab: string) => {
+    if (TAB_ROUTES[tab as keyof typeof TAB_ROUTES]) {
+      navigate(TAB_ROUTES[tab as keyof typeof TAB_ROUTES]);
+    }
+  };
+
+
+ return (
+    <div className="flex flex-col min-h-screen">
+      <div className="flex-1 overflow-auto">
+        {children}
+      </div>
+      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+    </div>
+  );
+};
+
 // Component để wrap routes với animation
 const AnimatedRoutes: React.FC = () => {
   const location = useLocation();
@@ -171,14 +223,60 @@ const AnimatedRoutes: React.FC = () => {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        {/* Home Route - Utilities Page */}
+        {/* Home Route - Utilities Page với BottomNav */}
         <Route path={ROUTES.HOME} element={
-          <AnimatedPage>
-            <Utilities />
-          </AnimatedPage>
+          <MainLayout>
+            <AnimatedPage>
+              <Suspense fallback={<LoadingSpinner />}>
+                <Utilities />
+              </Suspense>
+            </AnimatedPage>
+          </MainLayout>
         } />
         
-        {/* Utility Routes */}
+        {/* News Route với BottomNav */}
+        <Route path={ROUTES.NEWS} element={
+          <MainLayout>
+            <AnimatedPage>
+              <Suspense fallback={<LoadingSpinner />}>
+                <div className="p-6 text-center">
+                  <h2 className="text-2xl font-bold mb-4">Tin Tức</h2>
+                  <p className="text-muted-foreground">Trang tin tức sẽ được cập nhật sớm...</p>
+                </div>
+              </Suspense>
+            </AnimatedPage>
+          </MainLayout>
+        } />
+        
+        {/* AI Route với BottomNav */}
+        <Route path={ROUTES.AI} element={
+          <MainLayout>
+            <AnimatedPage>
+              <Suspense fallback={<LoadingSpinner />}>
+                <div className="p-6 text-center">
+                  <h2 className="text-2xl font-bold mb-4">Trợ Lý AI</h2>
+                  <p className="text-muted-foreground">Tính năng AI sẽ được cập nhật sớm...</p>
+                </div>
+              </Suspense>
+            </AnimatedPage>
+          </MainLayout>
+        } />
+        
+        {/* Video Route với BottomNav */}
+        <Route path={ROUTES.VIDEO} element={
+          <MainLayout>
+            <AnimatedPage>
+              <Suspense fallback={<LoadingSpinner />}>
+                <div className="p-6 text-center">
+                  <h2 className="text-2xl font-bold mb-4">Video</h2>
+                  <p className="text-muted-foreground">Trang video sẽ được cập nhật sớm...</p>
+                </div>
+              </Suspense>
+            </AnimatedPage>
+          </MainLayout>
+        } />
+        
+        {/* Utility Routes - KHÔNG có BottomNav */}
         <Route 
           path={ROUTES.UTILITIES.PRAYERS} 
           element={
@@ -278,6 +376,20 @@ const AnimatedRoutes: React.FC = () => {
           } 
         />
         
+        {/* Setting Route với BottomNav */}
+        <Route 
+          path={ROUTES.SETTING} 
+          element={
+            <MainLayout>
+              <AnimatedPage>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <Setting />
+                </Suspense>
+              </AnimatedPage>
+            </MainLayout>
+          } 
+        />
+
         {/* Redirect old routes */}
         <Route path="/home" element={<Navigate to={ROUTES.HOME} replace />} />
         <Route path="/utilities" element={<Navigate to={ROUTES.HOME} replace />} />

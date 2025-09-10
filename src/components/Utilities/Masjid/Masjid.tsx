@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, Navigation, Moon, Sun, Search, Phone, Clock, Star, Loader, ExternalLink, Map } from 'lucide-react';
 import BackButton from "@/components/ui/BackButton"; 
-import MasjidVietnam from '@/components/islamic/MasjidVietnam';
+import MasjidVietnam from '@/components/Utilities/Masjid/MasjidVietnam';
 
 interface Masjid {
   id: string;
