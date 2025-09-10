@@ -10,11 +10,14 @@ import {
   LocationPermissionModal
 } from './components';
 import { useLocation, usePrayerTimes, useNextPrayer } from './hooks';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { INTERNATIONAL_LOCATIONS } from './constants';
 
 export default function PrayerTimesCalculator() {
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  // Sử dụng localStorage để lưu các thiết lập
+  const [isDarkMode, setIsDarkMode] = useLocalStorage('prayer-dark-mode', true);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [calculationMethod, setCalculationMethod] = useState(1); // Vietnamese Muslim Community
+  const [calculationMethod, setCalculationMethod] = useLocalStorage('prayer-calculation-method', 1);
   const [showSettings, setShowSettings] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [showLocationPermission, setShowLocationPermission] = useState(false);
@@ -35,10 +38,16 @@ export default function PrayerTimesCalculator() {
 
   const { currentTime, nextPrayerInfo } = useNextPrayer(prayerTimes);
 
+  // Kiểm tra xem đã hỏi quyền vị trí chưa
+  const [hasAskedLocation, setHasAskedLocation] = useLocalStorage('prayer-has-asked-location', false);
+
   // Auto request location permission on first load
   useEffect(() => {
-    setShowLocationPermission(true);
-  }, []);
+    if (!hasAskedLocation) {
+      setShowLocationPermission(true);
+      setHasAskedLocation(true);
+    }
+  }, [hasAskedLocation, setHasAskedLocation]);
 
   // Apply dark mode to document
   useEffect(() => {
@@ -57,6 +66,26 @@ export default function PrayerTimesCalculator() {
   const handleBackPress = () => {
     window.history.back();
   };
+
+  // Lưu vị trí đã chọn vào localStorage
+  const handleLocationChange = (location: any) => {
+    setSelectedLocation(location);
+    // Lưu tên vị trí để có thể khôi phục sau
+    localStorage.setItem('prayer-selected-location', JSON.stringify(location));
+  };
+
+  // Khôi phục vị trí đã lưu khi component mount
+  useEffect(() => {
+    const savedLocation = localStorage.getItem('prayer-selected-location');
+    if (savedLocation) {
+      try {
+        const location = JSON.parse(savedLocation);
+        setSelectedLocation(location);
+      } catch (error) {
+        console.error('Error parsing saved location:', error);
+      }
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-smooth">
@@ -94,7 +123,7 @@ export default function PrayerTimesCalculator() {
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
         selectedLocation={selectedLocation}
-        onLocationChange={setSelectedLocation}
+        onLocationChange={handleLocationChange}
         selectedDate={selectedDate}
         onDateChange={setSelectedDate}
         calculationMethod={calculationMethod}

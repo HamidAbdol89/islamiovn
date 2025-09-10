@@ -1,15 +1,34 @@
 // src/components/Utilities/Prayers/hooks.ts
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Location, PrayerTimes } from './types';
 import { INTERNATIONAL_LOCATIONS, CALCULATION_METHODS } from './constants';
 import { findNearestLocation, calculatePrayerTimes, calculateQiblaDirection, findNextPrayer } from './utils';
 
 export const useLocation = () => {
-  const [selectedLocation, setSelectedLocation] = useState<Location>(INTERNATIONAL_LOCATIONS[0]);
+  // Khôi phục vị trí từ localStorage nếu có
+  const [selectedLocation, setSelectedLocation] = useState<Location>(() => {
+    try {
+      const savedLocation = localStorage.getItem('prayer-selected-location');
+      if (savedLocation) {
+        return JSON.parse(savedLocation);
+      }
+      
+      const savedUserLocation = localStorage.getItem('prayer-user-location');
+      if (savedUserLocation) {
+        return JSON.parse(savedUserLocation);
+      }
+      
+      return INTERNATIONAL_LOCATIONS[0];
+    } catch (error) {
+      console.error('Error parsing saved location:', error);
+      return INTERNATIONAL_LOCATIONS[0];
+    }
+  });
+  
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
 
-  const requestUserLocation = () => {
+  const requestUserLocation = useCallback(() => {
     setIsLoadingLocation(true);
     
     if (navigator.geolocation) {
@@ -17,7 +36,15 @@ export const useLocation = () => {
         (position) => {
           const { latitude, longitude } = position.coords;
           const nearestLocation = findNearestLocation(latitude, longitude);
-          setSelectedLocation(nearestLocation);
+          
+          // Lưu vị trí người dùng vào localStorage
+          const userLocation = {
+            ...nearestLocation,
+            name: `Vị trí của tôi (${nearestLocation.name})`
+          };
+          
+          setSelectedLocation(userLocation);
+          localStorage.setItem('prayer-user-location', JSON.stringify(userLocation));
           setIsLoadingLocation(false);
         },
         (error) => {
@@ -31,7 +58,12 @@ export const useLocation = () => {
       setIsLoadingLocation(false);
       alert('Trình duyệt không hỗ trợ định vị. Sử dụng vị trí mặc định.');
     }
-  };
+  }, []);
+
+  // Cập nhật localStorage khi selectedLocation thay đổi
+  useEffect(() => {
+    localStorage.setItem('prayer-selected-location', JSON.stringify(selectedLocation));
+  }, [selectedLocation]);
 
   return {
     selectedLocation,
