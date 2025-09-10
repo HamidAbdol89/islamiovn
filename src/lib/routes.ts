@@ -5,6 +5,7 @@ export const ROUTES = {
   AI: '/ai',
   VIDEO: '/video',
   PROFILE: '/profile',
+  CHAT: '/chat',
   UTILITIES: {
     PRAYERS: '/utilities/prayers',
     QIBLAH: '/utilities/qiblah',
