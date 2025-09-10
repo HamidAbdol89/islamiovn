@@ -150,3 +150,19 @@
 }
 
 }
+
+
+/* Đảm bảo các trang chiếm toàn bộ không gian */
+html, body, #root {
+  height: 100%;
+}
+
+/* Tối ưu hiệu suất animation */
+* {
+  box-sizing: border-box;
+}
+
+/* Ngăn chặn scroll ngang trong khi animation */
+body {
+  overflow-x: hidden;
+}
