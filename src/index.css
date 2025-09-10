@@ -1,0 +1,152 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light Mode - Sophisticated & Elegant */
+    --background: 210 40% 98%; /* Light subtle blue */
+    --foreground: 0 0% 0%; /* Black for text */
+    
+    --card: 0 0% 100%; /* Pure white */
+    --card-foreground: 0 0% 0%; /* Black */
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+    
+    --primary: 0 0% 0%; /* Black for buttons */
+    --primary-foreground: 0 0% 100%; /* White for button text */
+    
+    --secondary: 215 25% 95%; /* Light grayish-blue */
+    --secondary-foreground: 0 0% 0%;
+    
+    --muted: 215 25% 95%;
+    --muted-foreground: 215 16% 45%; /* Neutral gray */
+    
+    --accent: 210 70% 50%; /* Sophisticated blue accent */
+    --accent-foreground: 0 0% 100%;
+    
+    --destructive: 0 84% 60%; /* Softer red */
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 214 32% 91%; /* Light gray border */
+    --input: 214 32% 91%;
+    --ring: 0 0% 0%; /* Black for focus */
+    
+    --radius: 0.75rem;
+    
+    /* Chart colors */
+    --chart-1: 0 0% 0%; /* Black */
+    --chart-2: 210 70% 50%; /* Sophisticated blue */
+    --chart-3: 191 97% 42%; /* Cyan */
+    --chart-4: 36 77% 49%; /* Amber */
+    --chart-5: 335 78% 52%; /* Peach */
+  }
+
+  .dark {
+    /* Dark Mode - Sophisticated & Elegant */
+    --background: 222 47% 11%; /* Deep navy */
+    --foreground: 0 0% 100%; /* White for text */
+    
+    --card: 222 47% 14%; /* Dark navy */
+    --card-foreground: 0 0% 100%; /* White */
+    
+    --popover: 222 47% 14%;
+    --popover-foreground: 0 0% 100%;
+    
+    --primary: 0 0% 100%; /* White for buttons */
+    --primary-foreground: 0 0% 0%; /* Black for button text */
+    
+    --secondary: 222 47% 18%; /* Medium navy */
+    --secondary-foreground: 0 0% 100%;
+    
+    --muted: 222 47% 18%;
+    --muted-foreground: 215 20% 65%; /* Grayish-blue */
+    
+    --accent: 210 70% 55%; /* Brighter sophisticated blue */
+    --accent-foreground: 0 0% 100%;
+    
+    --destructive: 0 63% 43%; /* Deeper red */
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 222 47% 21%; /* Navy border */
+    --input: 222 47% 21%;
+    --ring: 0 0% 100%; /* White for focus */
+    
+    /* Chart colors dark mode */
+    --chart-1: 0 0% 100%; /* White */
+    --chart-2: 210 70% 55%; /* Brighter sophisticated blue */
+    --chart-3: 182 92% 51%; /* Cyan */
+    --chart-4: 37 92% 50%; /* Amber */
+    --chart-5: 330 81% 60%; /* Pink */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+}
+
+/* Additional customizations for luxury feel */
+@layer utilities {
+  .backdrop-blur-lg {
+    backdrop-filter: blur(20px);
+  }
+  
+  .bg-white\/90 {
+    background-color: rgba(255, 255, 255, 0.92);
+  }
+  
+  .dark\:bg-navy-950\/90:dark {
+    background-color: rgba(8, 26, 51, 0.92);
+  }
+  
+  .border-white\/15 {
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+  
+  .dark\:border-navy-800\/30:dark {
+    border-color: rgba(21, 42, 70, 0.30);
+  }
+  
+  /* Smooth transition effect */
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* Luxury shadow */
+  .shadow-luxury {
+    box-shadow: 0 8px 35px -8px rgba(15, 41, 107, 0.15);
+  }
+  
+  .dark\:shadow-luxury-dark:dark {
+    box-shadow: 0 8px 35px -8px rgba(2, 13, 36, 0.35);
+  }
+  
+/* Luxury gradient dịu mắt, không có màu trắng */
+.bg-luxury-gradient {
+  background: linear-gradient(
+    135deg, 
+    hsl(210, 50%, 35%) 0%,   /* xanh navy đậm */
+    hsl(220, 60%, 45%) 100%  /* xanh nhẹ hơn, vẫn sang */
+  );
+}
+
+.text-gradient {
+  background: linear-gradient(
+    135deg, 
+    hsl(210, 50%, 35%) 0%, 
+    hsl(220, 60%, 45%) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+}
