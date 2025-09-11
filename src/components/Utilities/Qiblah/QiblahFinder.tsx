@@ -2,14 +2,16 @@ import { useState, useEffect } from 'react';
 import BackButton from "@/components/ui/BackButton"; 
 import { 
   MapPin, 
-  Sun, 
-  Moon, 
   RefreshCw, 
   Compass,
   AlertCircle,
   Check,
   ArrowUp
 } from 'lucide-react';
+import { useTheme } from "@/context/ThemeContext";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 // Type definitions
 interface Position {
@@ -35,7 +37,7 @@ const QiblahCompass = () => {
   const [position, setPosition] = useState<Position | null>(null);
   const [qiblahDirection, setQiblahDirection] = useState<number>(0);
   const [compassHeading, setCompassHeading] = useState<number>(0);
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
+  const { theme } = useTheme();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
   const [locationInfo, setLocationInfo] = useState<LocationInfo | null>(null);
@@ -96,15 +98,15 @@ const QiblahCompass = () => {
       );
       const data: LocationResponse = await response.json();
       return {
-        city: data.city || data.locality || 'Unknown',
-        country: data.countryName || 'Unknown',
+        city: data.city || data.locality || 'Không xác định',
+        country: data.countryName || 'Không xác định',
         region: data.principalSubdivision || '',
         distance: calculateDistance(lat, lng)
       };
     } catch (err) {
       return {
-        city: 'Unknown',
-        country: 'Unknown',
+        city: 'Không xác định',
+        country: 'Không xác định',
         region: '',
         distance: calculateDistance(lat, lng)
       };
@@ -117,7 +119,7 @@ const QiblahCompass = () => {
     setError('');
 
     if (!navigator.geolocation) {
-      setError('Browser does not support GPS');
+      setError('Trình duyệt không hỗ trợ GPS');
       setIsLoading(false);
       return;
     }
@@ -138,16 +140,16 @@ const QiblahCompass = () => {
         setIsLoading(false);
       },
       (err) => {
-        let errorMessage = 'Unable to get location';
+        let errorMessage = 'Không thể lấy vị trí';
         switch(err.code) {
           case err.PERMISSION_DENIED:
-            errorMessage = 'Location permission denied';
+            errorMessage = 'Quyền truy cập vị trí bị từ chối';
             break;
           case err.POSITION_UNAVAILABLE:
-            errorMessage = 'Location information unavailable';
+            errorMessage = 'Thông tin vị trí không khả dụng';
             break;
           case err.TIMEOUT:
-            errorMessage = 'Location request timed out';
+            errorMessage = 'Yêu cầu vị trí đã hết thời gian';
             break;
         }
         setError(errorMessage);
@@ -169,7 +171,7 @@ const QiblahCompass = () => {
         setCompassPermission(permission);
         return permission === 'granted';
       } catch (error) {
-        console.error('Compass permission error:', error);
+        console.error('Lỗi quyền la bàn:', error);
         setCompassPermission('denied');
         return false;
       }
@@ -221,7 +223,7 @@ const QiblahCompass = () => {
           setCompassPermission("denied");
         }
       } else {
-        setError("Device does not support compass");
+        setError("Thiết bị không hỗ trợ la bàn");
       }
     };
 
@@ -237,114 +239,102 @@ const QiblahCompass = () => {
     getCurrentPosition();
   }, []);
 
-  const toggleDarkMode = (): void => {
-    setIsDarkMode(!isDarkMode);
-  };
-
   const relativeQiblahAngle = qiblahDirection - compassHeading;
   const normalizedAngle = ((relativeQiblahAngle % 360) + 360) % 360;
   const accuracy_degrees = Math.abs(normalizedAngle > 180 ? 360 - normalizedAngle : normalizedAngle);
   const isAccurate = accuracy_degrees < 15;
 
-  const themeClasses = isDarkMode 
-    ? 'bg-gray-900 text-white' 
-    : 'bg-gradient-to-br from-blue-50 to-indigo-100 text-gray-800';
-
   return (
-    <div className={`min-h-screen p-4 transition-all duration-300 ${themeClasses}`}>
+    <div className="min-h-screen p-4">
       <div className="max-w-md mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <BackButton />
           <div className="w-10"></div>
-          <div className="flex items-center space-x-2">
-            <span className="text-2xl">🕋</span>
-            <h1 className="text-xl font-bold">Qiblah Finder</h1>
-          </div>
+ <div className="w-full flex justify-center">
+  <div className="flex items-center gap-2 p-2 -translate-x-2">
+    <span className="text-xl md:text-2xl">🕋</span>
+    <h1 className="text-lg md:text-xl font-semibold text-center">
+      Tìm Hướng Qiblah
+    </h1>
+  </div>
+</div>
+
+
           
           <div className="flex space-x-2">
-            <button
-              onClick={toggleDarkMode}
-              className={`flex items-center justify-center w-10 h-10 rounded-full transition-colors ${
-                isDarkMode 
-                  ? 'bg-gray-800 hover:bg-gray-700' 
-                  : 'bg-white/70 hover:bg-white/90'
-              }`}
-            >
-              {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </button>
 
-            <button
+            <Button
               onClick={getCurrentPosition}
               disabled={isLoading}
-              className={`flex items-center justify-center w-10 h-10 rounded-full transition-colors ${
-                isDarkMode 
-                  ? 'bg-gray-800 hover:bg-gray-700' 
-                  : 'bg-white/70 hover:bg-white/90'
-              } ${isLoading ? 'opacity-50' : ''}`}
+              variant="outline"
+              size="icon"
+              className="h-10 w-10"
             >
-              <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
-            </button>
+              <RefreshCw className={`h-5 w-5 ${isLoading ? 'animate-spin' : ''}`} />
+            </Button>
           </div>
         </div>
 
         {/* Accuracy indicator */}
         {position && compassPermission === 'granted' && (
-          <div className={`p-3 rounded-xl mb-4 text-center ${
-            isAccurate 
-              ? (isDarkMode ? 'bg-green-900/40 border border-green-700' : 'bg-green-100 border border-green-300')
-              : (isDarkMode ? 'bg-yellow-900/40 border border-yellow-700' : 'bg-yellow-100 border border-yellow-300')
+          <Card className={`mb-4 text-center ${
+            isAccurate ? 'border-green-500' : 'border-yellow-500'
           }`}>
-            <div className={`font-bold ${isAccurate ? 'text-green-600' : 'text-yellow-600'}`}>
-              {isAccurate ? '✓ ACCURATE DIRECTION' : '⚠ CALIBRATING'}
-            </div>
-            <div className="text-sm opacity-80 mt-1">
-              Deviation: {Math.round(accuracy_degrees)}°
-            </div>
-          </div>
+            <CardContent className="p-3">
+              <div className={`font-bold ${isAccurate ? 'text-green-600' : 'text-yellow-600'}`}>
+                {isAccurate ? '✓ HƯỚNG CHÍNH XÁC' : '⚠ ĐANG HIỆU CHUẨN'}
+              </div>
+              <div className="text-sm opacity-80 mt-1">
+                Độ lệch: {Math.round(accuracy_degrees)}°
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* Location info */}
         {locationInfo && (
-          <div className={`p-4 rounded-2xl mb-6 ${
-            isDarkMode ? 'bg-gray-800/50' : 'bg-white/60'
-          } backdrop-blur-sm`}>
-            <div className="flex items-center space-x-2 mb-2">
-              <MapPin className="w-4 h-4 text-blue-600" />
-              <span className="font-medium">Current Location</span>
-            </div>
-            <p className="text-sm opacity-80">
-              {locationInfo.city}, {locationInfo.country}
-            </p>
-            <p className="text-xs opacity-60 mt-1">
-              Distance to Mecca: {locationInfo.distance.toLocaleString()} km
-            </p>
-            <p className="text-xs opacity-60">
-              Qiblah Direction: {Math.round(qiblahDirection)}° (from North)
-            </p>
-            {accuracy && (
-              <p className="text-xs opacity-60">
-                GPS Accuracy: ±{accuracy}m
+          <Card className="mb-6">
+            <CardHeader className="pb-3">
+              <div className="flex items-center space-x-2">
+                <MapPin className="w-4 h-4 text-blue-600" />
+                <CardTitle className="text-base">Vị trí hiện tại</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm">
+                {locationInfo.city}, {locationInfo.country}
               </p>
-            )}
-          </div>
+              <p className="text-xs opacity-60 mt-1">
+                Khoảng cách đến Mecca: {locationInfo.distance.toLocaleString()} km
+              </p>
+              <p className="text-xs opacity-60">
+                Hướng Qiblah: {Math.round(qiblahDirection)}° (từ Bắc)
+              </p>
+              {accuracy && (
+                <p className="text-xs opacity-60">
+                  Độ chính xác GPS: ±{accuracy}m
+                </p>
+              )}
+            </CardContent>
+          </Card>
         )}
 
-        {/* Qiblah compass */}
-        <div className="relative mb-6">
-          <div className={`w-80 h-80 mx-auto rounded-full border-8 ${
-            isDarkMode 
-              ? 'bg-gray-800 border-gray-700' 
-              : 'bg-white/70 border-white/50'
-          } backdrop-blur-sm shadow-2xl relative overflow-hidden`}>
+    {/* Qiblah compass */}
+<div className="relative mb-6">
+  <div className={`w-80 h-80 mx-auto rounded-full border-8 ${
+    theme === 'dark' 
+      ? 'bg-gray-800 border-gray-700' 
+      : 'bg-white border-gray-200'
+  } shadow-2xl relative overflow-hidden`}>
             
             <div className="relative w-full h-full">
               {/* Cardinal directions */}
               {[
-                { angle: 0, label: 'N', color: 'bg-red-500' },
-                { angle: 90, label: 'E', color: 'bg-gray-400' },
-                { angle: 180, label: 'S', color: 'bg-gray-400' },
-                { angle: 270, label: 'W', color: 'bg-gray-400' }
+                { angle: 0, label: 'B', color: 'bg-red-500' },
+                { angle: 90, label: 'Đ', color: 'bg-gray-400' },
+                { angle: 180, label: 'N', color: 'bg-gray-400' },
+                { angle: 270, label: 'T', color: 'bg-gray-400' }
               ].map(({ angle, label, color }) => (
                 <div key={angle}>
                   <div
@@ -412,7 +402,7 @@ const QiblahCompass = () => {
 
               {/* Compass center */}
               <div className={`absolute top-1/2 left-1/2 w-6 h-6 rounded-full transform -translate-x-1/2 -translate-y-1/2 border-2 ${
-                isDarkMode ? 'bg-gray-700 border-gray-500' : 'bg-white border-gray-300'
+                theme === 'dark' ? 'bg-gray-700 border-gray-500' : 'bg-white border-gray-300'
               } shadow-lg`} />
 
               {/* Kaaba icon */}
@@ -426,113 +416,112 @@ const QiblahCompass = () => {
 
           {/* Angle and instructions */}
           <div className="text-center mt-4 space-y-2">
-            <div className={`inline-flex items-center space-x-2 px-4 py-2 rounded-full ${
-              isDarkMode ? 'bg-gray-800/70' : 'bg-white/70'
-            } backdrop-blur-sm`}>
-              <Compass className="w-4 h-4 text-green-600" />
-              <span className="font-bold text-lg">
-                {Math.round(qiblahDirection)}°
-              </span>
-            </div>
+            <Badge className="px-4 py-2 text-lg">
+              <Compass className="w-4 h-4 text-green-600 mr-2" />
+              {Math.round(qiblahDirection)}°
+            </Badge>
             
             <div className="text-sm opacity-80">
-              <p className="font-medium text-green-600">Green arrow → Qiblah</p>
-              <p className="text-red-500">Red dot → Magnetic North</p>
+              <p className="font-medium text-green-600">Mũi tên xanh → Hướng Qiblah</p>
+              <p className="text-red-500">Chấm đỏ → Hướng Bắc từ trường</p>
             </div>
           </div>
         </div>
 
-        {/* Calibration warning */}
-        {calibrationNeeded && (
-          <div className={`p-4 rounded-2xl mb-4 ${
-            isDarkMode ? 'bg-yellow-900/30' : 'bg-yellow-100/70'
-          }`}>
-            <div className="flex items-center space-x-2 text-yellow-600">
-              <AlertCircle className="w-5 h-5" />
-              <span className="font-medium">Compass needs calibration</span>
-            </div>
-            <p className="text-sm mt-1 opacity-80">
-              Move your phone in a figure-8 motion to calibrate the sensor.
-            </p>
-          </div>
-        )}
+   {/* Calibration warning - placed right below the compass */}
+  {calibrationNeeded && (
+    <Card className="mt-4 border-yellow-500">
+      <CardContent className="p-4">
+        <div className="flex items-center space-x-2 text-yellow-600 mb-2">
+          <AlertCircle className="w-5 h-5" />
+          <span className="font-medium">Cần hiệu chuẩn la bàn</span>
+        </div>
+        <p className="text-sm opacity-80">
+          Di chuyển điện thoại theo hình số 8 để hiệu chuẩn cảm biến.
+        </p>
+      </CardContent>
+    </Card>
+  )}
 
         {/* Compass permission denied */}
         {compassPermission === 'denied' && (
-          <div className={`p-4 rounded-2xl mb-4 ${
-            isDarkMode ? 'bg-red-900/30' : 'bg-red-100/70'
-          }`}>
-            <div className="flex items-center space-x-2 text-red-600">
-              <AlertCircle className="w-5 h-5" />
-              <span className="font-medium">Compass permission denied</span>
-            </div>
-            <p className="text-sm mt-1 opacity-80">
-              Please enable sensor access in your browser settings.
-            </p>
-          </div>
+          <Card className="mb-4 border-red-500">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2 text-red-600 mb-2">
+                <AlertCircle className="w-5 h-5" />
+                <span className="font-medium">Quyền truy cập la bàn bị từ chối</span>
+              </div>
+              <p className="text-sm opacity-80">
+                Vui lòng cho phép truy cập cảm biến trong cài đặt trình duyệt.
+              </p>
+            </CardContent>
+          </Card>
         )}
 
         {/* Loading state */}
         {isLoading && (
-          <div className={`p-4 rounded-2xl text-center ${
-            isDarkMode ? 'bg-blue-900/30' : 'bg-blue-100/70'
-          }`}>
-            <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-blue-600" />
-            <p>Determining location...</p>
-          </div>
+          <Card className="mb-4 border-blue-500">
+            <CardContent className="p-4 text-center">
+              <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-blue-600" />
+              <p>Đang xác định vị trí...</p>
+            </CardContent>
+          </Card>
         )}
 
         {error && (
-          <div className={`p-4 rounded-2xl ${
-            isDarkMode ? 'bg-red-900/30' : 'bg-red-100/70'
-          }`}>
-            <div className="flex items-center space-x-2 text-red-600">
-              <AlertCircle className="w-5 h-5" />
-              <span className="font-medium">Error</span>
-            </div>
-            <p className="text-sm mt-1 opacity-80">{error}</p>
-            <button
-              onClick={getCurrentPosition}
-              className="mt-2 px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 transition-colors"
-            >
-              Try Again
-            </button>
-          </div>
+          <Card className="mb-4 border-red-500">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2 text-red-600 mb-2">
+                <AlertCircle className="w-5 h-5" />
+                <span className="font-medium">Lỗi</span>
+              </div>
+              <p className="text-sm opacity-80 mb-3">{error}</p>
+              <Button
+                onClick={getCurrentPosition}
+                variant="destructive"
+                size="sm"
+              >
+                Thử lại
+              </Button>
+            </CardContent>
+          </Card>
         )}
 
         {position && !isLoading && !error && compassPermission === 'granted' && (
-          <div className={`p-4 rounded-2xl ${
-            isDarkMode ? 'bg-green-900/30' : 'bg-green-100/70'
-          }`}>
-            <div className="flex items-center space-x-2 text-green-600 mb-2">
-              <Check className="w-5 h-5" />
-              <span className="font-medium">Ready</span>
-            </div>
-            <p className="text-sm opacity-80">
-              Rotate your phone until you see "ACCURATE DIRECTION". The Qiblah is in front of you.
-            </p>
-          </div>
+          <Card className="mb-4 border-green-500">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2 text-green-600 mb-2">
+                <Check className="w-5 h-5" />
+                <span className="font-medium">Sẵn sàng</span>
+              </div>
+              <p className="text-sm opacity-80">
+                Xoay điện thoại cho đến khi thấy "HƯỚNG CHÍNH XÁC". Qiblah ở phía trước bạn.
+              </p>
+            </CardContent>
+          </Card>
         )}
 
         {/* Usage instructions */}
-        <div className={`mt-6 p-4 rounded-2xl ${
-          isDarkMode ? 'bg-gray-800/30' : 'bg-white/40'
-        } backdrop-blur-sm`}>
-          <h3 className="font-semibold mb-3">📱 Usage Guide:</h3>
-          <ul className="text-sm space-y-2 opacity-80">
-            <li>• <strong>Step 1:</strong> Place phone flat with screen facing up</li>
-            <li>• <strong>Step 2:</strong> Rotate yourself following the green arrow</li>
-            <li>• <strong>Step 3:</strong> When "ACCURATE DIRECTION" appears → Qiblah is in front</li>
-            <li>• <strong>Note:</strong> Avoid electronics and metal objects</li>
-            <li>• <strong>Best accuracy:</strong> Use outdoors</li>
-          </ul>
-        </div>
+        <Card className="mb-4">
+          <CardHeader>
+            <CardTitle className="text-base">Hướng dẫn sử dụng:</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="text-sm space-y-2 opacity-80">
+              <li><strong>Bước 1:</strong> Đặt điện thoại nằm ngang, màn hình hướng lên</li>
+              <li><strong>Bước 2:</strong> Xoay người theo hướng mũi tên xanh</li>
+              <li><strong>Bước 3:</strong> Khi "HƯỚNG CHÍNH XÁC" xuất hiện → Qiblah ở phía trước</li>
+              <li><strong>Lưu ý:</strong> Tránh xa thiết bị điện tử và vật kim loại</li>
+              <li><strong>Độ chính xác tốt nhất:</strong> Sử dụng ngoài trời</li>
+            </ul>
+          </CardContent>
+        </Card>
 
         {/* Technical info */}
-        <div className={`mt-4 p-3 rounded-xl text-xs ${
-          isDarkMode ? 'bg-gray-800/20' : 'bg-white/30'
-        } backdrop-blur-sm opacity-60`}>
-          <p>🧭 Compass: {compassHeading.toFixed(1)}° | 🎯 Qiblah: {qiblahDirection.toFixed(1)}° | 📍 GPS: ±{accuracy}m</p>
+        <div className={`p-3 rounded-xl text-xs ${
+          theme === 'dark' ? 'bg-muted' : 'bg-muted/50'
+        } opacity-60`}>
+          <p>🧭 La bàn: {compassHeading.toFixed(1)}° | 🎯 Qiblah: {qiblahDirection.toFixed(1)}° | 📍 GPS: ±{accuracy}m</p>
         </div>
       </div>
     </div>
