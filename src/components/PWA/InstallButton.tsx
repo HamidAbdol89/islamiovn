@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Download, X } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -68,33 +69,48 @@ export const InstallButton: React.FC = () => {
     <>
       {/* Install Banner */}
       {showInstallBanner && (
-        <Alert className="fixed bottom-20 left-4 right-4 z-40 bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-200">
-          <Download className="h-4 w-4" />
-          <AlertDescription className="flex items-center justify-between">
-            <div>
-              <div className="font-medium">Cài đặt Muslim Việt</div>
-              <div className="text-sm text-muted-foreground">
+        <Alert className="fixed bottom-4 left-4 right-4 z-50 bg-background border border-border shadow-luxury backdrop-blur-lg bg-white/90 dark:bg-navy-950/90">
+          <div className="flex items-start gap-3">
+            <div className="bg-primary/10 p-2 rounded-full mt-0.5">
+              <Download className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <AlertTitle className="text-base font-semibold">Cài đặt Muslim Việt</AlertTitle>
+              <AlertDescription className="text-muted-foreground mt-1">
                 Truy cập nhanh và sử dụng offline
-              </div>
+              </AlertDescription>
             </div>
             <div className="flex gap-2">
               <Button onClick={handleInstallClick} size="sm">
                 Cài đặt
               </Button>
-              <Button onClick={dismissBanner} variant="ghost" size="sm">
-                <X className="h-3 w-3" />
+              <Button onClick={dismissBanner} variant="ghost" size="icon" className="h-9 w-9">
+                <X className="h-4 w-4" />
               </Button>
             </div>
-          </AlertDescription>
+          </div>
         </Alert>
       )}
 
       {/* Install Button in Settings */}
       {deferredPrompt && (
-        <Button onClick={handleInstallClick} className="w-full" variant="outline">
-          <Download className="h-4 w-4 mr-2" />
-          Cài đặt ứng dụng
-        </Button>
+        <Card className="w-full border-border bg-card">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Download className="h-5 w-5" />
+              Ứng dụng
+            </CardTitle>
+            <CardDescription>
+              Cài đặt ứng dụng để trải nghiệm tốt hơn
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={handleInstallClick} className="w-full" variant="default">
+              <Download className="h-4 w-4 mr-2" />
+              Cài đặt ứng dụng
+            </Button>
+          </CardContent>
+        </Card>
       )}
     </>
   );
