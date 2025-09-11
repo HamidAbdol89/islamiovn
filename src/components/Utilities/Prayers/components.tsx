@@ -29,6 +29,16 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 
+// Định nghĩa ảnh nền cho từng giờ cầu nguyện
+const prayerBackgrounds: Record<string, string> = {
+  Fajr: "/images/praytime/fajr.webp",
+  Dhuhr: "/images/praytime/dhuhr.jpg", 
+  Asr: "/images/praytime/asr.jpg",
+  Maghrib: "/images/praytime/maghrib.jpg",
+  Isha: "/images/praytime/isha.jpg",
+  default: "/images/makkah/makkah1.webp" // Ảnh mặc định
+};
+
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -118,38 +128,49 @@ export const CurrentTimeCard: React.FC<CurrentTimeCardProps> = ({
   qiblaDirection
 }) => {
   return (
-    <Card className="mb-6">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-3xl font-mono text-center">
-          {currentTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
-        </CardTitle>
-        <CardDescription className="text-center">
-          {new Date(selectedDate).toLocaleDateString('vi-VN', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-          })}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="flex justify-between items-center text-sm">
-          <div className="flex items-center gap-1">
-            <MapPin size={16} className="text-primary" />
-            <span className="text-muted-foreground">{selectedLocation.name}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Compass size={16} className="text-amber-500" />
-            <span className="text-muted-foreground">{qiblaDirection}° Qibla</span>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+   <Card className="mb-6 relative overflow-hidden text-white border-0">
+  {/* Ảnh nền */}
+  <img
+    src="/images/praytime/vietnammosque.jpg"
+    alt="Vietnam Mosque"
+    className="absolute inset-0 w-full h-full object-cover"
+  />
+  {/* Overlay để chữ nổi bật */}
+  <div className="absolute inset-0 bg-black/40" />
+
+  <CardHeader className="relative pb-3">
+    <CardTitle className="text-3xl font-mono text-center">
+      {currentTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+    </CardTitle>
+    <CardDescription className="text-center text-white/80">
+      {new Date(selectedDate).toLocaleDateString('vi-VN', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })}
+    </CardDescription>
+  </CardHeader>
+
+  <CardContent className="relative">
+    <div className="flex justify-between items-center text-sm">
+      <div className="flex items-center gap-1">
+        <MapPin size={16} className="text-white" />
+        <span>{selectedLocation.name}</span>
+      </div>
+      <div className="flex items-center gap-1">
+        <Compass size={16} className="text-amber-300" />
+        <span>{qiblaDirection}° Qibla</span>
+      </div>
+    </div>
+  </CardContent>
+</Card>
+
   );
 };
 
 interface NextPrayerCardProps {
-  nextPrayer: string;
+  nextPrayer: string; // Đây sẽ là tên prayer (fajr, dhuhr, asr, maghrib, isha)
   timeToNext: string;
   progressPercentage: number;
 }
@@ -161,19 +182,38 @@ export const NextPrayerCard: React.FC<NextPrayerCardProps> = ({
 }) => {
   if (!nextPrayer) return null;
 
+  // Chuyển đổi tên prayer thành dạng viết hoa chữ cái đầu để khớp với keys trong prayerBackgrounds
+  const prayerName = nextPrayer.charAt(0).toUpperCase() + nextPrayer.slice(1);
+  const backgroundImage = prayerBackgrounds[prayerName] || prayerBackgrounds.default;
+
   return (
-    <Card className="mb-6 bg-gradient-to-r from-blue-600 to-purple-600 text-card-foreground border-0">
-      <CardHeader className="pb-3">
-        <CardDescription className="text-card-foreground/90 text-center">
+    <Card className="mb-6 relative overflow-hidden text-white border-0">
+      <img
+        src={backgroundImage}
+        alt={prayerName}
+        className="absolute inset-0 w-full h-full object-cover"
+        onError={(e) => {
+          // Fallback nếu ảnh không tải được
+          const target = e.target as HTMLImageElement;
+          target.src = prayerBackgrounds.default;
+        }}
+      />
+      <div className="absolute inset-0 bg-black/40" />
+
+      <CardHeader className="relative pb-3">
+        <CardDescription className="text-center text-white/90">
           Cầu nguyện tiếp theo
         </CardDescription>
-        <CardTitle className="text-xl text-center">{nextPrayer}</CardTitle>
+        <CardTitle className="text-xl text-center">
+          {PRAYER_NAMES_VIETNAMESE[nextPrayer as keyof typeof PRAYER_NAMES_VIETNAMESE] || prayerName}
+        </CardTitle>
         <div className="text-lg font-mono text-center">{timeToNext}</div>
       </CardHeader>
-      <CardContent>
+
+      <CardContent className="relative">
         <div className="space-y-2">
           <Progress value={progressPercentage} className="h-2 bg-white/20" />
-          <div className="text-center text-xs text-card-foreground/75">
+          <div className="text-center text-xs text-white/80">
             {Math.round(progressPercentage)}% hoàn thành
           </div>
         </div>
@@ -181,6 +221,7 @@ export const NextPrayerCard: React.FC<NextPrayerCardProps> = ({
     </Card>
   );
 };
+
 
 interface PrayerTimesGridProps {
   prayerTimes: PrayerTimes;

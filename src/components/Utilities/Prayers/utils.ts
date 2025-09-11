@@ -137,12 +137,12 @@ export const findNextPrayer = (
   progressPercentage: number;
 } => {
   const prayerList: PrayerInfo[] = [
-    { name: 'Fajr', time: times.fajr, displayName: 'Fajr', icon: '🌅' },
-    { name: 'Sunrise', time: times.sunrise, displayName: 'Bình minh', icon: '☀️' },
-    { name: 'Dhuhr', time: times.dhuhr, displayName: 'Dhuhr', icon: '🌞' },
-    { name: 'Asr', time: times.asr, displayName: 'Asr', icon: '🌤️' },
-    { name: 'Maghrib', time: times.maghrib, displayName: 'Maghrib', icon: '🌅' },
-    { name: 'Isha', time: times.isha, displayName: 'Isha', icon: '🌙' }
+    { name: 'fajr', time: times.fajr, displayName: 'Fajr', icon: '🌅' },
+    { name: 'sunrise', time: times.sunrise, displayName: 'Bình minh', icon: '☀️' },
+    { name: 'dhuhr', time: times.dhuhr, displayName: 'Dhuhr', icon: '🌞' },
+    { name: 'asr', time: times.asr, displayName: 'Asr', icon: '🌤️' },
+    { name: 'maghrib', time: times.maghrib, displayName: 'Maghrib', icon: '🌅' },
+    { name: 'isha', time: times.isha, displayName: 'Isha', icon: '🌙' }
   ];
   
   const currentMinutes = current.getHours() * 60 + current.getMinutes();
@@ -183,7 +183,7 @@ export const findNextPrayer = (
       const progress = totalPeriod > 0 ? (elapsed / totalPeriod) * 100 : 0;
       
       return {
-        nextPrayer: `${prayer.icon} ${prayer.displayName}`,
+nextPrayer: prayer.displayName,
         timeToNext: hoursLeft > 0 ? `${hoursLeft}h ${minutesLeft}p` : `${minutesLeft}p ${secondsLeft}s`,
         progressPercentage: Math.min(progress, 100)
       };
@@ -203,7 +203,7 @@ export const findNextPrayer = (
   const progress = totalPeriod > 0 ? (elapsed / totalPeriod) * 100 : 0;
   
   return {
-    nextPrayer: '🌅 Fajr (ngày mai)',
+    nextPrayer: 'fajr', // CHỈ TRẢ VỀ TÊN PRAYER
     timeToNext: hoursLeft > 0 ? `${hoursLeft}h ${minutesLeft}p` : `${minutesLeft}p`,
     progressPercentage: Math.min(progress, 100)
   };
