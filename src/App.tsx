@@ -1,10 +1,11 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { Toaster } from '@/components/ui/toaster';
+import { Toaster } from 'react-hot-toast';
 import { ROUTES, TAB_ROUTES } from '@/lib/routes';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Transition } from 'framer-motion';
 import BottomNav from '@/components/BottomNavbar/BottomNav';
+import { InstallButton } from '@/components/PWA/InstallButton';
 
 // Preload components để tránh khựng khi chuyển tab
 const preloadComponents = () => {
@@ -234,6 +235,7 @@ const AnimatedRoutes: React.FC = () => {
           </MainLayout>
         } />
         
+        
         {/* News Route với BottomNav */}
         <Route path={ROUTES.NEWS} element={
           <MainLayout>
@@ -414,13 +416,17 @@ const App: React.FC = () => {
           <Suspense fallback={<LoadingSpinner />}>
             <AnimatedRoutes />
           </Suspense>
-          
+
+          {/* Install Prompt */}
+          <InstallButton />
+
           {/* Toast Notifications */}
-          <Toaster />
+          <Toaster position="top-right" />
         </div>
       </Router>
     </ErrorBoundary>
   );
 };
+
 
 export default App;
