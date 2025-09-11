@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Play, Pause, SkipBack, SkipForward } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, ChevronRight  } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,6 +43,20 @@ const adhanReaders: AdhanReader[] = [
     audio: '/audio/adhan/Nasser-Alqatami.mp3',
     description: 'Imam và Qari từ Saudi Arabia'
   }
+  ,
+  {
+    id: 'Rabeh-Ibn-Darah-Al-Jazairi',
+    name: 'Rabeh Ibn Darah Al Jazairi',
+    image: '/images/adhan/Rabeh-Ibn-Darah-Al-Jazairi.webp',
+    audio: '/audio/adhan/Rabeh-Ibn-Darah-Al-Jazairi.mp3',
+  }
+   ,
+  {
+    id: 'Ahmed-El-Kourdi',
+    name: 'Ahmed El Kourdi',
+    image: '/images/adhan/Ahmed-El-Kourdi.webp',
+    audio: '/audio/adhan/Ahmed-El-Kourdi.mp3',
+  }
 ];
 
 export default function AdhanPlaylist() {
@@ -54,7 +68,38 @@ export default function AdhanPlaylist() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [currentReaderIndex, setCurrentReaderIndex] = useState(0);
   const [isSeeking, setIsSeeking] = useState(false);
+ const [showScrollIndicator, setShowScrollIndicator] = useState(true);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const checkScroll = () => {
+      if (scrollContainerRef.current) {
+        const { scrollWidth, clientWidth, scrollLeft } = scrollContainerRef.current;
+        // Kiểm tra xem còn nội dung để cuộn không
+        const hasMoreContent = scrollWidth > clientWidth;
+        const isAtEnd = scrollLeft + clientWidth >= scrollWidth - 10; // 10px dung sai
+        
+        setShowScrollIndicator(hasMoreContent && !isAtEnd);
+      }
+    };
+
+    // Kiểm tra khi component mount
+    checkScroll();
+    
+    // Thêm event listener để kiểm tra khi cuộn
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', checkScroll);
+      window.addEventListener('resize', checkScroll);
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener('scroll', checkScroll);
+      }
+      window.removeEventListener('resize', checkScroll);
+    };
+  }, []);
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -168,25 +213,28 @@ export default function AdhanPlaylist() {
 
   const currentReader = adhanReaders[currentReaderIndex];
 
-  return (
+ return (
     <Card className="w-full max-w-md mx-auto">
-<CardHeader className="pb-3">
-  <CardTitle className="flex items-center gap-2 text-lg">
-    <Lottie 
-      animationData={audioAnim} 
-      loop={true} 
-      autoplay={true} 
-      className="w-7 h-7" 
-    />
-    Lắng nghe Adhan
-  </CardTitle>
-</CardHeader>
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <Lottie 
+            animationData={audioAnim} 
+            loop={true} 
+            autoplay={true} 
+            className="w-7 h-7" 
+          />
+          Lắng nghe Adhan
+        </CardTitle>
+      </CardHeader>
       <CardContent>
         <audio ref={audioRef} />
         
-        {/* Horizontal Scroll Reader Cards */}
-        <div className="mb-4">
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+        {/* Horizontal Scroll Reader Cards với chỉ báo cuộn */}
+        <div className="mb-4 relative">
+          <div 
+            ref={scrollContainerRef}
+            className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide"
+          >
             {adhanReaders.map((reader, index) => (
               <div
                 key={reader.id}
@@ -233,6 +281,17 @@ export default function AdhanPlaylist() {
               </div>
             ))}
           </div>
+          
+          {/* Chỉ báo cuộn với màu sắc nổi bật hơn */}
+          {showScrollIndicator && (
+            <div className="absolute right-0 top-0 bottom-0 flex items-center justify-end pointer-events-none">
+              <div className="bg-gradient-to-l from-background via-background/90 to-transparent w-12 h-full flex items-center justify-end pr-1">
+                <div className="bg-primary/20 rounded-full p-1.5">
+                  <ChevronRight className="w-5 h-5 text-primary animate-pulse" />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Mini Player (only when an audio is selected) */}
