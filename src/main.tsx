@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { HelmetProvider } from 'react-helmet-async'; // Thêm import này
 
 // Thêm viewport meta tag cho mobile (tùy chọn)
 const setViewportMeta = () => {
@@ -16,8 +17,10 @@ setViewportMeta();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ThemeProvider>
-      <App />
-    </ThemeProvider>
+    <HelmetProvider> {/* Bọc bằng HelmetProvider */}
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
+    </HelmetProvider>
   </React.StrictMode>
 );

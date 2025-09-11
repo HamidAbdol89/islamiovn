@@ -1,0 +1,16 @@
+// Ví dụ trong PrayerTimes component
+import { SEOHead } from '@/components/SEO/SEOHead';
+
+export const PrayerTimes: React.FC = () => {
+  return (
+    <>
+      <SEOHead
+        title="Lịch Cầu Nguyện - Muslim Việt"
+        description="Xem lịch cầu nguyện chính xác theo vị trí của bạn. Bao gồm Fajr, Dhuhr, Asr, Maghrib, Isha với thời gian chính xác."
+        url="https://muslimviet.vercel.app/prayers"
+        keywords={['lịch cầu nguyện', 'prayer times', 'salah', 'namaz']}
+      />
+      {/* Component content */}
+    </>
+  );
+};

@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react';
+import * as React from "react";
+import { useHelmetFix } from '@/hooks/useHelmetFix'; // Import hook mới
+
 import {
   Header,
   CurrentTimeCard,
@@ -8,10 +11,13 @@ import {
   InfoModal,
   LocationPermissionModal
 } from './components';
-import AdhanPlaylist from '@/components/Utilities/Prayers/AdhanPlaylist'; // Import component mới
+import AdhanPlaylist from '@/components/Utilities/Prayers/AdhanPlaylist';
 import { useLocation, usePrayerTimes, useNextPrayer } from './hooks';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useTheme } from '@/context/ThemeContext';
+
+// Import SEOHead với dynamic import để tránh lỗi nếu component có vấn đề
+const SEOHead = React.lazy(() => import('@/components/SEO/SEOHead'));
 
 export default function PrayerTimesCalculator() {
   // Sử dụng theme context thay vì localStorage riêng
@@ -89,8 +95,23 @@ export default function PrayerTimesCalculator() {
     }
   }, []);
 
+ // SỬ DỤNG HOOK FIX
+  useHelmetFix(
+    "Giờ cầu nguyện",
+    "Xem lịch cầu nguyện chính xác theo vị trí của bạn. Bao gồm Fajr, Dhuhr, Asr, Maghrib, Isha với thời gian chính xác."
+  );
   return (
     <div className="min-h-screen bg-background text-foreground transition-smooth">
+      {/* SEO Head với Error Boundary */}
+      <React.Suspense fallback={null}>
+        <SEOHead
+          title="Giờ cầu nguyện"
+          description="Xem giờ giấc cầu nguyện chính xác theo vị trí của bạn. Bao gồm Fajr, Dhuhr, Asr, Maghrib, Isha với thời gian chính xác."
+          url="https://muslimviet.vercel.app/utilities/prayers"
+          keywords={['lịch cầu nguyện', 'prayer times', 'salah', 'namaz']}
+        />
+      </React.Suspense>
+      
       {/* Header */}
       <Header
         selectedLocation={selectedLocation}
@@ -109,25 +130,22 @@ export default function PrayerTimesCalculator() {
           qiblaDirection={qiblaDirection}
         />
 
-        
-  
-
         {/* Next Prayer Alert with Progress Bar */}
         <NextPrayerCard
           nextPrayer={nextPrayerInfo.nextPrayer}
           timeToNext={nextPrayerInfo.timeToNext}
           progressPercentage={nextPrayerInfo.progressPercentage}
         />
-      {/* Adhan Playlist */}
+      
+        {/* Adhan Playlist */}
         <AdhanPlaylist />
 
         {/* Prayer Times Grid */}
         {prayerTimes && <PrayerTimesGrid prayerTimes={prayerTimes} />}
-
       </div>
 
       {/* Settings Modal */}
-     <SettingsModal
+      <SettingsModal
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
         selectedLocation={selectedLocation}
@@ -137,7 +155,7 @@ export default function PrayerTimesCalculator() {
         calculationMethod={calculationMethod}
         onMethodChange={setCalculationMethod}
         isDarkMode={isDarkMode}
-        onDarkModeToggle={toggleTheme} // Sử dụng toggleTheme từ context
+        onDarkModeToggle={toggleTheme}
         onLocationRequest={() => setShowLocationPermission(true)}
       />
 
