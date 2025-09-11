@@ -9,6 +9,8 @@ import NotFound from './NotFound';
 
 // Lazy load components
 const Utilities = React.lazy(() => import('@/Pages/Home/Utilities'));
+const News = React.lazy(() => import('@/Pages/News/News'));
+
 const Prayers = React.lazy(() => import('@/components/Utilities/Prayers/PrayerTimes'));
 const Qiblah = React.lazy(() => import('@/components/Utilities/Qiblah/QiblahFinder'));
 const Calendar = React.lazy(() => import('@/components/Utilities/Calendar/HijriCalendar'));
@@ -42,10 +44,7 @@ const AnimatedRoutes: React.FC = () => {
           <MainLayout>
             <AnimatedPage>
               <Suspense fallback={<LoadingSpinner />}>
-                <div className="p-6 text-center">
-                  <h2 className="text-2xl font-bold mb-4">Tin Tức</h2>
-                  <p className="text-muted-foreground">Trang tin tức sẽ được cập nhật sớm...</p>
-                </div>
+               <News/>
               </Suspense>
             </AnimatedPage>
           </MainLayout>

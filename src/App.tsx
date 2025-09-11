@@ -11,6 +11,7 @@ const preloadComponents = () => {
   const components = [
     import('@/Pages/Home/Utilities'),
     import('@/Pages/Setting/Setting'),
+     import('@/Pages/News/News'),
     import('@/components/Utilities/Prayers/PrayerTimes'),
     import('@/components/Utilities/Qiblah/QiblahFinder'),
     import('@/components/Utilities/Calendar/HijriCalendar'),

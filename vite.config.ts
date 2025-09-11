@@ -4,6 +4,11 @@ import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 
 export default defineConfig({
+  server: {
+    proxy: {
+      '/api': 'http://localhost:8080', // port server backend của bạn
+    },
+  },
   plugins: [
     react(),
     VitePWA({
