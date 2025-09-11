@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import * as React from "react";
-import { useHelmetFix } from '@/hooks/useHelmetFix'; // Import hook mới
-
+import { prayerNotificationService } from '@/services/prayerNotifications';
+import { useNotifications } from '@/hooks/useNotifications';
 import {
   Header,
   CurrentTimeCard,
@@ -29,8 +29,30 @@ export default function PrayerTimesCalculator() {
   const [showSettings, setShowSettings] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [showLocationPermission, setShowLocationPermission] = useState(false);
+  const { permission, requestPermission } = useNotifications();
 
-  // Custom hooks
+  // Yêu cầu quyền thông báo khi component mount
+  useEffect(() => {
+    const initializeNotifications = async () => {
+      await prayerNotificationService.initialize();
+      
+      if (permission === 'default') {
+        const result = await requestPermission();
+        if (result === 'granted') {
+          console.log('Notification permission granted');
+        }
+      }
+    };
+    
+    initializeNotifications();
+    
+    return () => {
+      // Dọn dẹp khi component unmount
+      prayerNotificationService.destroy();
+    };
+  }, [permission, requestPermission]);
+
+  // Custom hooks - Moved usePrayerTimes earlier to make prayerTimes available for scheduling
   const {
     selectedLocation,
     setSelectedLocation,
@@ -44,7 +66,26 @@ export default function PrayerTimesCalculator() {
     calculationMethod
   );
 
-  const { currentTime, nextPrayerInfo } = useNextPrayer(prayerTimes);
+  // Convert PrayerTimes object to array for notifications
+  const prayerTimesArray: import('@/services/prayerNotifications').PrayerTime[] = prayerTimes
+    ? [
+        { name: 'fajr', time: prayerTimes.fajr, nameVi: 'Fajr' },
+        { name: 'sunrise', time: prayerTimes.sunrise, nameVi: 'Bình minh' },
+        { name: 'dhuhr', time: prayerTimes.dhuhr, nameVi: 'Dhuhr' },
+        { name: 'asr', time: prayerTimes.asr, nameVi: 'Asr' },
+        { name: 'maghrib', time: prayerTimes.maghrib, nameVi: 'Maghrib' },
+        { name: 'isha', time: prayerTimes.isha, nameVi: 'Isha' }
+      ]
+    : [];
+
+  // Lên lịch thông báo khi prayerTimes thay đổi
+  useEffect(() => {
+    if (prayerTimesArray.length > 0 && permission === 'granted') {
+      prayerNotificationService.schedulePrayerNotifications(prayerTimesArray);
+    }
+  }, [prayerTimesArray, permission]);
+
+  const { currentTime, nextPrayerInfo } = useNextPrayer(prayerTimes);  // useNextPrayer expects PrayerTimes | null
 
   // Kiểm tra xem đã hỏi quyền vị trí chưa
   const [hasAskedLocation, setHasAskedLocation] = useLocalStorage('prayer-has-asked-location', false);
@@ -93,13 +134,8 @@ export default function PrayerTimesCalculator() {
         console.error('Error parsing saved location:', error);
       }
     }
-  }, []);
+  }, []);  // Note: setSelectedLocation is stable, so empty deps are fine
 
- // SỬ DỤNG HOOK FIX
-  useHelmetFix(
-    "Giờ cầu nguyện",
-    "Xem lịch cầu nguyện chính xác theo vị trí của bạn. Bao gồm Fajr, Dhuhr, Asr, Maghrib, Isha với thời gian chính xác."
-  );
   return (
     <div className="min-h-screen bg-background text-foreground transition-smooth">
       {/* SEO Head với Error Boundary */}

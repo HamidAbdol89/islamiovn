@@ -1,4 +1,4 @@
-import { addMinutes, format, isAfter, isBefore, parseISO } from 'date-fns';
+import { addMinutes, format, isAfter } from 'date-fns';
 
 export interface PrayerTime {
   name: string;
@@ -6,9 +6,21 @@ export interface PrayerTime {
   nameVi: string;
 }
 
+// Custom interface to extend NotificationOptions with 'actions' (workaround for TS lib issue)
+interface ExtendedNotificationOptions extends NotificationOptions {
+  actions?: NotificationAction[];
+}
+
+interface NotificationAction {
+  action: string;
+  title: string;
+  // Add icon if needed: icon?: string;
+}
+
 export class PrayerNotificationService {
   private static instance: PrayerNotificationService;
   private registration: ServiceWorkerRegistration | null = null;
+  private scheduledTimeouts: Map<string, number> = new Map();
 
   static getInstance(): PrayerNotificationService {
     if (!PrayerNotificationService.instance) {
@@ -18,15 +30,40 @@ export class PrayerNotificationService {
   }
 
   async initialize() {
-    if ('serviceWorker' in navigator) {
-      this.registration = await navigator.serviceWorker.ready;
+    if ('serviceWorker' in navigator && 'Notification' in window) {
+      try {
+        this.registration = await navigator.serviceWorker.ready;
+        
+        // Đăng ký message event listener để xử lý action clicks
+        if (navigator.serviceWorker.controller) {
+          navigator.serviceWorker.addEventListener('message', this.handleServiceWorkerMessage);
+        }
+      } catch (error) {
+        console.error('Failed to initialize service worker:', error);
+      }
     }
   }
 
-  async schedulePrayerNotifications(prayerTimes: PrayerTime[]) {
-    if (!this.registration) return;
+  private handleServiceWorkerMessage = (event: MessageEvent) => {
+    if (event.data && event.data.type === 'NOTIFICATION_CLICK') {
+      const { action } = event.data;  // Removed unused notificationData
+      
+      if (action === 'view') {
+        // Mở trang lịch cầu nguyện khi người dùng click "Xem lịch cầu nguyện"
+        window.focus();
+        window.location.href = '/utilities/prayers';
+      }
+      // Với action 'dismiss', không cần làm gì thêm
+    }
+  };
 
-    // Clear existing notifications
+  async schedulePrayerNotifications(prayerTimes: PrayerTime[]) {
+    if (!this.registration) {
+      console.warn('Service worker not ready, skipping notification scheduling');
+      return;
+    }
+
+    // Clear existing notifications và timeouts
     await this.clearScheduledNotifications();
 
     const today = new Date();
@@ -54,57 +91,125 @@ export class PrayerNotificationService {
 
     // Schedule notification 5 minutes before
     const notificationTime = addMinutes(prayerDateTime, -5);
+    const timeUntilNotification = notificationTime.getTime() - Date.now();
 
-    const notificationData = {
-      title: `Sắp đến giờ ${prayer.nameVi}`,
-      body: `${prayer.nameVi} sẽ bắt đầu lúc ${prayer.time}`,
-      icon: '/pwa-192x192.png',
-      badge: '/pwa-64x64.png',
-      tag: `prayer-${prayer.name}-${format(date, 'yyyy-MM-dd')}`,
-      data: {
-        prayer: prayer.name,
-        time: prayer.time,
-        type: 'prayer-reminder'
-      },
-      showTrigger: new Date(notificationTime.getTime())
-    };
+    // Nếu thời gian thông báo đã qua, bỏ qua
+    if (timeUntilNotification <= 0) return;
+
+    const notificationId = `prayer-${prayer.name}-${format(date, 'yyyy-MM-dd')}`;
 
     try {
-      // Use Notification API with delay
-      setTimeout(() => {
-        this.registration?.showNotification(notificationData.title, {
-          body: notificationData.body,
-          icon: notificationData.icon,
-          badge: notificationData.badge,
-          tag: notificationData.tag,
-          data: notificationData.data,
-          requireInteraction: true,
-          actions: [
-            {
-              action: 'view',
-              title: 'Xem lịch cầu nguyện'
+      // Sử dụng service worker để lên lịch thông báo background
+      // Gửi message đến service worker để lên lịch thông báo
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: 'SCHEDULE_NOTIFICATION',
+          notification: {
+            id: notificationId,
+            time: notificationTime.getTime(),
+            title: `Sắp đến giờ ${prayer.nameVi}`,
+            body: `${prayer.nameVi} sẽ bắt đầu lúc ${prayer.time}`,
+            icon: '/pwa-192x192.png',
+            badge: '/pwa-64x64.png',
+            data: {
+              prayer: prayer.name,
+              time: prayer.time,
+              type: 'prayer-reminder',
+              id: notificationId
             },
-            {
-              action: 'dismiss',
-              title: 'Đóng'
-            }
-          ]
+            actions: [
+              {
+                action: 'view',
+                title: 'Xem lịch cầu nguyện'
+              },
+              {
+                action: 'dismiss',
+                title: 'Đóng'
+              }
+            ]
+          }
         });
-      }, notificationTime.getTime() - Date.now());
+      }
+
+      // Fallback: vẫn sử dụng setTimeout nhưng chỉ khi tab đang active
+      const timeoutId = setTimeout(() => {
+        this.showNotificationNow(prayer, date);
+        this.scheduledTimeouts.delete(notificationId);
+      }, timeUntilNotification) as unknown as number;
+
+      this.scheduledTimeouts.set(notificationId, timeoutId);
     } catch (error) {
       console.error('Failed to schedule notification:', error);
     }
   }
 
-  async clearScheduledNotifications() {
-    if (!this.registration) return;
+  private async showNotificationNow(prayer: PrayerTime, date: Date) {
+    if (!this.registration || Notification.permission !== 'granted') return;
 
-    const notifications = await this.registration.getNotifications();
-    notifications.forEach(notification => {
-      if (notification.data?.type === 'prayer-reminder') {
-        notification.close();
-      }
+    const notificationId = `prayer-${prayer.name}-${format(date, 'yyyy-MM-dd')}`;
+    const options: ExtendedNotificationOptions = {
+      body: `${prayer.nameVi} sẽ bắt đầu lúc ${prayer.time}`,
+      icon: '/pwa-192x192.png',
+      badge: '/pwa-64x64.png',
+      tag: notificationId,
+      data: {
+        prayer: prayer.name,
+        time: prayer.time,
+        type: 'prayer-reminder',
+        id: notificationId
+      },
+      actions: [
+        {
+          action: 'view',
+          title: 'Xem lịch cầu nguyện'
+        },
+        {
+          action: 'dismiss',
+          title: 'Đóng'
+        }
+      ],
+      requireInteraction: true
+    };
+
+    try {
+      await this.registration.showNotification(
+        `Sắp đến giờ ${prayer.nameVi}`,
+        options
+      );
+    } catch (error) {
+      console.error('Failed to show notification:', error);
+    }
+  }
+
+  async clearScheduledNotifications() {
+    // Clear all timeouts
+    this.scheduledTimeouts.forEach((timeoutId, id) => {
+      clearTimeout(timeoutId);
+      this.scheduledTimeouts.delete(id);
     });
+
+    // Clear notifications từ service worker
+    if (this.registration) {
+      const notifications = await this.registration.getNotifications();
+      notifications.forEach(notification => {
+        if (notification.data?.type === 'prayer-reminder') {
+          notification.close();
+        }
+      });
+
+      // Gửi message đến service worker để clear scheduled notifications
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: 'CLEAR_SCHEDULED_NOTIFICATIONS'
+        });
+      }
+    }
+  }
+
+  // Hàm hủy đăng ký khi không cần thiết
+  destroy() {
+    navigator.serviceWorker.removeEventListener('message', this.handleServiceWorkerMessage);
+    this.clearScheduledNotifications();
   }
 }
 
