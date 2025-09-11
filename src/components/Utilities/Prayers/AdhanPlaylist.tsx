@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
-import { Play, Pause, Volume2, SkipBack, SkipForward } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Lottie from "lottie-react";
+import audioAnim from "@/assets/lottie/audio-animition.json";
 
 interface AdhanReader {
   id: string;
@@ -168,12 +170,17 @@ export default function AdhanPlaylist() {
 
   return (
     <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <Volume2 className="w-5 h-5 text-primary" />
-          Lắng nghe Adhan
-        </CardTitle>
-      </CardHeader>
+<CardHeader className="pb-3">
+  <CardTitle className="flex items-center gap-2 text-lg">
+    <Lottie 
+      animationData={audioAnim} 
+      loop={true} 
+      autoplay={true} 
+      className="w-7 h-7" 
+    />
+    Lắng nghe Adhan
+  </CardTitle>
+</CardHeader>
       <CardContent>
         <audio ref={audioRef} />
         
