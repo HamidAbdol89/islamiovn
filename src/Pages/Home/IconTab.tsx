@@ -150,8 +150,12 @@ const UtilityButton = React.memo<{
             )}
           </Button>
         </TooltipTrigger>
+        {/* Only show tooltip on non-touch devices */}
         {utility.description && (
-          <TooltipContent side="bottom" className="text-xs max-w-[140px] text-center">
+          <TooltipContent 
+            side="bottom" 
+            className="text-xs max-w-[140px] text-center hidden md:block"
+          >
             <p>{utility.description}</p>
           </TooltipContent>
         )}
