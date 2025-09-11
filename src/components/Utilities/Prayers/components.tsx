@@ -82,21 +82,15 @@ export const Header: React.FC<HeaderProps> = ({
           ←
         </Button>
         
-        <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-1 text-sm">
-            <div className="flex items-center gap-1">
-              <MapPin size={14} className="text-primary flex-shrink-0" />
-              <span className="truncate text-muted-foreground">{selectedLocation.name}</span>
-              {isLoadingLocation && (
-                <Badge variant="secondary" className="ml-1 text-xs">
-                  đang cập nhật...
-                </Badge>
-              )}
-            </div>
-            <span className="opacity-70 hidden xs:inline">•</span>
-            <p className="text-xs text-muted-foreground truncate">
-              Múi giờ: {selectedLocation.timezone}
-            </p>
+        <div className="flex-1 min-w-0 text-center">
+          <div className="flex items-center justify-center gap-1 text-sm">
+            <MapPin size={14} className="text-primary flex-shrink-0" />
+            <span className="truncate font-medium">{selectedLocation.name}</span>
+            {isLoadingLocation && (
+              <Badge variant="secondary" className="ml-1 text-xs">
+                đang cập nhật...
+              </Badge>
+            )}
           </div>
         </div>
         
@@ -127,46 +121,55 @@ export const CurrentTimeCard: React.FC<CurrentTimeCardProps> = ({
   qiblaDirection
 }) => {
   return (
-   <Card className="mb-6 relative overflow-hidden text-white border-0">
-  {/* Ảnh nền */}
-  <img
-    src="/images/praytime/vietnammosque.jpg"
-    alt="Vietnam Mosque"
-    className="absolute inset-0 w-full h-full object-cover"
-  />
-  {/* Overlay để chữ nổi bật */}
-  <div className="absolute inset-0 bg-black/40" />
+    <Card className="mb-6 relative overflow-hidden text-white border-0 rounded-2xl shadow-lg">
+      {/* Background */}
+      <img
+        src="/images/praytime/vietnammosque.jpg"
+        alt="Vietnam Mosque"
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/60" />
 
-  <CardHeader className="relative pb-3">
-    <CardTitle className="text-3xl font-mono text-center">
-      {currentTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
-    </CardTitle>
-    <CardDescription className="text-center text-white/80">
-      {new Date(selectedDate).toLocaleDateString('vi-VN', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      })}
-    </CardDescription>
-  </CardHeader>
+      <div className="relative p-6 flex flex-col items-center">
+        {/* Time */}
+        <h2 className="text-5xl font-mono font-bold drop-shadow-md">
+          {currentTime.toLocaleTimeString("vi-VN", {
+            hour: "2-digit",
+            minute: "2-digit"
+          })}
+        </h2>
+        {/* Date */}
+        <p className="text-sm text-white/80 mt-1">
+          {new Date(selectedDate).toLocaleDateString("vi-VN", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+          })}
+        </p>
 
-  <CardContent className="relative">
-    <div className="flex justify-between items-center text-sm">
-      <div className="flex items-center gap-1">
-        <MapPin size={16} className="text-white" />
-        <span>{selectedLocation.name}</span>
+        {/* Location & Qibla */}
+        <div className="grid grid-cols-2 gap-4 mt-6 text-sm w-full">
+          <div className="flex flex-col items-center">
+            <MapPin size={18} className="text-emerald-300 mb-1" />
+            <span className="text-center">{selectedLocation.name}</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <Compass size={18} className="text-amber-300 mb-1" />
+            <span>{qiblaDirection}° Qibla</span>
+          </div>
+        </div>
+
+        {/* Timezone */}
+        <p className="text-xs text-white/60 mt-4 italic">
+          Múi giờ: {selectedLocation.timezone}
+        </p>
       </div>
-      <div className="flex items-center gap-1">
-        <Compass size={16} className="text-amber-300" />
-        <span>{qiblaDirection}° Qibla</span>
-      </div>
-    </div>
-  </CardContent>
-</Card>
-
+    </Card>
   );
 };
+
 
 interface NextPrayerCardProps {
   nextPrayer: string; // Đây sẽ là tên prayer (fajr, dhuhr, asr, maghrib, isha)
