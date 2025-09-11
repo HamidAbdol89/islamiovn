@@ -1,5 +1,7 @@
 import React from 'react';
+import type { MouseEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+
 
 interface BottomNavProps {
   activeTab: string;
@@ -19,28 +21,49 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) => {
     }
   ];
 
+  // ripple effect
+  const createRipple = (e: MouseEvent<HTMLButtonElement>) => {
+    const button = e.currentTarget;
+    const circle = document.createElement("span");
+    const diameter = Math.max(button.clientWidth, button.clientHeight);
+    const radius = diameter / 2;
+
+    circle.style.width = circle.style.height = `${diameter}px`;
+    circle.style.left = `${e.clientX - button.getBoundingClientRect().left - radius}px`;
+    circle.style.top = `${e.clientY - button.getBoundingClientRect().top - radius}px`;
+    circle.classList.add("ripple");
+
+    const ripple = button.getElementsByClassName("ripple")[0];
+    if (ripple) ripple.remove();
+
+    button.appendChild(circle);
+  };
+
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50">
-      <div className="bg-[hsl(var(--card)/0.9)] backdrop-blur-lg rounded-t-2xl p-1.5 shadow-luxury dark:shadow-luxury-dark border-t border-white/15 dark:border-navy-800/30 transition-smooth mx-auto max-w-md">
+      <div className="bg-[hsl(var(--card)/0.9)] backdrop-blur-lg rounded-t-2xl p-2 shadow-luxury dark:shadow-luxury-dark border-t border-white/15 dark:border-navy-800/30 transition-smooth mx-auto max-w-md">
         <div className="flex justify-around items-center">
           {tabs.map(tab => (
             <button
               key={tab.key}
-              onClick={() => onTabChange(tab.key)}
+              onClick={(e) => {
+                createRipple(e);
+                onTabChange(tab.key);
+              }}
               className={`
-                flex items-center gap-1.5 sm:gap-2.5 
+                relative overflow-hidden
+                flex items-center gap-2 sm:gap-3
                 transition-smooth 
-                overflow-hidden 
                 rounded-full 
-                px-2 py-2 sm:px-3 sm:py-3
+                px-3 py-2.5 sm:px-4 sm:py-3
                 ${activeTab === tab.key 
                   ? 'bg-primary/20 text-primary w-auto'
-                  : 'bg-transparent text-muted-foreground w-10 sm:w-12 justify-center hover:text-primary'
+                  : 'bg-transparent text-muted-foreground w-12 sm:w-14 justify-center hover:text-primary'
                 }
               `}
             >
               <svg
-                className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" 
+                className="w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0" 
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24" 
@@ -56,7 +79,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) => {
                     animate={{ opacity: 1, width: "auto" }}
                     exit={{ opacity: 0, width: 0 }}
                     transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="text-[10px] sm:text-[12px] font-medium whitespace-nowrap overflow-hidden"
+                    className="text-xs sm:text-sm font-medium whitespace-nowrap overflow-hidden"
                   >
                     {tab.label}
                   </motion.span>
