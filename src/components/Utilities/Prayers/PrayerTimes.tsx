@@ -8,6 +8,7 @@ import {
   InfoModal,
   LocationPermissionModal
 } from './components';
+import AdhanPlaylist from '@/components/Utilities/Prayers/AdhanPlaylist'; // Import component mới
 import { useLocation, usePrayerTimes, useNextPrayer } from './hooks';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 
@@ -96,7 +97,7 @@ export default function PrayerTimesCalculator() {
         onBackPress={handleBackPress}
       />
 
-      <div className="px-4 py-6 max-w-md mx-auto">
+      <div className="px-4 py-6 max-w-md mx-auto space-y-6">
         {/* Current Time & Location Card */}
         <CurrentTimeCard
           currentTime={currentTime}
@@ -105,15 +106,21 @@ export default function PrayerTimesCalculator() {
           qiblaDirection={qiblaDirection}
         />
 
+        
+  
+
         {/* Next Prayer Alert with Progress Bar */}
         <NextPrayerCard
           nextPrayer={nextPrayerInfo.nextPrayer}
           timeToNext={nextPrayerInfo.timeToNext}
           progressPercentage={nextPrayerInfo.progressPercentage}
         />
-
+      {/* Adhan Playlist */}
+        <AdhanPlaylist />
+        
         {/* Prayer Times Grid */}
         {prayerTimes && <PrayerTimesGrid prayerTimes={prayerTimes} />}
+
       </div>
 
       {/* Settings Modal */}
