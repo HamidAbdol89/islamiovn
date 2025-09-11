@@ -15,10 +15,17 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [offlineAlertVisible, setOfflineAlertVisible] = React.useState(false);
   const [isOnline, setIsOnline] = React.useState(navigator.onLine);
 
-  const { needRefresh, offlineReady, updateServiceWorker } = useRegisterSW({
+  const {
+    offlineReady: [offlineReady, setOfflineReady],
+    needRefresh: [needRefresh],
+    updateServiceWorker
+  } = useRegisterSW({
     onRegistered(r) { console.log('SW Registered:', r); },
     onRegisterError(e) { console.log('SW registration error:', e); },
-    onOfflineReady() { setOfflineAlertVisible(true); },
+    onOfflineReady() {
+      setOfflineReady(true);
+      setOfflineAlertVisible(true);
+    },
   });
 
   // auto hide offline alert

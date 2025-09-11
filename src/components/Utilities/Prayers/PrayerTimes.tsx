@@ -15,6 +15,7 @@ import AdhanPlaylist from '@/components/Utilities/Prayers/AdhanPlaylist';
 import { useLocation, usePrayerTimes, useNextPrayer } from './hooks';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useTheme } from '@/context/ThemeContext';
+import { registerServiceWorker } from '@/utils/registerServiceWorker';
 
 // Import SEOHead với dynamic import để tránh lỗi nếu component có vấn đề
 const SEOHead = React.lazy(() => import('@/components/SEO/SEOHead'));
@@ -30,29 +31,9 @@ export default function PrayerTimesCalculator() {
   const [showInfo, setShowInfo] = useState(false);
   const [showLocationPermission, setShowLocationPermission] = useState(false);
   const { permission, requestPermission } = useNotifications();
+  const [isServiceWorkerReady, setIsServiceWorkerReady] = useState(false);
 
-  // Yêu cầu quyền thông báo khi component mount
-  useEffect(() => {
-    const initializeNotifications = async () => {
-      await prayerNotificationService.initialize();
-      
-      if (permission === 'default') {
-        const result = await requestPermission();
-        if (result === 'granted') {
-          console.log('Notification permission granted');
-        }
-      }
-    };
-    
-    initializeNotifications();
-    
-    return () => {
-      // Dọn dẹp khi component unmount
-      prayerNotificationService.destroy();
-    };
-  }, [permission, requestPermission]);
-
-  // Custom hooks - Moved usePrayerTimes earlier to make prayerTimes available for scheduling
+  // Custom hooks
   const {
     selectedLocation,
     setSelectedLocation,
@@ -67,7 +48,7 @@ export default function PrayerTimesCalculator() {
   );
 
   // Convert PrayerTimes object to array for notifications
-  const prayerTimesArray: import('@/services/prayerNotifications').PrayerTime[] = prayerTimes
+  const prayerTimesArray = prayerTimes
     ? [
         { name: 'fajr', time: prayerTimes.fajr, nameVi: 'Fajr' },
         { name: 'sunrise', time: prayerTimes.sunrise, nameVi: 'Bình minh' },
@@ -78,17 +59,44 @@ export default function PrayerTimesCalculator() {
       ]
     : [];
 
-  // Lên lịch thông báo khi prayerTimes thay đổi
-  useEffect(() => {
-    if (prayerTimesArray.length > 0 && permission === 'granted') {
-      prayerNotificationService.schedulePrayerNotifications(prayerTimesArray);
-    }
-  }, [prayerTimesArray, permission]);
-
-  const { currentTime, nextPrayerInfo } = useNextPrayer(prayerTimes);  // useNextPrayer expects PrayerTimes | null
+  const { currentTime, nextPrayerInfo } = useNextPrayer(prayerTimes);
 
   // Kiểm tra xem đã hỏi quyền vị trí chưa
   const [hasAskedLocation, setHasAskedLocation] = useLocalStorage('prayer-has-asked-location', false);
+
+  // Khởi tạo service worker và notification service - CHỈ MỘT LẦN
+  useEffect(() => {
+    const initializeServiceWorkerAndNotifications = async () => {
+      try {
+        // Đăng ký service worker
+        await registerServiceWorker();
+        
+        // Khởi tạo notification service
+        await prayerNotificationService.initialize();
+        setIsServiceWorkerReady(true);
+        
+        // Yêu cầu quyền thông báo
+        if (permission === 'default') {
+          await requestPermission();
+        }
+      } catch (error) {
+        console.error('Failed to initialize service worker:', error);
+      }
+    };
+    
+    initializeServiceWorkerAndNotifications();
+    
+    return () => {
+      prayerNotificationService.destroy();
+    };
+  }, [permission, requestPermission]);
+
+  // Lên lịch thông báo khi prayerTimes thay đổi và service worker đã sẵn sàng
+  useEffect(() => {
+    if (prayerTimesArray.length > 0 && isServiceWorkerReady && permission === 'granted') {
+      prayerNotificationService.schedulePrayerNotifications(prayerTimesArray);
+    }
+  }, [prayerTimesArray, isServiceWorkerReady, permission]);
 
   // Auto request location permission on first load
   useEffect(() => {
@@ -119,7 +127,6 @@ export default function PrayerTimesCalculator() {
   // Lưu vị trí đã chọn vào localStorage
   const handleLocationChange = (location: any) => {
     setSelectedLocation(location);
-    // Lưu tên vị trí để có thể khôi phục sau
     localStorage.setItem('prayer-selected-location', JSON.stringify(location));
   };
 
@@ -134,7 +141,7 @@ export default function PrayerTimesCalculator() {
         console.error('Error parsing saved location:', error);
       }
     }
-  }, []);  // Note: setSelectedLocation is stable, so empty deps are fine
+  }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-smooth">

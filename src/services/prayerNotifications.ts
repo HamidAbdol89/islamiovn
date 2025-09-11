@@ -57,6 +57,8 @@ export class PrayerNotificationService {
     }
   };
 
+  
+
   async schedulePrayerNotifications(prayerTimes: PrayerTime[]) {
     if (!this.registration) {
       console.warn('Service worker not ready, skipping notification scheduling');
