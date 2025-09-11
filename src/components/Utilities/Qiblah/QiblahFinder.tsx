@@ -54,10 +54,9 @@ const QiblahCompass = () => {
   const [accuracy, setAccuracy] = useState<number | null>(null);
   const [compassPermission, setCompassPermission] = useState<string>('pending');
   const [calibrationNeeded, setCalibrationNeeded] = useState<boolean>(false);
-  
-  // Thêm state cho dialog vị trí
+   // Thêm state cho dialog vị trí
   const [showLocationDialog, setShowLocationDialog] = useState<boolean>(false);
-  const [isFirstLoad, setIsFirstLoad] = useState<boolean>(true);
+  const [, setLocationPermission] = useState<string>('prompt');
 
   // Kaaba coordinates (Mecca)
   const KAABA_LAT = 21.4225;
@@ -86,6 +85,56 @@ const QiblahCompass = () => {
     bearing = (bearing + 360) % 360;
     
     return bearing;
+  };
+
+  // Kiểm tra quyền vị trí khi component mount
+  useEffect(() => {
+    checkLocationPermission();
+  }, []);
+
+  // Hàm kiểm tra quyền vị trí
+  const checkLocationPermission = async () => {
+    if (!navigator.permissions) {
+      // Trình duyệt không hỗ trợ Permissions API
+      setShowLocationDialog(true);
+      return;
+    }
+
+    try {
+      const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
+      setLocationPermission(permissionStatus.state);
+      
+      if (permissionStatus.state === 'prompt') {
+        setShowLocationDialog(true);
+      } else if (permissionStatus.state === 'denied') {
+        // Nếu đã từ chối, vẫn hiển thị dialog để người dùng có thể thử lại
+        setShowLocationDialog(true);
+      }
+      
+      // Lắng nghe thay đổi quyền
+      permissionStatus.onchange = () => {
+        setLocationPermission(permissionStatus.state);
+        if (permissionStatus.state === 'granted') {
+          setShowLocationDialog(false);
+          getCurrentPosition();
+        }
+      };
+    } catch (error) {
+      console.error('Lỗi kiểm tra quyền vị trí:', error);
+      setShowLocationDialog(true);
+    }
+  };
+
+  // Hàm yêu cầu quyền vị trí
+  const requestLocationPermission = () => {
+    setShowLocationDialog(false);
+    getCurrentPosition();
+  };
+
+  // Hàm skip yêu cầu vị trí
+  const skipLocationRequest = () => {
+    setShowLocationDialog(false);
+    setError('Vui lòng bật quyền vị trí để sử dụng tính năng này');
   };
 
   // Calculate distance to Mecca
@@ -131,7 +180,6 @@ const QiblahCompass = () => {
   const getCurrentPosition = (): void => {
     setIsLoading(true);
     setError('');
-    setShowLocationDialog(false);
 
     if (!navigator.geolocation) {
       setError('Trình duyệt không hỗ trợ GPS');
@@ -153,17 +201,15 @@ const QiblahCompass = () => {
         setLocationInfo(locationData);
         
         setIsLoading(false);
-        setIsFirstLoad(false);
       },
       (err) => {
         let errorMessage = 'Không thể lấy vị trí';
         switch(err.code) {
           case err.PERMISSION_DENIED:
             errorMessage = 'Quyền truy cập vị trí bị từ chối';
-            setShowLocationDialog(true);
             break;
           case err.POSITION_UNAVAILABLE:
-            errorMessage = 'Thông tin vị trí không khả dụng, vui lòng bật vị trí và thử lại';
+            errorMessage = 'Thông tin vị trí không khả dụng';
             break;
           case err.TIMEOUT:
             errorMessage = 'Yêu cầu vị trí đã hết thời gian';
@@ -171,7 +217,6 @@ const QiblahCompass = () => {
         }
         setError(errorMessage);
         setIsLoading(false);
-        setIsFirstLoad(false);
       },
       {
         enableHighAccuracy: true,
@@ -253,63 +298,9 @@ const QiblahCompass = () => {
     };
   }, []);
 
-  // Kiểm tra quyền vị trí khi component mount
   useEffect(() => {
-    const checkLocationPermission = async () => {
-      if (!navigator.geolocation) {
-        setError('Trình duyệt không hỗ trợ GPS');
-        setIsLoading(false);
-        return;
-      }
-
-      // Kiểm tra quyền sử dụng Geolocation API
-      try {
-        // Sử dụng Permissions API nếu trình duyệt hỗ trợ
-        if (navigator.permissions && navigator.permissions.query) {
-          const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
-          
-          if (permissionStatus.state === 'prompt') {
-            setShowLocationDialog(true);
-          } else if (permissionStatus.state === 'denied') {
-            setShowLocationDialog(true);
-          } else {
-            // Nếu đã được cấp quyền, tự động lấy vị trí
-            getCurrentPosition();
-          }
-          
-          // Lắng nghe thay đổi quyền
-          permissionStatus.onchange = () => {
-            if (permissionStatus.state === 'granted') {
-              getCurrentPosition();
-            }
-          };
-        } else {
-          // Trình duyệt không hỗ trợ Permissions API, hiển thị dialog
-          setShowLocationDialog(true);
-        }
-      } catch (error) {
-        console.error('Lỗi kiểm tra quyền vị trí:', error);
-        setShowLocationDialog(true);
-      }
-    };
-
-    checkLocationPermission();
-  }, []);
-
-  // Hàm yêu cầu quyền vị trí
-  const requestLocationPermission = () => {
-    setShowLocationDialog(false);
-    // Gọi getCurrentPosition để kích hoạt hộp thoại yêu cầu quyền của trình duyệt
     getCurrentPosition();
-  };
-
-  // Hàm skip yêu cầu vị trí
-  const skipLocationRequest = () => {
-    setShowLocationDialog(false);
-    setIsLoading(false);
-    setIsFirstLoad(false);
-    setError('Vui lòng bật quyền vị trí để sử dụng tính năng này. Bạn có thể thử lại bằng nút làm mới.');
-  };
+  }, []);
 
   const relativeQiblahAngle = qiblahDirection - compassHeading;
   const normalizedAngle = ((relativeQiblahAngle % 360) + 360) % 360;
@@ -318,52 +309,55 @@ const QiblahCompass = () => {
 
   return (
     <div className="min-h-screen p-4">
-      <div className="max-w-md mx-auto">
         {/* Dialog yêu cầu quyền vị trí */}
-        <Dialog open={showLocationDialog} onOpenChange={setShowLocationDialog}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Navigation className="w-5 h-5 text-blue-500" />
-                Quyền truy cập vị trí
-              </DialogTitle>
-              <DialogDescription>
-                Ứng dụng cần truy cập vị trí của bạn để xác định hướng Qiblah chính xác.
-                Vui lòng cho phép truy cập vị trí để tiếp tục.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="flex flex-col sm:flex-col gap-2 mt-4">
-              <Button 
-                onClick={requestLocationPermission} 
-                className="w-full"
-                size="lg"
-              >
-                Cho phép truy cập vị trí
-              </Button>
-              <Button 
-                onClick={skipLocationRequest} 
-                variant="outline" 
-                className="w-full"
-              >
-                Bỏ qua
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
+      <Dialog open={showLocationDialog} onOpenChange={setShowLocationDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Navigation className="w-5 h-5 text-blue-500" />
+              Quyền truy cập vị trí
+            </DialogTitle>
+            <DialogDescription>
+              Ứng dụng cần truy cập vị trí của bạn để xác định hướng Qiblah chính xác.
+              Vui lòng cho phép truy cập vị trí để tiếp tục.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-col sm:flex-col gap-2 mt-4">
+            <Button 
+              onClick={requestLocationPermission} 
+              className="w-full"
+              size="lg"
+            >
+              Cho phép truy cập vị trí
+            </Button>
+            <Button 
+              onClick={skipLocationRequest} 
+              variant="outline" 
+              className="w-full"
+            >
+              Bỏ qua
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <div className="max-w-md mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <BackButton />
           <div className="w-10"></div>
-          <div className="w-full flex justify-center">
-            <div className="flex items-center gap-2 p-2 -translate-x-2">
-              <span className="text-xl md:text-2xl">🕋</span>
-              <h1 className="text-lg md:text-xl font-semibold text-center">
-                Tìm Hướng Qiblah
-              </h1>
-            </div>
-          </div>
+ <div className="w-full flex justify-center">
+  <div className="flex items-center gap-2 p-2 -translate-x-2">
+    <span className="text-xl md:text-2xl">🕋</span>
+    <h1 className="text-lg md:text-xl font-semibold text-center">
+      Tìm Hướng Qiblah
+    </h1>
+  </div>
+</div>
+
+
+          
           <div className="flex space-x-2">
+
             <Button
               onClick={getCurrentPosition}
               disabled={isLoading}
@@ -375,16 +369,6 @@ const QiblahCompass = () => {
             </Button>
           </div>
         </div>
-
-        {/* Loading state chỉ hiển thị khi đang tải và không phải lần đầu */}
-        {isLoading && !isFirstLoad && (
-          <Card className="mb-4 border-blue-500">
-            <CardContent className="p-4 text-center">
-              <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-blue-600" />
-              <p>Đang xác định vị trí...</p>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Accuracy indicator */}
         {position && compassPermission === 'granted' && (
@@ -430,13 +414,13 @@ const QiblahCompass = () => {
           </Card>
         )}
 
-        {/* Qiblah compass */}
-        <div className="relative mb-6">
-          <div className={`w-80 h-80 mx-auto rounded-full border-8 ${
-            theme === 'dark' 
-              ? 'bg-gray-800 border-gray-700' 
-              : 'bg-white border-gray-200'
-          } shadow-2xl relative overflow-hidden`}>
+    {/* Qiblah compass */}
+<div className="relative mb-6">
+  <div className={`w-80 h-80 mx-auto rounded-full border-8 ${
+    theme === 'dark' 
+      ? 'bg-gray-800 border-gray-700' 
+      : 'bg-white border-gray-200'
+  } shadow-2xl relative overflow-hidden`}>
             
             <div className="relative w-full h-full">
               {/* Cardinal directions */}
@@ -538,20 +522,20 @@ const QiblahCompass = () => {
           </div>
         </div>
 
-        {/* Calibration warning - placed right below the compass */}
-        {calibrationNeeded && (
-          <Card className="mt-4 border-yellow-500">
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-2 text-yellow-600 mb-2">
-                <AlertCircle className="w-5 h-5" />
-                <span className="font-medium">Cần hiệu chuẩn la bàn</span>
-              </div>
-              <p className="text-sm opacity-80">
-                Di chuyển điện thoại theo hình số 8 để hiệu chuẩn cảm biến.
-              </p>
-            </CardContent>
-          </Card>
-        )}
+   {/* Calibration warning - placed right below the compass */}
+  {calibrationNeeded && (
+    <Card className="mt-4 border-yellow-500">
+      <CardContent className="p-4">
+        <div className="flex items-center space-x-2 text-yellow-600 mb-2">
+          <AlertCircle className="w-5 h-5" />
+          <span className="font-medium">Cần hiệu chuẩn la bàn</span>
+        </div>
+        <p className="text-sm opacity-80">
+          Di chuyển điện thoại theo hình số 8 để hiệu chuẩn cảm biến.
+        </p>
+      </CardContent>
+    </Card>
+  )}
 
         {/* Compass permission denied */}
         {compassPermission === 'denied' && (
@@ -564,6 +548,16 @@ const QiblahCompass = () => {
               <p className="text-sm opacity-80">
                 Vui lòng cho phép truy cập cảm biến trong cài đặt trình duyệt.
               </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Loading state */}
+        {isLoading && (
+          <Card className="mb-4 border-blue-500">
+            <CardContent className="p-4 text-center">
+              <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-blue-600" />
+              <p>Đang xác định vị trí...</p>
             </CardContent>
           </Card>
         )}
