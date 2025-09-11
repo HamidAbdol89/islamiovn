@@ -4,7 +4,7 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { Moon } from 'lucide-react';
 
 const Setting: React.FC = () => {
-  const { theme } = useTheme(); // Lấy chủ đề hiện tại từ context
+  const { theme, toggleTheme } = useTheme(); // Sử dụng toggleTheme từ context
 
   return (
     <div className={`min-h-screen p-4 ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'}`}>
@@ -16,13 +16,13 @@ const Setting: React.FC = () => {
       <div className="mb-6">
         <h2 className="text-lg font-semibold mb-2">Tùy chỉnh</h2>
         <div className="space-y-2">
-          <button className={`w-full flex justify-between items-center p-2 rounded-lg ${theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-200 hover:bg-gray-300'}`}>
-            <div className="flex items-center">
-              <Moon className="mr-2 w-5 h-5" />
-              <span>Chủ đề</span>
-            </div>
-            <ThemeToggle /> {/* Thêm nút chuyển đổi chủ đề ở đây */}
-          </button>
+           <button className={`w-full flex justify-between items-center p-2 rounded-lg ${theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-200 hover:bg-gray-300'}`}>
+        <div className="flex items-center">
+          <Moon className="mr-2 w-5 h-5" />
+          <span>Chủ đề</span>
+        </div>
+        <ThemeToggle theme={theme} onToggle={toggleTheme} /> {/* Truyền theme và toggle function */}
+      </button>
           <button className={`w-full flex justify-between items-center p-2 rounded-lg ${theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-200 hover:bg-gray-300'}`}>
             <div className="flex items-center">
               <span className="mr-2">🌐</span>

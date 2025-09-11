@@ -24,7 +24,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -279,8 +278,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onDateChange,
   calculationMethod,
   onMethodChange,
-  isDarkMode,
-  onDarkModeToggle,
+
   onLocationRequest
 }) => {
   return (
@@ -348,19 +346,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           Cập nhật vị trí hiện tại
         </Button>
         
-        <div className="flex items-center justify-between space-x-2">
-          <Label htmlFor="dark-mode" className="flex flex-col space-y-1">
-            <span>Chế độ tối</span>
-            <span className="font-normal text-muted-foreground">
-              Giao diện tối cho trải nghiệm ban đêm
-            </span>
-          </Label>
-          <Switch
-            id="dark-mode"
-            checked={isDarkMode}
-            onCheckedChange={onDarkModeToggle}
-          />
-        </div>
+     
         
         <Button onClick={onClose} className="w-full">
           Hoàn thành

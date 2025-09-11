@@ -11,10 +11,13 @@ import {
 import AdhanPlaylist from '@/components/Utilities/Prayers/AdhanPlaylist'; // Import component mới
 import { useLocation, usePrayerTimes, useNextPrayer } from './hooks';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function PrayerTimesCalculator() {
-  // Sử dụng localStorage để lưu các thiết lập
-  const [isDarkMode, setIsDarkMode] = useLocalStorage('prayer-dark-mode', true);
+  // Sử dụng theme context thay vì localStorage riêng
+  const { theme, toggleTheme } = useTheme();
+  const isDarkMode = theme === 'dark';
+  
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [calculationMethod, setCalculationMethod] = useLocalStorage('prayer-calculation-method', 1);
   const [showSettings, setShowSettings] = useState(false);
@@ -117,14 +120,14 @@ export default function PrayerTimesCalculator() {
         />
       {/* Adhan Playlist */}
         <AdhanPlaylist />
-        
+
         {/* Prayer Times Grid */}
         {prayerTimes && <PrayerTimesGrid prayerTimes={prayerTimes} />}
 
       </div>
 
       {/* Settings Modal */}
-      <SettingsModal
+     <SettingsModal
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
         selectedLocation={selectedLocation}
@@ -134,7 +137,7 @@ export default function PrayerTimesCalculator() {
         calculationMethod={calculationMethod}
         onMethodChange={setCalculationMethod}
         isDarkMode={isDarkMode}
-        onDarkModeToggle={() => setIsDarkMode(!isDarkMode)}
+        onDarkModeToggle={toggleTheme} // Sử dụng toggleTheme từ context
         onLocationRequest={() => setShowLocationPermission(true)}
       />
 

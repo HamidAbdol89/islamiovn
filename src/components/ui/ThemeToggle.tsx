@@ -1,20 +1,26 @@
-// src/components/ThemeToggle.tsx
-import { useTheme } from "@/context/ThemeContext";
-import { Switch } from "@/components/ui/switch";
-import { Sun, Moon } from "lucide-react";
+// src/components/ui/ThemeToggle.tsx
+import React from 'react';
+import { Moon, Sun } from 'lucide-react';
 
-export const ThemeToggle = () => {
-  const { theme, toggleTheme } = useTheme();
+interface ThemeToggleProps {
+  theme: 'dark' | 'light';
+  onToggle: () => void;
+}
 
+export const ThemeToggle: React.FC<ThemeToggleProps> = ({ theme, onToggle }) => {
   return (
-    <div className="flex items-center space-x-2">
-      <Sun className="w-5 h-5 text-yellow-500" />
-      <Switch
-        checked={theme === "dark"}
-        onCheckedChange={toggleTheme}
-        className="bg-slate-300 dark:bg-slate-700"
+    <button
+      onClick={onToggle}
+      className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-300 dark:bg-gray-600 transition-colors"
+    >
+      <span className="sr-only">Toggle theme</span>
+      <span
+        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+          theme === 'dark' ? 'translate-x-6' : 'translate-x-1'
+        }`}
       />
-      <Moon className="w-5 h-5 text-purple-500" />
-    </div>
+      <Moon className="absolute left-1 h-3 w-3 text-gray-600 dark:text-gray-300" />
+      <Sun className="absolute right-1 h-3 w-3 text-gray-600 dark:text-gray-300" />
+    </button>
   );
 };
