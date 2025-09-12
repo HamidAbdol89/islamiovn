@@ -1,7 +1,24 @@
 // src/components/Utilities/Prayers/utils.ts
 
 import type { Location, PrayerTimes, CalculationMethod, PrayerInfo } from './types';
-import {  INTERNATIONAL_LOCATIONS } from './constants';
+import { INTERNATIONAL_LOCATIONS } from './constants';
+
+// Extract constants for better performance
+const EARTH_RADIUS_KM = 6371;
+const DEGREES_TO_RADIANS = Math.PI / 180;
+const RADIANS_TO_DEGREES = 180 / Math.PI;
+const MAKKAH_COORDINATES = {
+  latitude: 21.4225,
+  longitude: 39.8262
+} as const;
+
+// Memoization cache for expensive calculations
+const calculationCache = new Map<string, any>();
+
+// Helper function to create cache key
+const createCacheKey = (...args: any[]): string => {
+  return JSON.stringify(args);
+};
 
 export const calculateHaversineDistance = (
   lat1: number, 
@@ -9,8 +26,14 @@ export const calculateHaversineDistance = (
   lat2: number, 
   lng2: number
 ): number => {
-  const R = 6371; // Bán kính Trái Đất (km)
-  const toRadians = (degrees: number) => degrees * (Math.PI / 180);
+  // Create cache key for memoization
+  const cacheKey = createCacheKey('haversine', lat1, lng1, lat2, lng2);
+  
+  if (calculationCache.has(cacheKey)) {
+    return calculationCache.get(cacheKey);
+  }
+  
+  const toRadians = (degrees: number) => degrees * DEGREES_TO_RADIANS;
   
   const dLat = toRadians(lat2 - lat1);
   const dLng = toRadians(lng2 - lng1);
@@ -20,14 +43,26 @@ export const calculateHaversineDistance = (
             Math.sin(dLng / 2) * Math.sin(dLng / 2);
   
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
+  const distance = EARTH_RADIUS_KM * c;
+  
+  // Cache the result
+  calculationCache.set(cacheKey, distance);
+  return distance;
 };
 
 export const findNearestLocation = (userLat: number, userLng: number): Location => {
+  const cacheKey = createCacheKey('nearest', userLat, userLng);
+  
+  if (calculationCache.has(cacheKey)) {
+    return calculationCache.get(cacheKey);
+  }
+  
   let nearestLocation = INTERNATIONAL_LOCATIONS[0];
   let minDistance = Infinity;
   
-  INTERNATIONAL_LOCATIONS.forEach(location => {
+  // Use for loop for better performance than forEach
+  for (let i = 0; i < INTERNATIONAL_LOCATIONS.length; i++) {
+    const location = INTERNATIONAL_LOCATIONS[i];
     const distance = calculateHaversineDistance(
       userLat, userLng, 
       location.latitude, location.longitude
@@ -37,8 +72,10 @@ export const findNearestLocation = (userLat: number, userLng: number): Location 
       minDistance = distance;
       nearestLocation = location;
     }
-  });
+  }
   
+  // Cache the result
+  calculationCache.set(cacheKey, nearestLocation);
   return nearestLocation;
 };
 
@@ -47,12 +84,26 @@ export const calculatePrayerTimes = (
   date: Date, 
   method: CalculationMethod
 ): PrayerTimes => {
+  const cacheKey = createCacheKey(
+    'prayerTimes',
+    location.latitude,
+    location.longitude,
+    location.timezone,
+    date.toDateString(),
+    method.fajrAngle,
+    method.ishaAngle
+  );
+  
+  if (calculationCache.has(cacheKey)) {
+    return calculationCache.get(cacheKey);
+  }
+  
   // Chuyển đổi sang múi giờ địa phương
   const localDateStr = date.toLocaleString('en-US', { timeZone: location.timezone });
   const dateInTz = new Date(localDateStr);
   
-  const rad = Math.PI / 180;
-  const deg = 180 / Math.PI;
+  const rad = DEGREES_TO_RADIANS;
+  const deg = RADIANS_TO_DEGREES;
   
   // Tính toán ngày Julian
   const julianDay = Math.floor(dateInTz.getTime() / 86400000) + 2440587.5;
@@ -101,7 +152,7 @@ export const calculatePrayerTimes = (
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   };
   
-  return {
+  const prayerTimes = {
     fajr: formatTime(fajrTime),
     sunrise: formatTime(sunriseTime),
     dhuhr: formatTime(dhuhrTime),
@@ -109,23 +160,34 @@ export const calculatePrayerTimes = (
     maghrib: formatTime(maghribTime),
     isha: formatTime(ishaTime)
   };
+  
+  // Cache the result
+  calculationCache.set(cacheKey, prayerTimes);
+  return prayerTimes;
 };
 
 export const calculateQiblaDirection = (location: Location): number => {
-  const makkahLat = 21.4225;
-  const makkahLng = 39.8262;
+  const cacheKey = createCacheKey('qibla', location.latitude, location.longitude);
   
-  const lat1 = location.latitude * Math.PI / 180;
-  const lat2 = makkahLat * Math.PI / 180;
-  const deltaLng = (makkahLng - location.longitude) * Math.PI / 180;
+  if (calculationCache.has(cacheKey)) {
+    return calculationCache.get(cacheKey);
+  }
+  
+  const lat1 = location.latitude * DEGREES_TO_RADIANS;
+  const lat2 = MAKKAH_COORDINATES.latitude * DEGREES_TO_RADIANS;
+  const deltaLng = (MAKKAH_COORDINATES.longitude - location.longitude) * DEGREES_TO_RADIANS;
   
   const y = Math.sin(deltaLng);
   const x = Math.cos(lat1) * Math.tan(lat2) - Math.sin(lat1) * Math.cos(deltaLng);
   
-  let qibla = Math.atan2(y, x) * 180 / Math.PI;
+  let qibla = Math.atan2(y, x) * RADIANS_TO_DEGREES;
   qibla = (qibla + 360) % 360;
   
-  return Math.round(qibla);
+  const roundedQibla = Math.round(qibla);
+  
+  // Cache the result
+  calculationCache.set(cacheKey, roundedQibla);
+  return roundedQibla;
 };
 
 export const findNextPrayer = (

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import * as React from "react";
 import { prayerNotificationService } from '@/services/prayerNotifications';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -11,21 +11,34 @@ import {
   InfoModal,
   LocationPermissionModal
 } from './components';
-import AdhanPlaylist from '@/components/Utilities/Prayers/AdhanPlaylist';
 import { useLocation, usePrayerTimes, useNextPrayer } from './hooks';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useTheme } from '@/context/ThemeContext';
 import { registerServiceWorker } from '@/utils/registerServiceWorker';
 
+// Lazy load components for better performance
+const AdhanPlaylist = React.lazy(() => import('@/components/Utilities/Prayers/AdhanPlaylist'));
+
 // Import SEOHead với dynamic import để tránh lỗi nếu component có vấn đề
 const SEOHead = React.lazy(() => import('@/components/SEO/SEOHead'));
 
-export default function PrayerTimesCalculator() {
+// Extract static data outside component
+const PRAYER_TIMES_ARRAY_KEYS = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'] as const;
+const PRAYER_NAMES_VI = {
+  fajr: 'Fajr',
+  sunrise: 'Bình minh', 
+  dhuhr: 'Dhuhr',
+  asr: 'Asr',
+  maghrib: 'Maghrib',
+  isha: 'Isha'
+} as const;
+
+const PrayerTimesCalculator = memo(() => {
   // Sử dụng theme context thay vì localStorage riêng
   const { theme, toggleTheme } = useTheme();
-  const isDarkMode = theme === 'dark';
+  const isDarkMode = useMemo(() => theme === 'dark', [theme]);
   
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [calculationMethod, setCalculationMethod] = useLocalStorage('prayer-calculation-method', 1);
   const [showSettings, setShowSettings] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
@@ -47,17 +60,16 @@ export default function PrayerTimesCalculator() {
     calculationMethod
   );
 
-  // Convert PrayerTimes object to array for notifications
-  const prayerTimesArray = prayerTimes
-    ? [
-        { name: 'fajr', time: prayerTimes.fajr, nameVi: 'Fajr' },
-        { name: 'sunrise', time: prayerTimes.sunrise, nameVi: 'Bình minh' },
-        { name: 'dhuhr', time: prayerTimes.dhuhr, nameVi: 'Dhuhr' },
-        { name: 'asr', time: prayerTimes.asr, nameVi: 'Asr' },
-        { name: 'maghrib', time: prayerTimes.maghrib, nameVi: 'Maghrib' },
-        { name: 'isha', time: prayerTimes.isha, nameVi: 'Isha' }
-      ]
-    : [];
+  // Convert PrayerTimes object to array for notifications - Memoized for performance
+  const prayerTimesArray = useMemo(() => {
+    if (!prayerTimes) return [];
+    
+    return PRAYER_TIMES_ARRAY_KEYS.map(key => ({
+      name: key,
+      time: prayerTimes[key],
+      nameVi: PRAYER_NAMES_VI[key]
+    }));
+  }, [prayerTimes]);
 
   const { currentTime, nextPrayerInfo } = useNextPrayer(prayerTimes);
 
@@ -111,24 +123,32 @@ export default function PrayerTimesCalculator() {
     document.documentElement.classList.toggle('dark', isDarkMode);
   }, [isDarkMode]);
 
-  const handleLocationRequest = () => {
+  // Memoized event handlers to prevent unnecessary re-renders
+  const handleLocationRequest = useCallback(() => {
     setShowLocationPermission(false);
     requestUserLocation();
-  };
+  }, [requestUserLocation]);
 
-  const handleLocationSkip = () => {
+  const handleLocationSkip = useCallback(() => {
     setShowLocationPermission(false);
-  };
+  }, []);
 
-  const handleBackPress = () => {
+  const handleBackPress = useCallback(() => {
     window.history.back();
-  };
+  }, []);
 
-  // Lưu vị trí đã chọn vào localStorage
-  const handleLocationChange = (location: any) => {
+  const handleSettingsOpen = useCallback(() => setShowSettings(true), []);
+  const handleSettingsClose = useCallback(() => setShowSettings(false), []);
+  const handleInfoOpen = useCallback(() => setShowInfo(true), []);
+  const handleInfoClose = useCallback(() => setShowInfo(false), []);
+  const handleLocationPermissionClose = useCallback(() => setShowLocationPermission(false), []);
+  const handleLocationPermissionOpen = useCallback(() => setShowLocationPermission(true), []);
+
+  // Lưu vị trí đã chọn vào localStorage - Memoized
+  const handleLocationChange = useCallback((location: any) => {
     setSelectedLocation(location);
     localStorage.setItem('prayer-selected-location', JSON.stringify(location));
-  };
+  }, [setSelectedLocation]);
 
   // Khôi phục vị trí đã lưu khi component mount
   useEffect(() => {
@@ -159,8 +179,8 @@ export default function PrayerTimesCalculator() {
       <Header
         selectedLocation={selectedLocation}
         isLoadingLocation={isLoadingLocation}
-        onSettingsPress={() => setShowSettings(true)}
-        onInfoPress={() => setShowInfo(true)}
+        onSettingsPress={handleSettingsOpen}
+        onInfoPress={handleInfoOpen}
         onBackPress={handleBackPress}
       />
 
@@ -180,8 +200,10 @@ export default function PrayerTimesCalculator() {
           progressPercentage={nextPrayerInfo.progressPercentage}
         />
       
-        {/* Adhan Playlist */}
-        <AdhanPlaylist />
+        {/* Adhan Playlist - Lazy loaded with Suspense */}
+        <React.Suspense fallback={<div className="h-32 bg-muted animate-pulse rounded-lg" />}>
+          <AdhanPlaylist />
+        </React.Suspense>
 
         {/* Prayer Times Grid */}
         {prayerTimes && <PrayerTimesGrid prayerTimes={prayerTimes} />}
@@ -190,7 +212,7 @@ export default function PrayerTimesCalculator() {
       {/* Settings Modal */}
       <SettingsModal
         isOpen={showSettings}
-        onClose={() => setShowSettings(false)}
+        onClose={handleSettingsClose}
         selectedLocation={selectedLocation}
         onLocationChange={handleLocationChange}
         selectedDate={selectedDate}
@@ -199,13 +221,13 @@ export default function PrayerTimesCalculator() {
         onMethodChange={setCalculationMethod}
         isDarkMode={isDarkMode}
         onDarkModeToggle={toggleTheme}
-        onLocationRequest={() => setShowLocationPermission(true)}
+        onLocationRequest={handleLocationPermissionOpen}
       />
 
       {/* Info Modal */}
       <InfoModal
         isOpen={showInfo}
-        onClose={() => setShowInfo(false)}
+        onClose={handleInfoClose}
         selectedLocation={selectedLocation}
         calculationMethod={calculationMethod}
         qiblaDirection={qiblaDirection}
@@ -214,10 +236,14 @@ export default function PrayerTimesCalculator() {
       {/* Location Permission Modal */}
       <LocationPermissionModal
         isOpen={showLocationPermission}
-        onClose={() => setShowLocationPermission(false)}
+        onClose={handleLocationPermissionClose}
         onAllow={handleLocationRequest}
         onSkip={handleLocationSkip}
       />
     </div>
   );
-}
+});
+
+PrayerTimesCalculator.displayName = 'PrayerTimesCalculator';
+
+export default PrayerTimesCalculator;

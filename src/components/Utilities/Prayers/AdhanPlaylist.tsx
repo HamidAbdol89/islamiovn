@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback, memo } from 'react';
 import { Play, Pause, SkipBack, SkipForward, ChevronRight  } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -14,7 +14,8 @@ interface AdhanReader {
   description?: string;
 }
 
-const adhanReaders: AdhanReader[] = [
+// Extract static data outside component for better performance
+const ADHAN_READERS: AdhanReader[] = [
   {
     id: 'hamad-daghriry',
     name: 'Hamad Daghriry',
@@ -42,15 +43,13 @@ const adhanReaders: AdhanReader[] = [
     image: '/images/adhan/Nasser-Alqatami.webp',
     audio: '/audio/adhan/Nasser-Alqatami.mp3',
     description: 'Imam và Qari từ Saudi Arabia'
-  }
-  ,
+  },
   {
     id: 'Rabeh-Ibn-Darah-Al-Jazairi',
     name: 'Rabeh Ibn Darah Al Jazairi',
     image: '/images/adhan/Rabeh-Ibn-Darah-Al-Jazairi.webp',
     audio: '/audio/adhan/Rabeh-Ibn-Darah-Al-Jazairi.mp3',
-  }
-   ,
+  },
   {
     id: 'Ahmed-El-Kourdi',
     name: 'Ahmed El Kourdi',
@@ -59,7 +58,77 @@ const adhanReaders: AdhanReader[] = [
   }
 ];
 
-export default function AdhanPlaylist() {
+// Memoized Reader Card Component
+const ReaderCard = memo(({ reader, index, currentPlaying, isPlaying, isLoading, onPlay }: {
+  reader: AdhanReader;
+  index: number;
+  currentPlaying: string | null;
+  isPlaying: boolean;
+  isLoading: boolean;
+  onPlay: (reader: AdhanReader, index: number) => void;
+}) => {
+  const handleClick = useCallback(() => {
+    onPlay(reader, index);
+  }, [reader, index, onPlay]);
+  
+  const isCurrentReader = currentPlaying === reader.id;
+  const showPlayOverlay = isCurrentReader && isPlaying;
+  
+  const cardClassName = useMemo(() => 
+    "flex-shrink-0 cursor-pointer group", []);
+  
+  const avatarClassName = useMemo(() => 
+    "relative w-16 h-16 rounded-full overflow-hidden shadow-sm mb-1 mx-auto border border-border", []);
+  
+  const overlayClassName = useMemo(() => 
+    `absolute inset-0 bg-black/50 flex items-center justify-center transition-opacity ${
+      showPlayOverlay ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+    }`, [showPlayOverlay]);
+  
+  const nameClassName = useMemo(() => 
+    `text-xs truncate ${
+      isCurrentReader ? 'text-primary font-medium' : 'text-muted-foreground'
+    }`, [isCurrentReader]);
+
+  return (
+    <div className={cardClassName} onClick={handleClick}>
+      <div className="w-16 text-center">
+        <div className={avatarClassName}>
+          <img
+            src={reader.image}
+            alt={reader.name}
+            className="w-full h-full object-cover transition-transform group-hover:scale-110"
+            loading="lazy"
+          />
+          
+          <div className={overlayClassName}>
+            <div className="bg-primary rounded-full p-1">
+              {isLoading && isCurrentReader ? (
+                <div className="w-3 h-3 border-2 border-background border-t-transparent rounded-full animate-spin" />
+              ) : showPlayOverlay ? (
+                <Pause className="w-3 h-3 text-primary-foreground" />
+              ) : (
+                <Play className="w-3 h-3 text-primary-foreground ml-0.5" />
+              )}
+            </div>
+          </div>
+
+          {isCurrentReader && (
+            <div className="absolute inset-0 rounded-full border-2 border-primary" />
+          )}
+        </div>
+        
+        <p className={nameClassName}>
+          {reader.name}
+        </p>
+      </div>
+    </div>
+  );
+});
+
+ReaderCard.displayName = 'ReaderCard';
+
+const AdhanPlaylist = memo(() => {
   const [currentPlaying, setCurrentPlaying] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -68,25 +137,23 @@ export default function AdhanPlaylist() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [currentReaderIndex, setCurrentReaderIndex] = useState(0);
   const [isSeeking, setIsSeeking] = useState(false);
- const [showScrollIndicator, setShowScrollIndicator] = useState(true);
+  const [showScrollIndicator, setShowScrollIndicator] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const checkScroll = () => {
-      if (scrollContainerRef.current) {
-        const { scrollWidth, clientWidth, scrollLeft } = scrollContainerRef.current;
-        // Kiểm tra xem còn nội dung để cuộn không
-        const hasMoreContent = scrollWidth > clientWidth;
-        const isAtEnd = scrollLeft + clientWidth >= scrollWidth - 10; // 10px dung sai
-        
-        setShowScrollIndicator(hasMoreContent && !isAtEnd);
-      }
-    };
+  // Memoized scroll check function
+  const checkScroll = useCallback(() => {
+    if (scrollContainerRef.current) {
+      const { scrollWidth, clientWidth, scrollLeft } = scrollContainerRef.current;
+      const hasMoreContent = scrollWidth > clientWidth;
+      const isAtEnd = scrollLeft + clientWidth >= scrollWidth - 10;
+      
+      setShowScrollIndicator(hasMoreContent && !isAtEnd);
+    }
+  }, []);
 
-    // Kiểm tra khi component mount
+  useEffect(() => {
     checkScroll();
     
-    // Thêm event listener để kiểm tra khi cuộn
     const container = scrollContainerRef.current;
     if (container) {
       container.addEventListener('scroll', checkScroll);
@@ -99,7 +166,7 @@ export default function AdhanPlaylist() {
       }
       window.removeEventListener('resize', checkScroll);
     };
-  }, []);
+  }, [checkScroll]);
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -139,14 +206,12 @@ export default function AdhanPlaylist() {
     };
   }, [isSeeking]);
 
-  const playPause = (reader: AdhanReader, index: number) => {
+  const playPause = useCallback((reader: AdhanReader, index: number) => {
     if (currentPlaying === reader.id && isPlaying) {
-      // Pause current audio
       audioRef.current?.pause();
     } else {
       if (audioRef.current) {
         if (currentPlaying !== reader.id) {
-          // New audio selected
           audioRef.current.src = reader.audio;
           setCurrentReaderIndex(index);
         }
@@ -154,9 +219,32 @@ export default function AdhanPlaylist() {
         setCurrentPlaying(reader.id);
       }
     }
-  };
+  }, [currentPlaying, isPlaying]);
 
-  const togglePlayPause = () => {
+  // Memoized audio control functions
+  const skipPrevious = useCallback(() => {
+    const prevIndex = currentReaderIndex > 0 ? currentReaderIndex - 1 : ADHAN_READERS.length - 1;
+    const prevReader = ADHAN_READERS[prevIndex];
+    setCurrentReaderIndex(prevIndex);
+    if (audioRef.current) {
+      audioRef.current.src = prevReader.audio;
+      audioRef.current.play();
+      setCurrentPlaying(prevReader.id);
+    }
+  }, [currentReaderIndex]);
+
+  const skipNext = useCallback(() => {
+    const nextIndex = currentReaderIndex < ADHAN_READERS.length - 1 ? currentReaderIndex + 1 : 0;
+    const nextReader = ADHAN_READERS[nextIndex];
+    setCurrentReaderIndex(nextIndex);
+    if (audioRef.current) {
+      audioRef.current.src = nextReader.audio;
+      audioRef.current.play();
+      setCurrentPlaying(nextReader.id);
+    }
+  }, [currentReaderIndex]);
+
+  const togglePlayPause = useCallback(() => {
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
@@ -164,54 +252,34 @@ export default function AdhanPlaylist() {
         audioRef.current.play();
       }
     }
-  };
+  }, [isPlaying]);
 
-  const skipPrevious = () => {
-    const prevIndex = currentReaderIndex > 0 ? currentReaderIndex - 1 : adhanReaders.length - 1;
-    const prevReader = adhanReaders[prevIndex];
-    setCurrentReaderIndex(prevIndex);
-    if (audioRef.current) {
-      audioRef.current.src = prevReader.audio;
-      audioRef.current.play();
-      setCurrentPlaying(prevReader.id);
-    }
-  };
-
-  const skipNext = () => {
-    const nextIndex = currentReaderIndex < adhanReaders.length - 1 ? currentReaderIndex + 1 : 0;
-    const nextReader = adhanReaders[nextIndex];
-    setCurrentReaderIndex(nextIndex);
-    if (audioRef.current) {
-      audioRef.current.src = nextReader.audio;
-      audioRef.current.play();
-      setCurrentPlaying(nextReader.id);
-    }
-  };
-
-  const handleSeek = (value: number[]) => {
+  const handleSeek = useCallback((value: number[]) => {
     if (audioRef.current) {
       const newTime = value[0];
       setCurrentTime(newTime);
       audioRef.current.currentTime = newTime;
     }
-  };
+  }, []);
 
-  const handleSeekStart = () => {
+  const handleSeekStart = useCallback(() => {
     setIsSeeking(true);
-  };
+  }, []);
 
-  const handleSeekEnd = () => {
+  const handleSeekEnd = useCallback(() => {
     setIsSeeking(false);
-  };
+  }, []);
 
-  const formatTime = (time: number) => {
+  const formatTime = useCallback((time: number) => {
     if (isNaN(time)) return "0:00";
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
+  }, []);
 
-  const currentReader = adhanReaders[currentReaderIndex];
+  const currentReader = useMemo(() => ADHAN_READERS[currentReaderIndex], [currentReaderIndex]);
+  const formattedCurrentTime = useMemo(() => formatTime(currentTime), [currentTime, formatTime]);
+  const formattedDuration = useMemo(() => formatTime(duration), [duration, formatTime]);
 
  return (
     <Card className="w-full max-w-md mx-auto">
@@ -235,50 +303,16 @@ export default function AdhanPlaylist() {
             ref={scrollContainerRef}
             className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide"
           >
-            {adhanReaders.map((reader, index) => (
-              <div
+            {ADHAN_READERS.map((reader, index) => (
+              <ReaderCard
                 key={reader.id}
-                className="flex-shrink-0 cursor-pointer group"
-                onClick={() => playPause(reader, index)}
-              >
-                <div className="w-16 text-center">
-                  {/* Avatar */}
-                  <div className="relative w-16 h-16 rounded-full overflow-hidden shadow-sm mb-1 mx-auto border border-border">
-                    <img
-                      src={reader.image}
-                      alt={reader.name}
-                      className="w-full h-full object-cover transition-transform group-hover:scale-110"
-                    />
-                    
-                    {/* Play Overlay - Sử dụng màu primary thay vì trắng */}
-                    <div className={`absolute inset-0 bg-black/50 flex items-center justify-center transition-opacity ${
-                      currentPlaying === reader.id && isPlaying ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                    }`}>
-                      <div className="bg-primary rounded-full p-1">
-                        {isLoading && currentPlaying === reader.id ? (
-                          <div className="w-3 h-3 border-2 border-background border-t-transparent rounded-full animate-spin" />
-                        ) : currentPlaying === reader.id && isPlaying ? (
-                          <Pause className="w-3 h-3 text-primary-foreground" />
-                        ) : (
-                          <Play className="w-3 h-3 text-primary-foreground ml-0.5" />
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Active Ring - Sử dụng màu primary */}
-                    {currentPlaying === reader.id && (
-                      <div className="absolute inset-0 rounded-full border-2 border-primary" />
-                    )}
-                  </div>
-                  
-                  {/* Name */}
-                  <p className={`text-xs truncate ${
-                    currentPlaying === reader.id ? 'text-primary font-medium' : 'text-muted-foreground'
-                  }`}>
-                    {reader.name}
-                  </p>
-                </div>
-              </div>
+                reader={reader}
+                index={index}
+                currentPlaying={currentPlaying}
+                isPlaying={isPlaying}
+                isLoading={isLoading}
+                onPlay={playPause}
+              />
             ))}
           </div>
           
@@ -347,7 +381,7 @@ export default function AdhanPlaylist() {
             
             {/* Progress and Seek Bar */}
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-              <span>{formatTime(currentTime)}</span>
+              <span>{formattedCurrentTime}</span>
               <div className="flex-1">
                 <Slider
                   value={[currentTime]}
@@ -359,7 +393,7 @@ export default function AdhanPlaylist() {
                   className="cursor-pointer"
                 />
               </div>
-              <span>{formatTime(duration)}</span>
+              <span>{formattedDuration}</span>
             </div>
           </div>
         )}
@@ -376,4 +410,8 @@ export default function AdhanPlaylist() {
       </CardContent>
     </Card>
   );
-}
+});
+
+AdhanPlaylist.displayName = 'AdhanPlaylist';
+
+export default AdhanPlaylist;

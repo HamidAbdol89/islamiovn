@@ -2,7 +2,10 @@
 
 import type { Location, CalculationMethod } from './types';
 
-export const INTERNATIONAL_LOCATIONS: Location[] = [
+// Extract static data outside for better performance and prevent re-creation
+
+// Memoized international locations - frozen for immutability and performance
+export const INTERNATIONAL_LOCATIONS: readonly Location[] = Object.freeze([
   // Việt Nam
   { name: "TP. Hồ Chí Minh, Việt Nam", latitude: 10.8231, longitude: 106.6297, timezone: "Asia/Ho_Chi_Minh" },
   { name: "Hà Nội, Việt Nam", latitude: 21.0285, longitude: 105.8542, timezone: "Asia/Ho_Chi_Minh" },
@@ -88,9 +91,10 @@ export const INTERNATIONAL_LOCATIONS: Location[] = [
   { name: "Thổ Nhĩ Kỳ", latitude: 39.9334, longitude: 32.8597, timezone: "Europe/Istanbul" },
   { name: "Iran", latitude: 35.6892, longitude: 51.3890, timezone: "Asia/Tehran" },
   { name: "Jordan", latitude: 31.9454, longitude: 35.9284, timezone: "Asia/Amman" }
-];
+]);
 
-export const CALCULATION_METHODS: CalculationMethod[] = [
+// Memoized calculation methods - frozen for immutability and performance
+export const CALCULATION_METHODS: readonly CalculationMethod[] = Object.freeze([
   { name: "Liên đoàn Thế giới Hồi giáo", fajrAngle: 18, ishaAngle: 17 },
   { name: "Cộng đồng Hồi giáo Việt Nam", fajrAngle: 18, ishaAngle: 17 },
   { name: "Đại học Khoa học Hồi giáo, Karachi", fajrAngle: 18, ishaAngle: 18 },
@@ -104,31 +108,48 @@ export const CALCULATION_METHODS: CalculationMethod[] = [
   { name: "Hội đồng Tôn giáo Hồi giáo Singapore", fajrAngle: 20, ishaAngle: 18 },
   { name: "Liên hiệp Tổ chức Hồi giáo Pháp", fajrAngle: 12, ishaAngle: 12 },
   { name: "Liên bang Nga", fajrAngle: 16, ishaAngle: 15 }
-];
+]);
 
-export const PRAYER_NAMES = {
+// Frozen prayer names for better performance
+export const PRAYER_NAMES = Object.freeze({
   fajr: 'Fajr',
-  sunrise: 'Bình minh',
+  sunrise: 'Bình minh', 
   dhuhr: 'Dhuhr',
   asr: 'Asr',
   maghrib: 'Maghrib',
   isha: 'Isha'
-};
+} as const);
 
-export const PRAYER_NAMES_VIETNAMESE = {
+// Frozen Vietnamese prayer names for better performance
+export const PRAYER_NAMES_VIETNAMESE = Object.freeze({
   fajr: 'Cầu nguyện Sáng',
   sunrise: 'Bình minh',
   dhuhr: 'Cầu nguyện Trưa', 
   asr: 'Cầu nguyện Chiều',
   maghrib: 'Cầu nguyện Chiều tối',
   isha: 'Cầu nguyện Tối'
-};
+} as const);
 
-export const PRAYER_ICONS = {
+// Frozen prayer icons for better performance
+export const PRAYER_ICONS = Object.freeze({
   fajr: '🌅',
   sunrise: '☀️',
-  dhuhr: '🌞',
+  dhuhr: '🌞', 
   asr: '🌤️',
   maghrib: '🌅',
   isha: '🌙'
-};
+} as const);
+
+// Type-safe prayer keys for better TypeScript support
+export type PrayerKey = keyof typeof PRAYER_NAMES;
+
+// Memoized prayer list for components that need ordered prayer data
+export const PRAYER_ORDER: readonly PrayerKey[] = Object.freeze([
+  'fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'
+] as const);
+
+// Default location index for fallback scenarios
+export const DEFAULT_LOCATION_INDEX = 0;
+
+// Default calculation method index
+export const DEFAULT_CALCULATION_METHOD_INDEX = 0;
