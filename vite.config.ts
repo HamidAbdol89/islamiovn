@@ -15,7 +15,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
       strategies: 'injectManifest', // dùng SW tùy chỉnh
-      srcDir: 'public',             // thư mục chứa service-worker.js
+      srcDir: 'src',             // thư mục chứa service-worker.js
       filename: 'service-worker.js', // tên file SW
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'favicon-96x96.png'],
       workbox: {

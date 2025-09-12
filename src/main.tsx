@@ -5,6 +5,13 @@ import "./index.css";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { HelmetProvider } from 'react-helmet-async'; // Thêm import này
 
+// 👇 Đăng ký SW
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/service-worker.js')
+    .then(reg => console.log('SW registered', reg))
+    .catch(err => console.error('SW registration failed', err));
+}
+
 // Thêm viewport meta tag cho mobile (tùy chọn)
 const setViewportMeta = () => {
   const meta = document.createElement('meta');
