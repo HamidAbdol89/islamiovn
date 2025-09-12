@@ -5,9 +5,10 @@ import animationData from '@/assets/lottie/AnimationRobot.json';
 import IconTab from '@/Pages/Home/IconTab';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import BottomNav from '@/components/BottomNavbar/BottomNav';
-  import { ROUTES, TAB_ROUTES, UTILITY_ROUTES } from '@/lib/routes';
-import { ChevronRight, MessageCircle, MapPin } from 'lucide-react';
+import { ROUTES, TAB_ROUTES, UTILITY_ROUTES } from '@/lib/routes';
+import { ChevronRight, MessageCircle, MapPin, Sparkles } from 'lucide-react';
 
 const Utilities: React.FC = () => {
   const navigate = useNavigate();
@@ -93,16 +94,14 @@ const Utilities: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex flex-col relative overflow-hidden pb-16">
+    <div className="min-h-screen w-full bg-background flex flex-col relative overflow-hidden pb-16">
       {/* Status bar placeholder */}
       <div className="h-6 bg-background w-full"></div>
       
       <main className="w-full flex-1 p-4 max-w-md mx-auto overflow-y-auto">
-    
-
-{/* Carousel Card - Optimized */}
+        {/* Carousel Card */}
         <div className="mb-5">
-          <Card className="bg-white rounded-2xl overflow-hidden shadow-lg border-0 dark:bg-gray-800">
+          <Card className="overflow-hidden">
             <CardContent className="p-0 relative">
               {/* Carousel Container */}
               <div className="relative h-40 overflow-hidden">
@@ -118,50 +117,43 @@ const Utilities: React.FC = () => {
                       alt={`Masjid ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
-                    {/* Simplified gradient overlay */}
-                    <div className="absolute inset-0 bg-black/40"></div>
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent"></div>
                   </div>
                 ))}
                 
-                {/* Carousel Indicators - Simplified */}
+                {/* Carousel Indicators */}
                 <div className="absolute bottom-3 left-4 flex space-x-1.5">
                   {carouselImages.map((_, index) => (
                     <div
                       key={index}
                       className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
                         index === currentSlide 
-                          ? 'bg-white' 
-                          : 'bg-white/50'
+                          ? 'bg-primary' 
+                          : 'bg-muted-foreground/50'
                       }`}
                     />
                   ))}
                 </div>
 
-                {/* Content - Simplified and cleaner */}
+                {/* Content */}
                 <div className="absolute bottom-0 left-0 right-0 p-4">
                   <div className="flex items-center justify-between">
-                <div className="pb-2">
-  <div className="flex items-center mb-1">
-    <MapPin size={14} className="mr-1.5 text-white" />
-    <h3 className="text-white font-semibold text-sm">Khám phá Masjid</h3>
-  </div>
-  <p className="text-white/80 text-xs">Thánh đường Hồi giáo tại VN</p>
-</div>
-
+                    <div className="pb-2">
+                      <div className="flex items-center mb-1">
+                        <MapPin size={14} className="mr-1.5 text-primary" />
+                        <h3 className="text-primary font-semibold text-sm">Khám phá Masjid</h3>
+                      </div>
+                      <p className="text-muted-foreground text-xs">Thánh đường Hồi giáo tại VN</p>
+                    </div>
                     
-                 <Button
-  onClick={handleExploreMasjids}
-  size="sm"
-  variant="ghost"  // hợp lệ
-  className="
-    bg-black text-white !shadow-none !hover:bg-black !hover:text-white
-    rounded-full px-3 py-1.5 text-xs font-medium
-    flex items-center gap-1
-  "
->
-  Xem Masjid<ChevronRight size={12} />
-</Button>
-
+                    <Button
+                      onClick={handleExploreMasjids}
+                      size="sm"
+                      className="rounded-full flex items-center gap-1"
+                    >
+                      Xem Masjid<ChevronRight size={12} />
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -169,105 +161,68 @@ const Utilities: React.FC = () => {
           </Card>
         </div>
 
-{/* AI Assistant Card - Clean Professional Design */}
-<div className="mb-5">
-  <Card className="
-    bg-gradient-to-br from-blue-50 to-indigo-50 
-    dark:from-slate-800 dark:to-slate-700
-    rounded-2xl shadow-lg border-0
-    hover:shadow-xl transition-shadow duration-300
-    overflow-hidden
-  ">
-    <CardContent className="p-5">
-      <div className="flex items-center justify-between">
-        {/* Left Content */}
-        <div className="flex-1 mr-4">
-          {/* Header */}
-          <div className="flex items-center mb-3">
-            <div className="w-2 h-2 bg-blue-500 rounded-full mr-3 animate-pulse"></div>
-            <div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                Mira AI
-              </h3>
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                Trợ lý thông minh
-              </span>
-            </div>
-          </div>
+        {/* AI Assistant Card */}
+        <div className="mb-5">
+          <Card className="bg-gradient-to-br from-primary/5 to-primary/10">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                {/* Left Content */}
+                <div className="flex-1 mr-4">
+                  {/* Header */}
+                  <div className="flex items-center mb-3">
+                    <div className="w-2 h-2 bg-primary rounded-full mr-3 animate-pulse"></div>
+                    <div>
+                      <h3 className="text-lg font-bold text-foreground">Mira AI</h3>
+                      <span className="text-xs text-muted-foreground">Trợ lý thông minh</span>
+                    </div>
+                  </div>
 
-          {/* Typewriter text */}
-          <p className="text-sm text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
-            {typedText}
-            <span className="inline-block w-0.5 h-4 bg-blue-500 ml-1 animate-pulse align-middle"></span>
-          </p>
+                  {/* Typewriter text */}
+                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                    {typedText}
+                    <span className="inline-block w-0.5 h-4 bg-primary ml-1 animate-pulse align-middle"></span>
+                  </p>
 
-          {/* CTA Button */}
-          <Button
-            onClick={handleNavigateToChat}
-           className="
-  bg-gradient-to-r from-emerald-600 to-teal-600
-  hover:from-emerald-700 hover:to-teal-700
-  hover:scale-105 active:scale-95
-  text-white font-medium
-  px-4 py-2.5 text-sm
-  rounded-xl shadow-md hover:shadow-lg
-  transition-all duration-200
-  flex items-center gap-2
-  relative overflow-hidden
-  group
-"
->
-
-            {/* Subtle shine effect */}
-            <div className="
-              absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent
-              transform translate-x-[-100%] group-hover:translate-x-[200%]
-              transition-transform duration-500 ease-out
-            "></div>
-            
-            <MessageCircle size={16} className="relative z-10" />
-            <span className="relative z-10">Bắt đầu trò chuyện</span>
-          </Button>
+                  {/* CTA Button */}
+                  <Button
+                    onClick={handleNavigateToChat}
+                    className="flex items-center gap-2"
+                  >
+                    <MessageCircle size={16} />
+                    <span>Bắt đầu trò chuyện</span>
+                  </Button>
+                </div>
+                
+                {/* Right Animation Container */}
+                <div className="relative hover:scale-110 transition-transform duration-300 ease-out">
+                  {/* Subtle glow effect */}
+                  <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl animate-pulse scale-150"></div>
+                  
+                  <div className="pointer-events-none relative z-10" style={{ height: '85px', width: '85px' }}>
+                    <Lottie
+                      height={85}
+                      width={85}
+                      {...lottieConfig}
+                    />
+                  </div>
+                  
+                  {/* Floating sparkles */}
+                  <Sparkles className="absolute top-2 right-2 w-3 h-3 text-primary animate-ping opacity-60" />
+                  <Sparkles className="absolute bottom-3 left-1 w-2 h-2 text-primary animate-pulse opacity-40" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-        
-        {/* Right Animation Container - No background, with subtle effects */}
-        <div className="
-          relative
-          hover:scale-110 transition-transform duration-300 ease-out
-        ">
-          {/* Subtle glow effect around robot */}
-          <div className="
-            absolute inset-0 rounded-full
-            bg-gradient-to-r from-blue-400/20 to-indigo-400/20
-            blur-xl animate-pulse
-            scale-150
-          "></div>
-          
-          <div className="pointer-events-none relative z-10" style={{ height: '85px', width: '85px' }}>
-            <Lottie
-              height={85}
-              width={85}
-              {...lottieConfig}
-            />
-          </div>
-          
-          {/* Floating sparkles */}
-          <div className="absolute top-2 right-2 w-1 h-1 bg-blue-400 rounded-full animate-ping opacity-60"></div>
-          <div className="absolute bottom-3 left-1 w-0.5 h-0.5 bg-indigo-400 rounded-full animate-pulse opacity-40"></div>
-        </div>
-      </div>
-    </CardContent>
-  </Card>
-</div>
 
         {/* Utilities Grid */}
         <div className="mb-4">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Tiện ích </h2>
-            <span className="text-xs text-gray-500 dark:text-gray-400">{Object.keys(UTILITY_ROUTES).length} công cụ</span>
+            <h2 className="text-lg font-semibold text-foreground">Tiện ích</h2>
+            <Badge variant="secondary">{Object.keys(UTILITY_ROUTES).length} công cụ</Badge>
           </div>
-          <Card className="bg-white rounded-2xl p-3 shadow-lg border-0 dark:bg-gray-800">
-            <CardContent className="p-0">
+          <Card>
+            <CardContent className="p-3">
               <IconTab
                 onUtilityClick={handleNavigateToUtility}
                 activeUtility={undefined}
@@ -280,8 +235,6 @@ const Utilities: React.FC = () => {
 
       {/* Bottom Navigation */}
       <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
-
-    
     </div>
   );
 };

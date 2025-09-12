@@ -89,21 +89,21 @@ const UtilityButton = React.memo<{
             variant="ghost"
             size="icon"
             className={cn(
-              "group relative flex flex-col items-center w-full h-auto p-1.5 rounded-xl",
+              "group relative flex flex-col items-center w-full h-auto p-1.5 rounded-lg",
               "transition-all duration-150 ease-out",
-              "focus:outline-none focus:ring-1 focus:ring-blue-500",
+              "focus:outline-none focus:ring-2 focus:ring-primary",
               isPressed ? 'scale-95 opacity-80' : '',
               isDisabled && 'cursor-not-allowed opacity-50',
-              isActive && 'bg-blue-50 dark:bg-blue-950/20'
+              isActive && 'bg-primary/10'
             )}
           >
             {/* Icon Container */}
             <div className={cn(
-              "relative w-10 h-10 rounded-lg flex items-center justify-center mb-1",
+              "relative w-10 h-10 rounded-md flex items-center justify-center mb-1",
               "transition-all duration-150",
-              isActive && 'ring-1 ring-blue-400/50',
+              isActive && 'ring-2 ring-primary/50',
               isDisabled 
-                ? 'bg-gray-100 dark:bg-gray-700' 
+                ? 'bg-muted' 
                 : `bg-gradient-to-br ${utility.gradient}`
             )}>
               <img
@@ -119,7 +119,10 @@ const UtilityButton = React.memo<{
               
               {/* Coming Soon Badge */}
               {isDisabled && (
-                <Badge className="absolute -top-1 -right-1 px-1 py-0 h-3 text-[8px] bg-gray-500">
+                <Badge 
+                  variant="secondary" 
+                  className="absolute -top-1 -right-1 px-1 py-0 h-4 text-[8px]"
+                >
                   !
                 </Badge>
               )}
@@ -127,24 +130,24 @@ const UtilityButton = React.memo<{
             
             {/* Label */}
             <span className={cn(
-              "text-[10px] font-medium text-center leading-tight max-w-14",
+              "text-xs font-medium text-center leading-tight max-w-14",
               isActive 
-                ? 'text-blue-600 dark:text-blue-400 font-semibold' 
+                ? 'text-primary font-semibold' 
                 : isDisabled
-                  ? 'text-gray-500 dark:text-gray-400'
-                  : 'text-slate-700 dark:text-slate-300'
+                  ? 'text-muted-foreground'
+                  : 'text-foreground'
             )}>
               {utility.label}
             </span>
             
             {/* Active Indicator */}
             {isActive && (
-              <div className="absolute -bottom-0.5 w-2 h-0.5 bg-blue-500 rounded-full" />
+              <div className="absolute -bottom-0.5 w-2 h-0.5 bg-primary rounded-full" />
             )}
             
             {/* Coming Soon Label */}
             {isDisabled && (
-              <span className="absolute -bottom-2 text-[7px] text-gray-500 dark:text-gray-400 font-medium">
+              <span className="absolute -bottom-2 text-[8px] text-muted-foreground font-medium">
                 Sắp ra mắt
               </span>
             )}
@@ -176,12 +179,12 @@ const IconTab: React.FC<IconTabProps> = ({
     {
       id: 'prayers',
       label: 'Cầu Nguyện',
-      gradient: 'from-emerald-400 to-teal-600',
+      gradient: 'from-primary/80 to-primary',
       iconUrl: prayerIcon,
       route: '/utilities/prayers',
       isAvailable: true,
       description: 'Giờ cầu nguyện hàng ngày và lịch trình',
-      accentColor: 'emerald'
+      accentColor: 'primary'
     },
     {
       id: 'qiblah',

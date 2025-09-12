@@ -6,12 +6,10 @@ import { TAB_ROUTES } from '@/lib/routes';
 interface MainLayoutProps {
   children: React.ReactNode;
 }
-
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // Xác định tab active dựa trên route hiện tại
   const getActiveTab = () => {
     const path = location.pathname;
     for (const [tab, route] of Object.entries(TAB_ROUTES)) {
@@ -28,14 +26,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     }
   };
 
-  return (
-    <div className="flex flex-col min-h-screen">
-      <div className="flex-1 overflow-auto">
-        {children}
-      </div>
-      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
-    </div>
-  );
+return (
+  <div className="flex flex-col min-h-screen">
+<div className="flex-1 overflow-auto pb-[calc(4rem+env(safe-area-inset-bottom))]">
+  {children}
+</div>
+    <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+  </div>
+);
 };
 
 export default MainLayout;

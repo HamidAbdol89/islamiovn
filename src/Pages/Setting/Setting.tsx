@@ -1,103 +1,155 @@
 import React from 'react';
 import { useTheme } from '@/context/ThemeContext';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
-import { Moon } from 'lucide-react';
+import { 
+  Moon, 
+  Globe, 
+  MapPin, 
+  Calendar,
+  Bell,
+  Smartphone,
+  Cloud,
+  Download,
+  Shield,
+  ChevronRight
+} from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
 
 const Setting: React.FC = () => {
-  const { theme, toggleTheme } = useTheme(); // Sử dụng toggleTheme từ context
+  const { theme, toggleTheme } = useTheme();
 
   return (
-    <div className={`min-h-screen p-4 ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'}`}>
+    <div className="min-h-screen p-4 bg-background text-foreground">
       <div className="flex justify-center mb-6">
         <img src="/logo.png" alt="Biểu tượng" className="h-32 w-auto" />
       </div>
 
       {/* Phần Tùy chỉnh */}
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-2">Tùy chỉnh</h2>
-        <div className="space-y-2">
-           <button className={`w-full flex justify-between items-center p-2 rounded-lg ${theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-200 hover:bg-gray-300'}`}>
-        <div className="flex items-center">
-          <Moon className="mr-2 w-5 h-5" />
-          <span>Chủ đề</span>
-        </div>
-        <ThemeToggle theme={theme} onToggle={toggleTheme} /> {/* Truyền theme và toggle function */}
-      </button>
-          <button className={`w-full flex justify-between items-center p-2 rounded-lg ${theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-200 hover:bg-gray-300'}`}>
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-lg">Tùy chỉnh</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 p-0">
+          <Button
+            variant="ghost"
+            className="w-full flex justify-between items-center p-4 rounded-lg"
+            onClick={toggleTheme}
+          >
             <div className="flex items-center">
-              <span className="mr-2">🌐</span>
+              <Moon className="mr-3 w-5 h-5" />
+              <span>Chủ đề</span>
+            </div>
+            <ThemeToggle theme={theme} onToggle={toggleTheme} />
+          </Button>
+          <Separator />
+          <Button
+            variant="ghost"
+            className="w-full flex justify-between items-center p-4 rounded-lg"
+          >
+            <div className="flex items-center">
+              <Globe className="mr-3 w-5 h-5" />
               <span>Ngôn ngữ</span>
             </div>
-            <span>{'>'}</span>
-          </button>
-        </div>
-      </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Phần Chung */}
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-2">Chung</h2>
-        <div className="space-y-2">
-          <button className={`w-full flex justify-between items-center p-2 rounded-lg ${theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-200 hover:bg-gray-300'}`}>
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-lg">Chung</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 p-0">
+          <Button
+            variant="ghost"
+            className="w-full flex justify-between items-center p-4 rounded-lg"
+          >
             <div className="flex items-center">
-              <span className="mr-2">📍</span>
+              <MapPin className="mr-3 w-5 h-5" />
               <span>Vị trí & Phương pháp tính</span>
             </div>
-            <span>{'>'}</span>
-          </button>
-          <button className={`w-full flex justify-between items-center p-2 rounded-lg ${theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-200 hover:bg-gray-300'}`}>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </Button>
+          <Separator />
+          <Button
+            variant="ghost"
+            className="w-full flex justify-between items-center p-4 rounded-lg"
+          >
             <div className="flex items-center">
-              <Moon className="mr-2 w-5 h-5" />
+              <Calendar className="mr-3 w-5 h-5" />
               <span>Điều chỉnh lịch Hồi giáo</span>
             </div>
-            <span>{'>'}</span>
-          </button>
-          <button className={`w-full flex justify-between items-center p-2 rounded-lg ${theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-200 hover:bg-gray-300'}`}>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </Button>
+          <Separator />
+          <div className="w-full flex justify-between items-center p-4 rounded-lg">
             <div className="flex items-center">
-              <span className="mr-2">🔔</span>
+              <Bell className="mr-3 w-5 h-5" />
               <span>Loại nhắc nhở</span>
             </div>
-            <span className="flex items-center">
-              <span>thông báo</span>
-              <span className="ml-2">⏺</span>
-            </span>
-          </button>
-          <button className={`w-full flex justify-between items-center p-2 rounded-lg ${theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-200 hover:bg-gray-300'}`}>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">thông báo</span>
+              <Switch defaultChecked />
+            </div>
+          </div>
+          <Separator />
+          <Button
+            variant="ghost"
+            className="w-full flex justify-between items-center p-4 rounded-lg"
+          >
             <div className="flex items-center">
-              <span className="mr-2">📱</span>
+              <Smartphone className="mr-3 w-5 h-5" />
               <span>Đồng bộ Widget màn hình chính</span>
             </div>
-            <span>{'>'}</span>
-          </button>
-        </div>
-      </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Phần Khác */}
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-2">Khác</h2>
-        <div className="space-y-2">
-          <button className={`w-full flex justify-between items-center p-2 rounded-lg ${theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-200 hover:bg-gray-300'}`}>
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-lg">Khác</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 p-0">
+          <Button
+            variant="ghost"
+            className="w-full flex justify-between items-center p-4 rounded-lg"
+          >
             <div className="flex items-center">
-              <span className="mr-2">☁️</span>
+              <Cloud className="mr-3 w-5 h-5" />
               <span>Sao lưu & Khôi phục</span>
             </div>
-            <span>{'>'}</span>
-          </button>
-          <button className={`w-full flex justify-between items-center p-2 rounded-lg ${theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-200 hover:bg-gray-300'}`}>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </Button>
+          <Separator />
+          <Button
+            variant="ghost"
+            className="w-full flex justify-between items-center p-4 rounded-lg"
+          >
             <div className="flex items-center">
-              <span className="mr-2">📅</span>
+              <Download className="mr-3 w-5 h-5" />
               <span>Xuất thời gian cầu nguyện</span>
             </div>
-            <span>{'>'}</span>
-          </button>
-          <button className={`w-full flex justify-between items-center p-2 rounded-lg ${theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-200 hover:bg-gray-300'}`}>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </Button>
+          <Separator />
+          <Button
+            variant="ghost"
+            className="w-full flex justify-between items-center p-4 rounded-lg"
+          >
             <div className="flex items-center">
-              <span className="mr-2">🔒</span>
+              <Shield className="mr-3 w-5 h-5" />
               <span>Chính sách quyền riêng tư</span>
             </div>
-            <span>{'>'}</span>
-          </button>
-        </div>
-      </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 };

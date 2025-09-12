@@ -1,27 +1,35 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import type { MouseEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import { HomeIcon, NewspaperIcon, ChatBubbleLeftRightIcon, PlayCircleIcon, Cog6ToothIcon } from "@heroicons/react/24/solid";
 
 interface BottomNavProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+    className?: string; // <-- thêm cái này
+
 }
 
 const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) => {
   const tabs = [
-    { key: 'home', label: 'Trang chủ', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-    { key: 'news', label: 'Tin tức', icon: 'M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z' },
-    { key: 'ai', label: 'AI', icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
-    { key: 'video', label: 'Video', icon: 'M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z' },
-    { 
-      key: 'setting', 
-      label: 'Cài đặt', 
-      icon: 'M19.43 12.98c.04-.32.07-.66.07-1s-.03-.68-.07-1l2.11-1.65a.5.5 0 00.11-.64l-2-3.46a.5.5 0 00-.61-.22l-2.49 1a7.007 7.007 0 00-1.7-.99l-.38-2.65A.5.5 0 0014 2h-4a.5.5 0 00-.49.42l-.38 2.65c-.63.24-1.21.58-1.7.99l-2.49-1a.5.5 0 00-.61.22l-2 3.46a.5.5 0 00.11.64L4.57 10c-.04.32-.07.66-.07 1s.03.68.07 1l-2.11 1.65a.5.5 0 00-.11.64l2 3.46c.14.24.44.34.70.22l2.49-1c.49.41 1.07.75 1.7.99l.38 2.65c.05.26.26.42.49.42h4c.23 0 .44-.16.49-.42l.38-2.65c.63-.24 1.21-.58 1.7-.99l2.49 1c.26.12.56.02.70-.22l2-3.46a.5.5 0 00-.11-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z' 
-    }
+    { key: 'home', label: 'Trang chủ', icon: HomeIcon },
+    { key: 'news', label: 'Tin tức', icon: NewspaperIcon },
+    { key: 'ai', label: 'AI', icon: ChatBubbleLeftRightIcon },
+    { key: 'video', label: 'Video', icon: PlayCircleIcon },
+    { key: 'setting', label: 'Cài đặt', icon: Cog6ToothIcon },
   ];
+  
+  const [previousTab, setPreviousTab] = useState(activeTab);
+  const [direction, setDirection] = useState(0);
+  
+  useEffect(() => {
+    const currentIndex = tabs.findIndex(tab => tab.key === activeTab);
+    const prevIndex = tabs.findIndex(tab => tab.key === previousTab);
+    
+    setDirection(currentIndex > prevIndex ? 1 : -1);
+    setPreviousTab(activeTab);
+  }, [activeTab]);
 
-  // ripple effect
   const createRipple = (e: MouseEvent<HTMLButtonElement>) => {
     const button = e.currentTarget;
     const circle = document.createElement("span");
@@ -40,55 +48,100 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) => {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50">
-      <div className="bg-[hsl(var(--card)/0.9)] backdrop-blur-lg rounded-t-2xl p-2 shadow-luxury dark:shadow-luxury-dark border-t border-white/15 dark:border-navy-800/30 transition-smooth mx-auto max-w-md">
+    <div className="fixed bottom-0 left-0 right-0 z-50 ">
+            <div className="bg-[hsl(var(--card)/0.9)] backdrop-blur-lg rounded-t-3xl p-2 shadow-luxury dark:shadow-luxury-dark border-t border-white/15 dark:border-navy-800/30 transition-smooth mx-auto max-w-md">
         <div className="flex justify-around items-center">
-          {tabs.map(tab => (
-            <button
-              key={tab.key}
-              onClick={(e) => {
-                createRipple(e);
-                onTabChange(tab.key);
-              }}
-              className={`
-                relative overflow-hidden
-                flex items-center gap-2 sm:gap-3
-                transition-smooth 
-                rounded-full 
-                px-3 py-2.5 sm:px-4 sm:py-3
-                ${activeTab === tab.key 
-                  ? 'bg-primary/20 text-primary w-auto'
-                  : 'bg-transparent text-muted-foreground w-12 sm:w-14 justify-center hover:text-primary'
-                }
-              `}
-            >
-              <svg
-                className="w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24" 
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={tab.icon} />
-              </svg>
-              
-              <AnimatePresence>
-                {activeTab === tab.key && (
-                  <motion.span
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: "auto" }}
-                    exit={{ opacity: 0, width: 0 }}
-                    transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="text-xs sm:text-sm font-medium whitespace-nowrap overflow-hidden"
-                  >
-                    {tab.label}
-                  </motion.span>
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = tab.key === activeTab;
+ 
+            
+            return (
+              <button
+                key={tab.key}
+                onClick={(e) => { createRipple(e); onTabChange(tab.key); }}
+                className={`
+                  relative overflow-hidden
+                  flex items-center gap-2 sm:gap-3
+                  transition-all duration-500 
+                  rounded-full 
+                  px-3 py-2.5 sm:px-4 sm:py-3
+                  ${isActive 
+                    ? 'bg-primary/10 text-primary flex-2 sm:flex-auto min-w-[56px]' 
+                    : 'bg-transparent text-muted-foreground w-12 sm:w-14 justify-center hover:text-primary'
+                  }
+                `}
+              >    
+                <motion.div
+                  animate={{ 
+                    scale: isActive ? 1.1 : 1,
+                  }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Icon className="w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0 text-current" />
+                </motion.div>
+                
+                <AnimatePresence mode="wait" custom={direction}>
+                  {isActive && (
+                    <motion.span
+                      key={`active-${tab.key}`}
+                      custom={direction}
+                      initial={{ 
+                        opacity: 0, 
+                        x: 20 * direction,
+                        width: 0 
+                      }}
+                      animate={{ 
+                        opacity: 1, 
+                        x: 0,
+                        width: "auto"
+                      }}
+                      exit={{ 
+                        opacity: 0, 
+                        x: -20 * direction,
+                        width: 0 
+                      }}
+                      transition={{
+                        duration: 0.4,
+                        ease: "easeOut"
+                      }}
+                      className="text-xs sm:text-sm font-medium whitespace-nowrap overflow-hidden"
+                    >
+                      {tab.label}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+                
+                {/* Hiệu ứng highlight cho tab active */}
+                {isActive && (
+                  <motion.div 
+                    className="absolute inset-0 bg-primary/10 rounded-full"
+                    layoutId="activeTab"
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  />
                 )}
-              </AnimatePresence>
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </div>
       </div>
+      
+      <style >{`
+        .ripple {
+          position: absolute;
+          border-radius: 50%;
+          background-color: rgba(255, 255, 255, 0.7);
+          transform: scale(0);
+          animation: ripple 0.6s linear;
+        }
+        
+        @keyframes ripple {
+          to {
+            transform: scale(4);
+            opacity: 0;
+          }
+        }
+      `}</style>
     </div>
   );
 };

@@ -1,26 +1,29 @@
-// src/components/ui/ThemeToggle.tsx
 import React from 'react';
 import { Moon, Sun } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { cn } from '@/lib/utils';
 
 interface ThemeToggleProps {
   theme: 'dark' | 'light';
   onToggle: () => void;
+  className?: string;
 }
 
-export const ThemeToggle: React.FC<ThemeToggleProps> = ({ theme, onToggle }) => {
+export const ThemeToggle: React.FC<ThemeToggleProps> = ({ 
+  theme, 
+  onToggle, 
+  className 
+}) => {
+  const isDark = theme === 'dark';
+  
   return (
-    <button
-      onClick={onToggle}
-      className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-300 dark:bg-gray-600 transition-colors"
-    >
-      <span className="sr-only">Toggle theme</span>
-      <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-          theme === 'dark' ? 'translate-x-6' : 'translate-x-1'
-        }`}
+    <div className={cn("flex items-center space-x-2", className)}>
+      <Sun className="h-4 w-4 text-muted-foreground" />
+      <Switch
+        checked={isDark}
+        onCheckedChange={onToggle}
       />
-      <Moon className="absolute left-1 h-3 w-3 text-gray-600 dark:text-gray-300" />
-      <Sun className="absolute right-1 h-3 w-3 text-gray-600 dark:text-gray-300" />
-    </button>
+      <Moon className="h-4 w-4 text-muted-foreground" />
+    </div>
   );
 };
