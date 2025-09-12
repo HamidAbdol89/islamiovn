@@ -1,5 +1,5 @@
 // hooks/useRssNews.ts
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
 
@@ -136,6 +136,7 @@ interface UseRssNewsReturn {
   refetch: () => void;
   hasMore: boolean;
   loadingMore: boolean;
+  loadMore: () => void;
 }
 
 export const useRssNews = (page = 1, limit = 10): UseRssNewsReturn => {
@@ -143,16 +144,24 @@ export const useRssNews = (page = 1, limit = 10): UseRssNewsReturn => {
   const [loading, setLoading] = useState<boolean>(false);
   const [loadingMore, setLoadingMore] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [pagination, setPagination] = useState({
+  
+  // Memoized pagination state to prevent unnecessary re-renders
+  const [pagination, setPagination] = useState(() => ({
     total: 0,
     currentPage: page,
     totalPages: 1,
     limit
-  });
+  }));
 
   // Ref để track request hiện tại và tránh race condition
   const currentRequestRef = useRef<AbortController | null>(null);
   const mountedRef = useRef<boolean>(true);
+
+  // Memoized API base URL
+  const apiBaseUrl = useMemo(() => getApiBaseUrl(), []);
+
+  // Memoized cache key
+  const cacheKey = useMemo(() => getCacheKey(page, limit), [page, limit]);
 
   // Helper function để xử lý dữ liệu an toàn
   const processSafeNewsData = useCallback((newsData: NewsItemRss[]): NewsItemRss[] => {
@@ -186,7 +195,6 @@ export const useRssNews = (page = 1, limit = 10): UseRssNewsReturn => {
 
     try {
       // Kiểm tra cache trước
-      const cacheKey = getCacheKey(currentPage, currentLimit);
       const cached = newsCache.get(cacheKey);
       
       if (cached && isCacheValid(cached.timestamp)) {
@@ -216,7 +224,6 @@ export const useRssNews = (page = 1, limit = 10): UseRssNewsReturn => {
 
       console.log(`Đang fetch RSS API - page=${currentPage}, limit=${currentLimit}...`);
 
-      const apiBaseUrl = getApiBaseUrl();
       const url = new URL('/api/rss', apiBaseUrl);
       url.searchParams.append('page', currentPage.toString());
       url.searchParams.append('limit', currentLimit.toString());
@@ -335,16 +342,15 @@ export const useRssNews = (page = 1, limit = 10): UseRssNewsReturn => {
         setLoadingMore(false);
       }
     }
-  }, [processSafeNewsData]);
+  }, [processSafeNewsData, apiBaseUrl, cacheKey]);
 
   // Function để refetch dữ liệu
   const refetch = useCallback(() => {
     // Xóa cache
-    const cacheKey = getCacheKey(page, limit);
     newsCache.delete(cacheKey);
     
     fetchNewsData(page, limit);
-  }, [page, limit, fetchNewsData]);
+  }, [page, limit, fetchNewsData, cacheKey]);
 
   // Effect chính để fetch dữ liệu khi page hoặc limit thay đổi
   useEffect(() => {
@@ -370,6 +376,13 @@ export const useRssNews = (page = 1, limit = 10): UseRssNewsReturn => {
     };
   }, []);
 
+  // Function để load more data cho infinite scroll
+  const loadMore = useCallback(() => {
+    if (!loadingMore && pagination.currentPage < pagination.totalPages) {
+      fetchNewsData(pagination.currentPage + 1, pagination.limit, true);
+    }
+  }, [loadingMore, pagination.currentPage, pagination.totalPages, pagination.limit, fetchNewsData]);
+
   const hasMore = pagination.currentPage < pagination.totalPages;
 
   return {
@@ -379,6 +392,7 @@ export const useRssNews = (page = 1, limit = 10): UseRssNewsReturn => {
     pagination,
     refetch,
     hasMore,
-    loadingMore
+    loadingMore,
+    loadMore
   };
 };

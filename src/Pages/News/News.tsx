@@ -1,14 +1,99 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback, memo } from 'react';
 import { useRssNews } from '@/hooks/useRssNews';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+
+// Constants moved outside component to prevent recreation
+const DEFAULT_IMAGE = "/default-news.jpg";
+
+// Memoized NewsCard component
+const NewsCard = memo(({ item, index }: { item: any; index: number }) => {
+  const handleCardClick = useCallback(() => {
+    window.open(item.link, "_blank");
+  }, [item.link]);
+
+  const formattedDate = useMemo(() => {
+    try {
+      const date = new Date(item.pubDate);
+      return date.toLocaleDateString('vi-VN', { 
+        day: '2-digit', 
+        month: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch {
+      return '';
+    }
+  }, [item.pubDate]);
+
+  const handleImageError = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+    const target = e.target as HTMLImageElement;
+    target.onerror = null;
+    target.src = DEFAULT_IMAGE;
+  }, []);
+
+  const sourceStr = typeof item.source === 'string' ? item.source : '';
+
+  return (
+    <Card
+      key={`news-${index}-${item.title.substring(0, 20)}`}
+      className="overflow-hidden transition-all duration-200 hover:shadow-md active:scale-[0.98] cursor-pointer"
+      onClick={handleCardClick}
+    >
+      <div className="relative h-40 overflow-hidden">
+        <img
+          src={item.image}
+          alt={item.title}
+          onError={handleImageError}
+          className="w-full h-full object-cover"
+          loading={index < 3 ? "eager" : "lazy"}
+        />
+        
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent">
+          <div className="absolute bottom-2 left-2 right-2 flex items-end justify-between">
+            {sourceStr && (
+              <Badge
+                variant="secondary"
+                className="max-w-[202px] sm:max-w-[200px] truncate"
+                title={sourceStr}
+              >
+                {sourceStr}
+              </Badge>
+            )}
+            
+            {formattedDate && (
+              <Badge
+                variant="outline"
+                className="text-white border-white/30 bg-black/30 backdrop-blur-sm"
+              >
+                {formattedDate}
+              </Badge>
+            )}
+          </div>
+        </div>
+      </div>
+      
+      <CardContent className="p-3">
+        <h2 className="font-bold text-base text-foreground mb-1.5 line-clamp-2 leading-tight">
+          {item.title}
+        </h2>
+        
+        <p className="text-muted-foreground text-xs line-clamp-2 mb-3 leading-relaxed">
+          {item.contentSnippet}
+        </p>
+      </CardContent>
+    </Card>
+  );
+});
+
+NewsCard.displayName = 'NewsCard';
+
 
 const NewsFeed: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(30); // Use cached limit from backend
   
   const { 
     news, 
@@ -16,68 +101,49 @@ const NewsFeed: React.FC = () => {
     error,  
     pagination, 
     refetch,
-  } = useRssNews(currentPage, limit);
+    hasMore,
+    loadingMore,
+    loadMore
+  } = useRssNews(1, limit);
   
-  const containerClass = "w-full min-h-screen bg-background text-foreground transition-all duration-300";
+  // Memoized class names
+  const containerClass = useMemo(() => 
+    "w-full min-h-screen bg-background text-foreground transition-all duration-300", 
+    []
+  );
 
-  const handlePageChange = (newPage: number) => {
-    if (newPage < 1 || newPage > pagination.totalPages) return;
-    setCurrentPage(newPage);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  // Infinite scroll integration
+  const { sentinelRef } = useInfiniteScroll({
+    hasMore,
+    loading: loadingMore,
+    onLoadMore: loadMore,
+    rootMargin: '200px'
+  });
 
-  const handleRefreshData = () => {
+  // Memoized handlers to prevent unnecessary re-renders
+  const handleRefreshData = useCallback(() => {
     refetch();
-  };
+  }, [refetch]);
 
-  const handleLimitChange = (newLimit: number) => {
+  const handleLimitChange = useCallback((newLimit: number) => {
     if (newLimit !== limit) {
       setLimit(newLimit);
-      setCurrentPage(1);
     }
-  };
+  }, [limit]);
 
-  const getPageNumbers = () => {
-    const totalPages = pagination.totalPages;
-    const currentPage = pagination.currentPage;
-    const pageNumbers: (number | string)[] = [];
-    
-    if (totalPages <= 5) {
-      for (let i = 1; i <= totalPages; i++) {
-        pageNumbers.push(i);
-      }
-    } else {
-      pageNumbers.push(1);
-      
-      if (currentPage > 3) {
-        pageNumbers.push('...');
-      }
-      
-      let start = Math.max(2, currentPage - 1);
-      let end = Math.min(totalPages - 1, currentPage + 1);
-      
-      if (currentPage <= 3) {
-        end = Math.min(4, totalPages - 1);
-      }
-      if (currentPage >= totalPages - 2) {
-        start = Math.max(totalPages - 3, 2);
-      }
-      
-      for (let i = start; i <= end; i++) {
-        pageNumbers.push(i);
-      }
-      
-      if (currentPage < totalPages - 2) {
-        pageNumbers.push('...');
-      }
-      
-      if (totalPages > 1) {
-        pageNumbers.push(totalPages);
-      }
-    }
-    
-    return pageNumbers;
-  };
+  // Loading indicator component for infinite scroll
+  const LoadingIndicator = memo(() => (
+    <div className="flex justify-center items-center py-8">
+      <div className="flex space-x-2">
+        <div className="h-4 w-4 rounded-full bg-primary animate-pulse"></div>
+        <div className="h-4 w-4 rounded-full bg-primary animate-pulse delay-75"></div>
+        <div className="h-4 w-4 rounded-full bg-primary animate-pulse delay-150"></div>
+      </div>
+      <span className="ml-3 text-muted-foreground">Đang tải thêm tin tức...</span>
+    </div>
+  ));
+  
+  LoadingIndicator.displayName = 'LoadingIndicator';
 
   return (
     <div className={containerClass}>
@@ -112,9 +178,9 @@ const NewsFeed: React.FC = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="5">5</SelectItem>
                   <SelectItem value="10">10</SelectItem>
                   <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="30">30</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -155,91 +221,32 @@ const NewsFeed: React.FC = () => {
           </Card>
         ) : (
           <>
-            {/* News List - Mobile First Design */}
+            {/* News List - Infinite Scroll Design */}
             {Array.isArray(news) && news.length > 0 ? (
-              <div className="space-y-3">
-                {news.map((item, idx) => {
-                  const title = item.title;
-                  const link = item.link;
-                  const sourceStr = typeof item.source === 'string' ? item.source : '';
-                  const pubDate = item.pubDate || '';
-                  const contentSnippet = item.contentSnippet;
-                  
-                  // Định dạng ngày tháng ngắn gọn
-                  const formattedDate = (() => {
-                    try {
-                      const date = new Date(pubDate);
-                      return date.toLocaleDateString('vi-VN', { 
-                        day: '2-digit', 
-                        month: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      });
-                    } catch {
-                      return '';
-                    }
-                  })();
-                  
-                  return (
-                    <Card
-                    key={`news-${idx}-${title.substring(0, 20)}`}
-                    className="overflow-hidden transition-all duration-200 hover:shadow-md active:scale-[0.98] cursor-pointer"
-                    onClick={() => window.open(link, "_blank")} // Nhấn card mở link
-                  >
-                    {/* Image Section */}
-                    <div className="relative h-40 overflow-hidden">
-                      <img
-                        src={item.image}
-                        alt={title}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.onerror = null;
-                          target.src = "/default-news.jpg";
-                        }}
-                        className="w-full h-full object-cover"
-                        loading={idx < 3 ? "eager" : "lazy"}
-                      />
-                  
-                      {/* Overlay with source and date */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent">
-                        <div className="absolute bottom-2 left-2 right-2 flex items-end justify-between">
-                          {sourceStr && (
-                            <Badge
-                              variant="secondary"
-                              className="max-w-[202px] sm:max-w-[200px] truncate"
-                              title={sourceStr}
-                            >
-                              {sourceStr}
-                            </Badge>
-                          )}
-                  
-                          {formattedDate && (
-                            <Badge
-                              variant="outline"
-                              className="text-white border-white/30 bg-black/30 backdrop-blur-sm"
-                            >
-                              {formattedDate}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  
-                    {/* Content Section */}
-                    <CardContent className="p-3">
-                      <h2 className="font-bold text-base text-foreground mb-1.5 line-clamp-2 leading-tight">
-                        {title}
-                      </h2>
-                  
-                      <p className="text-muted-foreground text-xs line-clamp-2 mb-3 leading-relaxed">
-                        {contentSnippet}
-                      </p>
-                    </CardContent>
-                  </Card>
-                  
-                  );
-                })}
-              </div>
+              <>
+                <div className="space-y-3">
+                  {news.map((item, idx) => (
+                    <NewsCard key={`news-${idx}-${item.title.substring(0, 20)}`} item={item} index={idx} />
+                  ))}
+                </div>
+                
+                {/* Loading More Indicator */}
+                {loadingMore && <LoadingIndicator />}
+                
+                {/* Infinite Scroll Sentinel */}
+                {hasMore && !loadingMore && (
+                  <div ref={sentinelRef} className="h-4 w-full" />
+                )}
+                
+                {/* End of Results */}
+                {!hasMore && news.length > 0 && (
+                  <div className="text-center py-8">
+                    <Badge variant="secondary" className="text-xs">
+                      Đã hiển thị tất cả {pagination.total} bài viết
+                    </Badge>
+                  </div>
+                )}
+              </>
             ) : (
               /* Empty State */
               <Card>
@@ -253,71 +260,6 @@ const NewsFeed: React.FC = () => {
                   </Button>
                 </CardContent>
               </Card>
-            )}
-            
-            {/* Pagination - Mobile First */}
-            {pagination.totalPages > 1 && (
-              <div className="mt-4">
-                <Card>
-                  <CardContent className="p-3">
-                    {/* Page Info */}
-                    <div className="text-center mb-3 text-muted-foreground text-xs">
-                      Trang {currentPage} / {pagination.totalPages} • {pagination.total} bài
-                    </div>
-                    
-                    <Separator className="mb-3" />
-                    
-                    {/* Navigation Buttons */}
-                    <div className="flex items-center justify-between gap-3">
-                      <Button
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                        </svg>
-                        Trước
-                      </Button>
-                      
-                      <Badge variant="default" className="px-3 py-2 font-bold text-xs min-w-12 text-center">
-                        {currentPage}
-                      </Badge>
-                      
-                      <Button
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === pagination.totalPages}
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
-                      >
-                        Sau
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </Button>
-                    </div>
-                    
-                    {/* Quick Jump (Desktop only) */}
-                    <div className="hidden sm:flex justify-center mt-4 gap-1">
-                      {getPageNumbers().slice(0, 7).map((pageNum, index) => (
-                        <Button
-                          key={`page-${index}-${pageNum}`}
-                          onClick={() => typeof pageNum === 'number' ? handlePageChange(pageNum) : undefined}
-                          disabled={typeof pageNum === 'string'}
-                          variant={pageNum === currentPage ? "default" : "ghost"}
-                          size="sm"
-                          className="min-w-8 h-8 text-xs"
-                        >
-                          {pageNum}
-                        </Button>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
             )}
           </>
         )}
