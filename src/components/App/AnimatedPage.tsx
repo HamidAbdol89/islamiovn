@@ -2,22 +2,21 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import type { Transition } from 'framer-motion';
-
 interface AnimatedPageProps {
   children: React.ReactNode;
 }
 
-// Variants chuyển trang: translate full width + opacity nhẹ
 const pageVariants = {
-  initial: { x: '100%', opacity: 0 },
-  in: { x: '0%', opacity: 1 },
-  out: { x: '-100%', opacity: 0 }
+  initial: { opacity: 0 },
+  in: { opacity: 1 },
+  out: { opacity: 0 },
 };
 
-// Transition hybrid: spring cho translate, tween cho opacity
 const pageTransition: Transition = {
-  x: { type: 'spring', stiffness: 250, damping: 25, mass: 0.8 },
-  opacity: { duration: 0.2, ease: 'easeOut' }
+  opacity: {
+    duration: 0.2,
+    ease: [0, 0, 1, 1], // cubic-bezier linear
+  },
 };
 
 const AnimatedPage: React.FC<AnimatedPageProps> = ({ children }) => (
@@ -29,10 +28,10 @@ const AnimatedPage: React.FC<AnimatedPageProps> = ({ children }) => (
     transition={pageTransition}
     style={{
       position: 'absolute',
+      top: 0,
+      left: 0,
       width: '100%',
       height: '100%',
-      top: 0,
-      left: 0
     }}
   >
     {children}
