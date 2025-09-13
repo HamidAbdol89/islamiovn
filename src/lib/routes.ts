@@ -10,7 +10,7 @@ export const ROUTES = {
     PRAYERS: '/utilities/prayers',
     QIBLAH: '/utilities/qiblah',
     CALENDAR: '/utilities/calendar',
-    QURAN: '/utilities/quran',
+    QURAN_READER: '/utilities/quranreader',
     MASJID: '/utilities/masjid',
     TASBIH: '/utilities/tasbih',
     DUAS: '/utilities/dua',
@@ -31,7 +31,7 @@ export const TAB_ROUTES = {
 };
 
 export const UTILITY_ROUTES = {
-  'quran': ROUTES.UTILITIES.QURAN,
+  'quranreader': ROUTES.UTILITIES.QURAN_READER,
   'calendar': ROUTES.UTILITIES.CALENDAR,
   'prayers': ROUTES.UTILITIES.PRAYERS,
   'qiblah': ROUTES.UTILITIES.QIBLAH,

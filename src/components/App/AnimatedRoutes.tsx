@@ -21,6 +21,7 @@ const NameAllah = React.lazy(() => import('@/components/Utilities/NameAllah/Name
 const Podcast = React.lazy(() => import('@/components/Utilities/Podcast/Podcast'));
 const Zakat = React.lazy(() => import('@/components/Utilities/Zakat/ZakatCalculator'));
 const Setting = React.lazy(() => import('@/Pages/Setting/Setting'));
+const QuranReader = React.lazy(() => import('@/components/Utilities/Quran/QuranReader'));
 
 const AnimatedRoutes: React.FC = () => {
   const location = useLocation();
@@ -171,6 +172,17 @@ const AnimatedRoutes: React.FC = () => {
             </AnimatedPage>
           } 
         />
+
+        <Route 
+          path={ROUTES.UTILITIES.QURAN_READER} 
+          element={
+            <AnimatedPage>
+              <Suspense fallback={<LoadingSpinner />}>
+                <QuranReader />
+              </Suspense>
+            </AnimatedPage>
+          } 
+        /> 
         
         <Route 
           path={ROUTES.UTILITIES.ZAKAT} 
@@ -196,6 +208,7 @@ const AnimatedRoutes: React.FC = () => {
             </MainLayout>
           } 
         />
+      
 
         {/* Redirect old routes */}
         <Route path="/home" element={<Navigate to={ROUTES.HOME} replace />} />

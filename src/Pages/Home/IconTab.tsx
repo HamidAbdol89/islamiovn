@@ -21,7 +21,7 @@ type UtilityId =
   | 'prayers' 
   | 'qiblah' 
   | 'calendar' 
-  | 'quran' 
+  | 'quranreader' 
   | 'masjid' 
   | 'tasbih' 
   | 'dua' 
@@ -221,11 +221,11 @@ const UTILITIES_DATA: UtilityItem[] = [
     accentColor: 'orange'
   },
   {
-    id: 'quran',
+    id: 'quranreader',
     label: 'Kinh Qur\'an',
     gradient: 'from-cyan-400 to-blue-600',
     iconUrl: bookIcon,
-    route: '/utilities/quran',
+    route: '/utilities/quranreader',
     isAvailable: true,
     description: 'Đọc và nghe Kinh Qur\'an',
     accentColor: 'cyan'

@@ -20,7 +20,9 @@ const preloadComponents = () => {
     import('@/components/Utilities/Duas/Dua'),
     import('@/components/Utilities/NameAllah/NameAllah'),
     import('@/components/Utilities/Podcast/Podcast'),
-    import('@/components/Utilities/Zakat/ZakatCalculator')
+    import('@/components/Utilities/Zakat/ZakatCalculator'),
+    import('@/components/Utilities/Quran/QuranReader'),
+    
   ];
   
   // Preload tất cả components
