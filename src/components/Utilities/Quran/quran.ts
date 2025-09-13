@@ -29,9 +29,31 @@ export interface SurahInfo {
     verses: Verse[];
   }
   
+  export interface TajweedRule {
+    rule: 'hamzat_wasl' | 'lam_shamsiyyah' | 'madd_2' | 'madd_246' | 'madd_6' | 'ghunnah' | 'ikhfa' | 'idgham' | 'iqlab' | 'qalqalah' | 'waqf' | 'sakt';
+    start: number;
+    end: number;
+  }
+
+  export interface TajweedVerseData {
+    [key: string]: TajweedRule[]; // verse_1, verse_2, etc.
+  }
+
+  export interface TajweedSurah {
+    index: string;
+    verse: TajweedVerseData;
+    count: number;
+  }
+
   export interface TajweedVerse {
     index: number;
     verse: string;
+    rules?: TajweedRule[];
+  }
+  
+  export interface Translation {
+    index: number;
+    text: string;
   }
   
   export interface AudioIndex {
@@ -39,11 +61,6 @@ export interface SurahInfo {
       url: string;
       duration?: number;
     };
-  }
-  
-  export interface Translation {
-    index: number;
-    text: string;
   }
   
   

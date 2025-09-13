@@ -17,3 +17,181 @@
     line-height: 1.8;
   }
 }
+
+/* Tajweed Rules Colors - Real Data Structure */
+.tajweed-hamzat_wasl {
+  color: #10B981; /* Green - Hamzat Wasl */
+  background-color: rgba(16, 185, 129, 0.1);
+  border-radius: 2px;
+  padding: 1px 2px;
+}
+
+.tajweed-lam_shamsiyyah {
+  color: #F59E0B; /* Amber - Lam Shamsiyyah */
+  background-color: rgba(245, 158, 11, 0.1);
+  border-radius: 2px;
+  padding: 1px 2px;
+}
+
+.tajweed-madd_2 {
+  color: #EC4899; /* Pink - Madd 2 harakat */
+  background-color: rgba(236, 72, 153, 0.1);
+  border-radius: 2px;
+  padding: 1px 2px;
+}
+
+.tajweed-madd_246 {
+  color: #F472B6; /* Pink-400 - Madd 2-4-6 harakat */
+  background-color: rgba(244, 114, 182, 0.1);
+  border-radius: 2px;
+  padding: 1px 2px;
+}
+
+.tajweed-madd_6 {
+  color: #DB2777; /* Pink-600 - Madd 6 harakat */
+  background-color: rgba(219, 39, 119, 0.1);
+  border-radius: 2px;
+  padding: 1px 2px;
+}
+
+/* Traditional Tajweed Rules (for future use) */
+.tajweed-ghunnah {
+  color: #10B981; /* Green - Ghunnah (nasal sound) */
+  background-color: rgba(16, 185, 129, 0.1);
+  border-radius: 2px;
+  padding: 1px 2px;
+}
+
+.tajweed-ikhfa {
+  color: #F59E0B; /* Amber - Ikhfa (hidden) */
+  background-color: rgba(245, 158, 11, 0.1);
+  border-radius: 2px;
+  padding: 1px 2px;
+}
+
+.tajweed-idgham {
+  color: #EF4444; /* Red - Idgham (assimilation) */
+  background-color: rgba(239, 68, 68, 0.1);
+  border-radius: 2px;
+  padding: 1px 2px;
+}
+
+.tajweed-iqlab {
+  color: #8B5CF6; /* Purple - Iqlab (substitution) */
+  background-color: rgba(139, 92, 246, 0.1);
+  border-radius: 2px;
+  padding: 1px 2px;
+}
+
+.tajweed-qalqalah {
+  color: #06B6D4; /* Cyan - Qalqalah (echoing sound) */
+  background-color: rgba(6, 182, 212, 0.1);
+  border-radius: 2px;
+  padding: 1px 2px;
+}
+
+.tajweed-waqf {
+  color: #64748B; /* Slate - Waqf (stopping) */
+  background-color: rgba(100, 116, 139, 0.1);
+  border-radius: 2px;
+  padding: 1px 2px;
+}
+
+.tajweed-sakt {
+  color: #DC2626; /* Red-600 - Sakt (brief pause) */
+  background-color: rgba(220, 38, 38, 0.1);
+  border-radius: 2px;
+  padding: 1px 2px;
+}
+
+/* Dark mode tajweed colors - Real Data Structure */
+.dark .tajweed-hamzat_wasl {
+  color: #34D399;
+  background-color: rgba(52, 211, 153, 0.15);
+}
+
+.dark .tajweed-lam_shamsiyyah {
+  color: #FBBF24;
+  background-color: rgba(251, 191, 36, 0.15);
+}
+
+.dark .tajweed-madd_2 {
+  color: #F472B6;
+  background-color: rgba(244, 114, 182, 0.15);
+}
+
+.dark .tajweed-madd_246 {
+  color: #F9A8D4;
+  background-color: rgba(249, 168, 212, 0.15);
+}
+
+.dark .tajweed-madd_6 {
+  color: #EC4899;
+  background-color: rgba(236, 72, 153, 0.15);
+}
+
+/* Dark mode traditional tajweed colors */
+.dark .tajweed-ghunnah {
+  color: #34D399;
+  background-color: rgba(52, 211, 153, 0.15);
+}
+
+.dark .tajweed-ikhfa {
+  color: #FBBF24;
+  background-color: rgba(251, 191, 36, 0.15);
+}
+
+.dark .tajweed-idgham {
+  color: #F87171;
+  background-color: rgba(248, 113, 113, 0.15);
+}
+
+.dark .tajweed-iqlab {
+  color: #A78BFA;
+  background-color: rgba(167, 139, 250, 0.15);
+}
+
+.dark .tajweed-qalqalah {
+  color: #22D3EE;
+  background-color: rgba(34, 211, 238, 0.15);
+}
+
+.dark .tajweed-waqf {
+  color: #94A3B8;
+  background-color: rgba(148, 163, 184, 0.15);
+}
+
+.dark .tajweed-sakt {
+  color: #EF4444;
+  background-color: rgba(239, 68, 68, 0.15);
+}
+
+/* Tajweed legend styles */
+.tajweed-legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.dark .tajweed-legend {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.tajweed-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.tajweed-legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}

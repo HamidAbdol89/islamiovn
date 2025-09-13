@@ -1,5 +1,5 @@
 // quranApi.ts
-import type { SurahInfo, JuzInfo, Surah, TajweedVerse, AudioIndex, Translation } from './quran';
+import type { SurahInfo, JuzInfo, Surah, TajweedVerse, TajweedSurah, TajweedRule, AudioIndex, Translation } from './quran';
 
 class QuranAPI {
     private baseUrl = 'https://quranvietapp.pages.dev';
@@ -56,10 +56,42 @@ class QuranAPI {
     // Lấy tajweed của surah
     async getTajweed(surahNumber: number): Promise<TajweedVerse[]> {
       try {
-        return this.fetchJSON<TajweedVerse[]>(`tajweed/surah_${surahNumber}.json`);
+        const tajweedSurah = await this.fetchJSON<TajweedSurah>(`tajweed/surah_${surahNumber}.json`);
+        
+        // Transform data structure to match TajweedVerse[]
+        const tajweedVerses: TajweedVerse[] = [];
+        
+        Object.entries(tajweedSurah.verse).forEach(([verseKey, rules]) => {
+          const verseIndex = parseInt(verseKey.replace('verse_', ''));
+          tajweedVerses.push({
+            index: verseIndex,
+            verse: '', // Will be filled from surah data
+            rules: rules as TajweedRule[]
+          });
+        });
+        
+        return tajweedVerses;
       } catch (error) {
         console.warn(`Tajweed not available for surah ${surahNumber}`);
         return [];
+      }
+    }
+
+    // Lấy surah với tajweed data (nếu có)
+    async getSurahWithTajweed(surahNumber: number): Promise<{ surah: Surah; tajweed: TajweedVerse[] }> {
+      try {
+        const [surahData, tajweedData] = await Promise.all([
+          this.getSurah(surahNumber),
+          this.getTajweed(surahNumber).catch(() => [])
+        ]);
+
+        return {
+          surah: surahData,
+          tajweed: tajweedData
+        };
+      } catch (error) {
+        console.error(`Error loading surah ${surahNumber} with tajweed:`, error);
+        throw error;
       }
     }
   
@@ -128,4 +160,4 @@ class QuranAPI {
   export const quranApi = new QuranAPI();
 
 // Re-export types for convenience
-export type { SurahInfo, JuzInfo, Surah, TajweedVerse, AudioIndex, Translation, Verse } from './quran';
+export type { SurahInfo, JuzInfo, Surah, TajweedVerse, TajweedRule, AudioIndex, Translation, Verse } from './quran';

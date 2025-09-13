@@ -1,23 +1,29 @@
 // components/QuranReader.tsx
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, BookOpen, Languages, RefreshCw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, BookOpen, Languages, RefreshCw, Palette, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import BackButton from '@/components/ui/BackButton';
 import QuranPlayer from './QuranPlayer';
-import { quranApi, type SurahInfo, type Verse, type Translation } from './quranApi';
+import TajweedVerse from './TajweedVerse';
+import TajweedLegend from './TajweedLegend';
+import { quranApi, type SurahInfo, type Verse, type Translation, type TajweedVerse as TajweedVerseType } from './quranApi';
 
 const QuranReader: React.FC = () => {
   const [surahList, setSurahList] = useState<SurahInfo[]>([]);
   const [selectedSurah, setSelectedSurah] = useState<number>(1);
   const [verses, setVerses] = useState<Verse[]>([]);
   const [translations, setTranslations] = useState<Translation[]>([]);
+  const [tajweedData, setTajweedData] = useState<TajweedVerseType[]>([]);
   const [currentVerse, setCurrentVerse] = useState<number>(1);
   const [selectedLanguage, setSelectedLanguage] = useState<string>('id');
   const [showTranslation, setShowTranslation] = useState<boolean>(true);
+  const [showTajweed, setShowTajweed] = useState<boolean>(false);
+  const [showTajweedLegend, setShowTajweedLegend] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,6 +40,8 @@ const QuranReader: React.FC = () => {
     loading: 'Đang tải Quran...',
     selectSurah: 'Chọn Surah',
     translation: 'Bản dịch',
+    tajweed: 'Tajweed',
+    tajweedGuide: 'Hướng dẫn Tajweed',
     verses: 'câu',
     translationNotAvailable: 'Bản dịch không có sẵn',
     errorLoadingSurah: 'Lỗi khi tải danh sách surah',
@@ -66,14 +74,15 @@ const QuranReader: React.FC = () => {
       setError(null);
 
       try {
-        const [surahData, translationData] = await Promise.all([
-          quranApi.getSurah(selectedSurah),
+        const [surahWithTajweed, translationData] = await Promise.all([
+          quranApi.getSurahWithTajweed(selectedSurah),
           showTranslation 
             ? quranApi.getTranslation(selectedLanguage, selectedSurah).catch(() => [])
             : Promise.resolve([])
         ]);
 
-        setVerses(surahData.verses || []);
+        setVerses(surahWithTajweed.surah.verses || []);
+        setTajweedData(surahWithTajweed.tajweed || []);
         setTranslations(translationData);
         setCurrentVerse(1);
       } catch (err) {
@@ -134,9 +143,23 @@ const QuranReader: React.FC = () => {
     setShowTranslation(prev => !prev);
   }, []);
 
+  const toggleTajweed = useCallback(() => {
+    setShowTajweed(prev => !prev);
+  }, []);
+
+  const toggleTajweedLegend = useCallback(() => {
+    setShowTajweedLegend(prev => !prev);
+  }, []);
+
   const handleVerseClick = useCallback((verseIndex: number) => {
     setCurrentVerse(verseIndex);
   }, []);
+
+  // Get tajweed rules for a specific verse
+  const getTajweedRules = useCallback((verseIndex: number) => {
+    const tajweedVerse = tajweedData.find(t => t.index === verseIndex);
+    return tajweedVerse?.rules || [];
+  }, [tajweedData]);
 
   if (loading && verses.length === 0) {
     return (
@@ -150,197 +173,266 @@ const QuranReader: React.FC = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-6 bg-background text-foreground">
-      {/* Header Controls */}
-      <Card className="bg-card border-border shadow-luxury dark:shadow-luxury-dark">
-        <CardHeader>
-          <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-background text-foreground">
+      {/* Fixed Header - Mobile First */}
+      <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
+        <div className="flex items-center justify-between p-4">
+          <div className="flex items-center space-x-3">
+            <BackButton 
+              className="flex-shrink-0"
+              size="sm"
+              variant="ghost"
+            />
             <div className="flex items-center space-x-2">
               <BookOpen className="h-5 w-5 text-primary" />
-              <CardTitle className="text-gradient">{UI_TEXT.title}</CardTitle>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleRefresh}
-                className="transition-smooth hover:bg-luxury-gradient"
-              >
-                <RefreshCw className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={goToPreviousSurah}
-                disabled={selectedSurah <= 1}
-                className="transition-smooth"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={goToNextSurah}
-                disabled={selectedSurah >= 114}
-                className="transition-smooth"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+              <h1 className="text-lg font-semibold text-gradient truncate">{UI_TEXT.title}</h1>
             </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Surah Selection */}
-            <Select
-              value={selectedSurah.toString()}
-              onValueChange={handleSurahChange}
+          <div className="flex items-center space-x-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRefresh}
+              className="transition-smooth hover:bg-luxury-gradient/10"
             >
-              <SelectTrigger className="bg-background border-border">
-                <SelectValue placeholder={UI_TEXT.selectSurah} />
-              </SelectTrigger>
-              <SelectContent>
-                <ScrollArea className="h-60">
-                  {surahList.map((surah) => (
-                    <SelectItem key={surah.index} value={surah.index}>
-                      <div className="flex items-center justify-between w-full">
-                        <span>{parseInt(surah.index)}. {surah.title}</span>
-                        <Badge variant="secondary" className="ml-2 bg-luxury-gradient text-white">
-                          {surah.count} {UI_TEXT.verses}
-                        </Badge>
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={goToPreviousSurah}
+              disabled={selectedSurah <= 1}
+              className="transition-smooth"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={goToNextSurah}
+              disabled={selectedSurah >= 114}
+              className="transition-smooth"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="pb-safe">
+        {/* Controls Section - Mobile Optimized */}
+        <Card className="m-4 bg-card border-border shadow-luxury dark:shadow-luxury-dark">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base text-center text-gradient">Cài đặt đọc Quran</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Surah Selection - Full Width on Mobile */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-muted-foreground">Chọn Surah</label>
+              <Select
+                value={selectedSurah.toString()}
+                onValueChange={handleSurahChange}
+              >
+                <SelectTrigger className="h-12 bg-background border-border">
+                  <SelectValue placeholder={UI_TEXT.selectSurah} />
+                </SelectTrigger>
+                <SelectContent>
+                  <ScrollArea className="h-60">
+                    {surahList.map((surah) => (
+                      <SelectItem key={surah.index} value={surah.index}>
+                        <div className="flex items-center justify-between w-full">
+                          <span className="font-medium">{parseInt(surah.index)}. {surah.title}</span>
+                          <Badge variant="secondary" className="ml-2 bg-luxury-gradient text-white text-xs">
+                            {surah.count} {UI_TEXT.verses}
+                          </Badge>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </ScrollArea>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Language Selection */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-muted-foreground">Ngôn ngữ dịch</label>
+              <Select
+                value={selectedLanguage}
+                onValueChange={handleLanguageChange}
+              >
+                <SelectTrigger className="h-12 bg-background border-border">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {LANGUAGES.map((lang) => (
+                    <SelectItem key={lang.code} value={lang.code}>
+                      <div className="flex items-center space-x-2">
+                        <span>{lang.flag}</span>
+                        <span>{lang.name}</span>
                       </div>
                     </SelectItem>
                   ))}
-                </ScrollArea>
-              </SelectContent>
-            </Select>
+                </SelectContent>
+              </Select>
+            </div>
 
-            {/* Language Selection */}
-            <Select
-              value={selectedLanguage}
-              onValueChange={handleLanguageChange}
-            >
-              <SelectTrigger className="bg-background border-border">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {LANGUAGES.map((lang) => (
-                  <SelectItem key={lang.code} value={lang.code}>
-                    <div className="flex items-center space-x-2">
-                      <span>{lang.flag}</span>
-                      <span>{lang.name}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {/* Toggle Buttons - Mobile Optimized */}
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant={showTranslation ? "default" : "outline"}
+                onClick={toggleTranslation}
+                className={`h-12 transition-smooth ${
+                  showTranslation ? 'bg-luxury-gradient hover:bg-luxury-gradient/90' : 'hover:bg-luxury-gradient/10'
+                }`}
+              >
+                <Languages className="h-4 w-4 mr-2" />
+                <span className="text-sm">{UI_TEXT.translation}</span>
+              </Button>
 
-            {/* Translation Toggle */}
-            <Button
-              variant={showTranslation ? "default" : "outline"}
-              onClick={toggleTranslation}
-              className={`w-full transition-smooth ${
-                showTranslation ? 'bg-luxury-gradient hover:bg-luxury-gradient/90' : 'hover:bg-luxury-gradient/10'
-              }`}
-            >
-              <Languages className="h-4 w-4 mr-2" />
-              {UI_TEXT.translation}
-            </Button>
+              <Button
+                variant={showTajweed ? "default" : "outline"}
+                onClick={toggleTajweed}
+                className={`h-12 transition-smooth ${
+                  showTajweed ? 'bg-luxury-gradient hover:bg-luxury-gradient/90' : 'hover:bg-luxury-gradient/10'
+                }`}
+              >
+                <Palette className="h-4 w-4 mr-2" />
+                <span className="text-sm">{UI_TEXT.tajweed}</span>
+              </Button>
+            </div>
+
+            {/* Tajweed Guide Toggle */}
+            {showTajweed && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleTajweedLegend}
+                className="w-full text-muted-foreground hover:text-foreground transition-smooth"
+              >
+                <Info className="h-4 w-4 mr-2" />
+                {UI_TEXT.tajweedGuide}
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Current Surah Info - Mobile Optimized */}
+        {currentSurahInfo && (
+          <Card className="mx-4 mb-4 bg-card border-border shadow-luxury dark:shadow-luxury-dark">
+            <CardContent className="p-4 text-center">
+              <h2 className="text-xl font-bold mb-2 font-arabic text-gradient">
+                {currentSurahInfo.titleAr}
+              </h2>
+              <p className="text-base text-muted-foreground mb-3">
+                {currentSurahInfo.title}
+              </p>
+              <div className="flex items-center justify-center space-x-3 text-sm">
+                <Badge className="bg-luxury-gradient text-white px-3 py-1">
+                  {currentSurahInfo.count} {UI_TEXT.verses}
+                </Badge>
+                <Badge variant="outline" className="border-border px-3 py-1">
+                  Juz {currentSurahInfo.juz?.join(', ')}
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Tajweed Legend - Mobile Optimized */}
+        {showTajweed && showTajweedLegend && (
+          <div className="mx-4 mb-4">
+            <TajweedLegend />
           </div>
-        </CardContent>
-      </Card>
+        )}
 
-      {/* Current Surah Info */}
-      {currentSurahInfo && (
-        <Card className="bg-card border-border shadow-luxury dark:shadow-luxury-dark">
-          <CardContent className="p-6 text-center">
-            <h1 className="text-2xl font-bold mb-2 font-arabic text-gradient">
-              {currentSurahInfo.titleAr}
-            </h1>
-            <p className="text-lg text-muted-foreground mb-1">
-              {currentSurahInfo.title}
-            </p>
-            <div className="flex items-center justify-center space-x-4 text-sm">
-              <Badge className="bg-luxury-gradient text-white">
-                {currentSurahInfo.count} {UI_TEXT.verses}
-              </Badge>
-              <Badge variant="outline" className="border-border">
-                Juz {currentSurahInfo.juz?.join(', ')}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+        {/* Audio Player - Mobile Optimized */}
+        {currentSurahInfo && (
+          <div className="mx-4 mb-4">
+            <QuranPlayer
+              surahNumber={selectedSurah}
+              verseNumber={currentVerse}
+              surahTitle={currentSurahInfo.title}
+              maxVerses={currentSurahInfo.count}
+              onVerseChange={setCurrentVerse}
+            />
+          </div>
+        )}
 
-      {/* Audio Player */}
-      {currentSurahInfo && (
-        <QuranPlayer
-          surahNumber={selectedSurah}
-          verseNumber={currentVerse}
-          surahTitle={currentSurahInfo.title}
-          maxVerses={currentSurahInfo.count}
-          onVerseChange={setCurrentVerse}
-        />
-      )}
+        {/* Error Display */}
+        {error && (
+          <Card className="mx-4 mb-4 border-red-200 bg-red-50 dark:bg-red-950/20">
+            <CardContent className="p-4 text-center text-red-600 dark:text-red-400">
+              {error}
+            </CardContent>
+          </Card>
+        )}
 
-      {/* Error Display */}
-      {error && (
-        <Card className="border-red-200 bg-red-50 dark:bg-red-950/20">
-          <CardContent className="p-4 text-center text-red-600 dark:text-red-400">
-            {error}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Verses */}
-      <Card className="bg-card border-border shadow-luxury dark:shadow-luxury-dark">
-        <CardContent className="p-0">
-          <ScrollArea className="h-96">
-            <div className="p-6 space-y-6">
-              {verses.map((verse) => (
-                <div
-                  key={verse.index}
-                  className={`p-4 rounded-lg transition-smooth cursor-pointer ${
-                    verse.index === currentVerse
-                      ? 'bg-luxury-gradient/10 border border-primary/30 shadow-md'
-                      : 'hover:bg-muted/50 hover:shadow-sm'
-                  }`}
-                  onClick={() => handleVerseClick(verse.index)}
-                >
-                  <div className="flex items-start space-x-4">
-                    <Badge
-                      variant={verse.index === currentVerse ? "default" : "secondary"}
-                      className={`mt-1 transition-smooth ${
-                        verse.index === currentVerse 
-                          ? 'bg-luxury-gradient text-white' 
-                          : 'bg-muted text-muted-foreground'
+        {/* Verses - Mobile First Design */}
+        <div className="mx-4 mb-4">
+          <Card className="bg-card border-border shadow-luxury dark:shadow-luxury-dark">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base text-center text-gradient">
+                Nội dung Surah
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="max-h-[60vh] overflow-y-auto">
+                <div className="p-4 space-y-4">
+                  {verses.map((verse) => (
+                    <div
+                      key={verse.index}
+                      className={`p-4 rounded-xl transition-all duration-200 cursor-pointer touch-manipulation ${
+                        verse.index === currentVerse
+                          ? 'bg-luxury-gradient/10 border-2 border-primary/30 shadow-lg scale-[1.02]'
+                          : 'hover:bg-muted/30 active:bg-muted/50 hover:shadow-md active:scale-[0.98]'
                       }`}
+                      onClick={() => handleVerseClick(verse.index)}
                     >
-                      {verse.index}
-                    </Badge>
-                    <div className="flex-1 space-y-3">
-                      {/* Arabic Text */}
-                      <div className="text-right text-xl leading-relaxed font-arabic">
-                        {verse.verse}
-                      </div>
-                      
-                      {/* Translation */}
-                      {showTranslation && (
-                        <>
-                          <Separator />
-                          <div className="text-left text-muted-foreground leading-relaxed">
-                            {getVerseTranslation(verse.index)}
+                      <div className="flex items-start space-x-3">
+                        <Badge
+                          variant={verse.index === currentVerse ? "default" : "secondary"}
+                          className={`mt-1 min-w-[2rem] h-8 flex items-center justify-center transition-all ${
+                            verse.index === currentVerse 
+                              ? 'bg-luxury-gradient text-white shadow-md' 
+                              : 'bg-muted text-muted-foreground'
+                          }`}
+                        >
+                          {verse.index}
+                        </Badge>
+                        <div className="flex-1 space-y-3">
+                          {/* Arabic Text with Tajweed - Mobile Optimized */}
+                          <div className="text-right leading-loose">
+                            {showTajweed ? (
+                              <TajweedVerse
+                                verse={verse.verse}
+                                tajweedRules={getTajweedRules(verse.index)}
+                                className="font-arabic text-lg sm:text-xl"
+                              />
+                            ) : (
+                              <span className="font-arabic text-lg sm:text-xl">{verse.verse}</span>
+                            )}
                           </div>
-                        </>
-                      )}
+                          
+                          {/* Translation - Mobile Optimized */}
+                          {showTranslation && (
+                            <>
+                              <Separator className="my-3" />
+                              <div className="text-left text-muted-foreground leading-relaxed text-sm sm:text-base">
+                                {getVerseTranslation(verse.index)}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </ScrollArea>
-        </CardContent>
-      </Card>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 };
