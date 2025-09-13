@@ -77,21 +77,22 @@ const TajweedVerse: React.FC<TajweedVerseProps> = React.memo(({
 // Helper function to get tajweed rule descriptions in Vietnamese
 const getTajweedTitle = (rule: TajweedRule['rule']): string => {
   const titles: Record<TajweedRule['rule'], string> = {
-    hamzat_wasl: 'Hamzat Wasl - Hamzah nối',
-    lam_shamsiyyah: 'Lam Shamsiyyah - Lam mặt trời',
-    madd_2: 'Madd - Kéo dài 2 harakat',
-    madd_246: 'Madd - Kéo dài 2-4-6 harakat',
-    madd_6: 'Madd - Kéo dài 6 harakat',
-    ghunnah: 'Ghunnah - Âm mũi (2 harakat)',
-    ikhfa: 'Ikhfa - Đọc âm ẩn',
-    idgham: 'Idgham - Đọc hòa âm',
-    iqlab: 'Iqlab - Đọc chuyển âm',
-    qalqalah: 'Qalqalah - Đọc rung động',
-    waqf: 'Waqf - Dấu dừng',
-    sakt: 'Sakt - Dừng ngắn'
+    hamzat_wasl: 'Hamzat Wasl - Âm nối (không đọc khi đứng đầu câu)',
+    lam_shamsiyyah: 'Lam Shamsiyyah - Lâm Mặt Trời (âm Lâm đồng hóa)',
+    madd_2: 'Madd Tabi‘i - Kéo dài 2 harakat',
+    madd_246: 'Madd - Kéo dài 2, 4 hoặc 6 harakat (tùy ngữ cảnh)',
+    madd_6: 'Madd Lazim - Kéo dài 6 harakat bắt buộc',
+    ghunnah: 'Ghunnah - Âm mũi (kéo dài 2 harakat)',
+    ikhfa: 'Ikhfāʼ - Đọc ẩn (nửa rõ nửa giấu)',
+    idgham: 'Idghām - Hòa âm (nhập âm vào nhau)',
+    iqlab: 'Iqlāb - Chuyển âm N thành M (trước B)',
+    qalqalah: 'Qalqalah - Âm bật/tách (rung nhẹ)',
+    waqf: 'Waqf - Dừng nghỉ (tạm dừng đọc)',
+    sakt: 'Sakt - Dừng ngắn (không ngắt hơi hẳn)'
   };
   return titles[rule] || rule;
 };
+
 
 TajweedVerse.displayName = 'TajweedVerse';
 

@@ -18,93 +18,80 @@
   }
 }
 
-/* Tajweed Rules Colors - Real Data Structure */
+/* Tajweed Rules Colors - Mushaf Madinah Standard */
 .tajweed-hamzat_wasl {
-  color: #10B981; /* Green - Hamzat Wasl */
+  color: #10B981; /* Teal green */
   background-color: rgba(16, 185, 129, 0.1);
   border-radius: 2px;
   padding: 1px 2px;
 }
 
 .tajweed-lam_shamsiyyah {
-  color: #F59E0B; /* Amber - Lam Shamsiyyah */
+  color: #F59E0B; /* Amber */
   background-color: rgba(245, 158, 11, 0.1);
   border-radius: 2px;
   padding: 1px 2px;
 }
 
-.tajweed-madd_2 {
-  color: #EC4899; /* Pink - Madd 2 harakat */
+.tajweed-madd_2,
+.tajweed-madd_246,
+.tajweed-madd_6 {
+  color: #EC4899; /* Pink (all madd same family) */
   background-color: rgba(236, 72, 153, 0.1);
   border-radius: 2px;
   padding: 1px 2px;
 }
 
-.tajweed-madd_246 {
-  color: #F472B6; /* Pink-400 - Madd 2-4-6 harakat */
-  background-color: rgba(244, 114, 182, 0.1);
-  border-radius: 2px;
-  padding: 1px 2px;
-}
-
-.tajweed-madd_6 {
-  color: #DB2777; /* Pink-600 - Madd 6 harakat */
-  background-color: rgba(219, 39, 119, 0.1);
-  border-radius: 2px;
-  padding: 1px 2px;
-}
-
-/* Traditional Tajweed Rules (for future use) */
 .tajweed-ghunnah {
-  color: #10B981; /* Green - Ghunnah (nasal sound) */
-  background-color: rgba(16, 185, 129, 0.1);
+  color: #DC2626; /* Red */
+  background-color: rgba(220, 38, 38, 0.1);
   border-radius: 2px;
   padding: 1px 2px;
 }
 
 .tajweed-ikhfa {
-  color: #F59E0B; /* Amber - Ikhfa (hidden) */
-  background-color: rgba(245, 158, 11, 0.1);
+  color: #22C55E; /* Green */
+  background-color: rgba(34, 197, 94, 0.1);
   border-radius: 2px;
   padding: 1px 2px;
 }
 
 .tajweed-idgham {
-  color: #EF4444; /* Red - Idgham (assimilation) */
-  background-color: rgba(239, 68, 68, 0.1);
+  color: #3B82F6; /* Blue */
+  background-color: rgba(59, 130, 246, 0.1);
   border-radius: 2px;
   padding: 1px 2px;
 }
 
 .tajweed-iqlab {
-  color: #8B5CF6; /* Purple - Iqlab (substitution) */
-  background-color: rgba(139, 92, 246, 0.1);
+  color: #2563EB; /* Dark blue */
+  background-color: rgba(37, 99, 235, 0.1);
   border-radius: 2px;
   padding: 1px 2px;
 }
 
 .tajweed-qalqalah {
-  color: #06B6D4; /* Cyan - Qalqalah (echoing sound) */
-  background-color: rgba(6, 182, 212, 0.1);
+  color: #EF4444; /* Bright red */
+  background-color: rgba(239, 68, 68, 0.1);
   border-radius: 2px;
   padding: 1px 2px;
 }
 
 .tajweed-waqf {
-  color: #64748B; /* Slate - Waqf (stopping) */
+  color: #64748B; /* Slate */
   background-color: rgba(100, 116, 139, 0.1);
   border-radius: 2px;
   padding: 1px 2px;
 }
 
 .tajweed-sakt {
-  color: #DC2626; /* Red-600 - Sakt (brief pause) */
+  color: #DC2626; /* Red-600 */
   background-color: rgba(220, 38, 38, 0.1);
   border-radius: 2px;
   padding: 1px 2px;
 }
 
-/* Dark mode tajweed colors - Real Data Structure */
+/* Dark mode tajweed colors */
 .dark .tajweed-hamzat_wasl {
   color: #34D399;
   background-color: rgba(52, 211, 153, 0.15);
@@ -115,45 +102,36 @@
   background-color: rgba(251, 191, 36, 0.15);
 }
 
-.dark .tajweed-madd_2 {
+.dark .tajweed-madd_2,
+.dark .tajweed-madd_246,
+.dark .tajweed-madd_6 {
   color: #F472B6;
   background-color: rgba(244, 114, 182, 0.15);
 }
 
-.dark .tajweed-madd_246 {
-  color: #F9A8D4;
-  background-color: rgba(249, 168, 212, 0.15);
-}
-
-.dark .tajweed-madd_6 {
-  color: #EC4899;
-  background-color: rgba(236, 72, 153, 0.15);
-}
-
-/* Dark mode traditional tajweed colors */
 .dark .tajweed-ghunnah {
-  color: #34D399;
-  background-color: rgba(52, 211, 153, 0.15);
-}
-
-.dark .tajweed-ikhfa {
-  color: #FBBF24;
-  background-color: rgba(251, 191, 36, 0.15);
-}
-
-.dark .tajweed-idgham {
   color: #F87171;
   background-color: rgba(248, 113, 113, 0.15);
 }
 
+.dark .tajweed-ikhfa {
+  color: #4ADE80;
+  background-color: rgba(74, 222, 128, 0.15);
+}
+
+.dark .tajweed-idgham {
+  color: #60A5FA;
+  background-color: rgba(96, 165, 250, 0.15);
+}
+
 .dark .tajweed-iqlab {
-  color: #A78BFA;
-  background-color: rgba(167, 139, 250, 0.15);
+  color: #93C5FD;
+  background-color: rgba(147, 197, 253, 0.15);
 }
 
 .dark .tajweed-qalqalah {
-  color: #22D3EE;
-  background-color: rgba(34, 211, 238, 0.15);
+  color: #F87171;
+  background-color: rgba(248, 113, 113, 0.15);
 }
 
 .dark .tajweed-waqf {

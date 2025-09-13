@@ -9,37 +9,16 @@ interface TajweedLegendProps {
 }
 
 const TAJWEED_RULES = [
-  {
-    type: 'hamzat_wasl',
-    name: 'Hamzat Wasl',
-    description: 'Hamzah nối',
-    color: '#10B981'
-  },
-  {
-    type: 'lam_shamsiyyah',
-    name: 'Lam Shamsiyyah',
-    description: 'Lam mặt trời',
-    color: '#F59E0B'
-  },
-  {
-    type: 'madd_2',
-    name: 'Madd 2',
-    description: 'Kéo dài 2 harakat',
-    color: '#EC4899'
-  },
-  {
-    type: 'madd_246',
-    name: 'Madd 2-4-6',
-    description: 'Kéo dài 2-4-6 harakat',
-    color: '#F472B6'
-  },
-  {
-    type: 'madd_6',
-    name: 'Madd 6',
-    description: 'Kéo dài 6 harakat',
-    color: '#DB2777'
-  }
+  { type: 'ghunnah', name: 'Ghunnah', description: 'Âm mũi (2 harakat)', color: '#DC2626' }, // đỏ
+  { type: 'ikhfa', name: 'Ikhfāʼ', description: 'Đọc ẩn (nửa rõ nửa giấu)', color: '#22C55E' }, // xanh lá
+  { type: 'idgham', name: 'Idghām', description: 'Hòa âm (nhập âm)', color: '#3B82F6' }, // xanh dương
+  { type: 'iqlab', name: 'Iqlāb', description: 'Chuyển âm N thành M (trước B)', color: '#2563EB' }, // xanh lam đậm
+  { type: 'qalqalah', name: 'Qalqalah', description: 'Âm bật/tách (rung nhẹ)', color: '#EF4444' }, // đỏ tươi
+  { type: 'madd', name: 'Madd', description: 'Kéo dài 2–6 harakat (tùy loại)', color: '#EC4899' }, // hồng
+  { type: 'lam_shamsiyyah', name: 'Lam Shamsiyyah', description: 'Lâm Mặt Trời (âm Lâm đồng hóa)', color: '#F59E0B' }, // cam
+  { type: 'hamzat_wasl', name: 'Hamzat Wasl', description: 'Âm nối (không đọc khi đứng đầu câu)', color: '#10B981' } // xanh lá nhạt
 ] as const;
+
 
 const TajweedLegend: React.FC<TajweedLegendProps> = React.memo(({ className = '' }) => {
   return (
