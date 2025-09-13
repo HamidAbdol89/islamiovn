@@ -1,27 +1,42 @@
-// quranApi.ts
+// quranApi.ts - Correct version with proper Vietnamese translation mapping
 import type { SurahInfo, JuzInfo, Surah, TajweedVerse, TajweedSurah, TajweedRule, AudioIndex, Translation } from './quran';
+
+// Interface for quranenc.com API response
+interface QuranEncTranslationResponse {
+  result: Array<{
+    id: string;
+    sura: string;
+    aya: string;
+    arabic_text: string;
+    translation: string;
+    footnotes: string;
+  }>;
+}
 
 class QuranAPI {
     private baseUrl = 'https://quranvietapp.pages.dev';
+    private quranEncUrl = 'https://quranenc.com/api/v1';
     private cache = new Map<string, any>();
     private audioCache = new Map<string, HTMLAudioElement>();
     private audioPreloadQueue = new Set<string>();
   
     // Fetch và cache JSON data
-    private async fetchJSON<T>(path: string): Promise<T> {
-      if (this.cache.has(path)) {
-        return this.cache.get(path);
+    private async fetchJSON<T>(path: string, baseUrl: string = this.baseUrl): Promise<T> {
+      const fullPath = baseUrl === this.baseUrl ? path : `${baseUrl}/${path}`;
+      
+      if (this.cache.has(fullPath)) {
+        return this.cache.get(fullPath);
       }
   
       try {
-        const response = await fetch(`${this.baseUrl}/${path}`);
+        const response = await fetch(baseUrl === this.baseUrl ? `${this.baseUrl}/${path}` : fullPath);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
         const data = await response.json();
-        this.cache.set(path, data);
+        this.cache.set(fullPath, data);
         return data;
       } catch (error) {
-        console.error(`Error fetching ${path}:`, error);
+        console.error(`Error fetching ${fullPath}:`, error);
         throw error;
       }
     }
@@ -54,8 +69,8 @@ class QuranAPI {
       return {
         index: parseInt(rawData.index),
         title: rawData.name,
-        titleAr: rawData.name, // Use name as titleAr for now
-        count: verses.length, // Update count to include Bismillah
+        titleAr: rawData.name,
+        count: verses.length,
         verses
       };
     }
@@ -65,14 +80,13 @@ class QuranAPI {
       try {
         const tajweedSurah = await this.fetchJSON<TajweedSurah>(`tajweed/surah_${surahNumber}.json`);
         
-        // Transform data structure to match TajweedVerse[]
         const tajweedVerses: TajweedVerse[] = [];
         
         Object.entries(tajweedSurah.verse).forEach(([verseKey, rules]) => {
           const verseIndex = parseInt(verseKey.replace('verse_', ''));
           tajweedVerses.push({
             index: verseIndex,
-            verse: '', // Will be filled from surah data
+            verse: '',
             rules: rules as TajweedRule[]
           });
         });
@@ -102,31 +116,144 @@ class QuranAPI {
       }
     }
   
-    // Lấy translation
-    async getTranslation(language: string, surahNumber: number): Promise<Translation[]> {
+    // Lấy Vietnamese translation từ quranenc.com với mapping chính xác
+    async getVietnameseTranslation(surahNumber: number): Promise<Translation[]> {
+      try {
+        const response = await fetch(
+          `${this.quranEncUrl}/translation/sura/vietnamese_rwwad/${surahNumber}`
+        );
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data: QuranEncTranslationResponse = await response.json();
+        const translations: Translation[] = [];
+        
+        if (surahNumber === 1) {
+          // AL-FATIHA: 
+          // API cũ: verse_1 (index 0), verse_2 (index 1), ..., verse_7 (index 6)
+          // quranenc: aya 1, aya 2, ..., aya 7
+          // Mapping: aya N → index (N-1)
+          
+          data.result.forEach((item) => {
+            const ayaNumber = parseInt(item.aya);
+            translations.push({
+              index: ayaNumber - 1, // aya 1 → index 0, aya 2 → index 1, etc.
+              text: item.translation,
+              footnotes: item.footnotes || undefined
+            });
+          });
+          
+        } else if (surahNumber === 9) {
+          // AL-TAWBA: Không có Bismillah
+          // API cũ: verse_1 (index 0), verse_2 (index 1), ..., verse_129 (index 128)
+          // quranenc: aya 1, aya 2, ..., aya 129  
+          // Mapping: aya N → index (N-1)
+          
+          data.result.forEach((item) => {
+            const ayaNumber = parseInt(item.aya);
+            translations.push({
+              index: ayaNumber - 1, // aya 1 → index 0, aya 2 → index 1, etc.
+              text: item.translation,
+              footnotes: item.footnotes || undefined
+            });
+          });
+          
+        } else {
+          // CÁC SURAH KHÁC: Có Bismillah riêng
+          // API cũ: verse_0 (Bismillah, index 0), verse_1 (index 1), verse_2 (index 2), etc.
+          // quranenc: aya 1 (tương ứng verse_1), aya 2 (tương ứng verse_2), etc.
+          // Mapping: Bismillah manual + aya N → index N
+          
+          // Thêm Bismillah tại index 0 (tương ứng verse_0 từ API cũ)
+          translations.push({
+            index: 0,
+            text: "Với danh nghĩa Allah, Đấng Rất thương xót, Rất từ bi",
+            footnotes: undefined
+          });
+          
+          // Thêm các verse còn lại
+          data.result.forEach((item) => {
+            const ayaNumber = parseInt(item.aya);
+            translations.push({
+              index: ayaNumber, // aya 1 → index 1, aya 2 → index 2, etc.
+              text: item.translation,
+              footnotes: item.footnotes || undefined
+            });
+          });
+        }
+        
+        // Sắp xếp theo index để đảm bảo thứ tự đúng
+        translations.sort((a, b) => a.index - b.index);
+        
+        console.log(`Vietnamese translation loaded for surah ${surahNumber}:`, {
+          totalVerses: translations.length,
+          indexRange: `${translations[0]?.index}-${translations[translations.length - 1]?.index}`,
+          sample: translations.slice(0, 3).map(t => `${t.index}: ${t.text.substring(0, 30)}...`)
+        });
+        
+        return translations;
+      } catch (error) {
+        console.error(`Error fetching Vietnamese translation for surah ${surahNumber}:`, error);
+        throw error;
+      }
+    }
+
+    // Lấy translation từ API cũ (cho các ngôn ngữ khác)
+    async getOtherLanguageTranslation(language: string, surahNumber: number): Promise<Translation[]> {
       try {
         const rawData = await this.fetchJSON<any>(
           `translation/${language}/${language}_translation_${surahNumber}.json`
         );
         
-        // Handle different possible data structures
+        let translations: Translation[] = [];
+        
         if (Array.isArray(rawData)) {
-          return rawData;
+          translations = rawData.map((item, index) => ({
+            index: index,
+            text: typeof item === 'string' ? item : item.text || '',
+            footnotes: undefined
+          }));
         } else if (rawData.verse) {
-          // Transform object format to array
-          return Object.entries(rawData.verse).map(([key, value]) => ({
-            index: parseInt(key.replace('verse_', '')),
-            text: value as string
+          // Transform object format - giữ nguyên structure từ API cũ
+          translations = Object.entries(rawData.verse).map(([_, value], idx) => ({
+            index: idx, // Sequential index: 0, 1, 2, 3...
+            text: value as string,
+            footnotes: undefined
+          }));
+        } else if (rawData.translation) {
+          translations = Object.entries(rawData.translation).map(([_, value], idx) => ({
+            index: idx,
+            text: value as string,
+            footnotes: undefined
           }));
         }
         
-        return [];
+        return translations;
       } catch (error) {
-        console.warn(`Translation not available for ${language} surah ${surahNumber}`);
+        console.error(`Error fetching ${language} translation for surah ${surahNumber}:`, error);
+        throw error;
+      }
+    }
+
+    // Main translation method
+    async getTranslation(language: string, surahNumber: number): Promise<Translation[]> {
+      try {
+        // Tiếng Việt: dùng API quranenc.com
+        if (language === 'vi' || language === 'vietnamese') {
+          return await this.getVietnameseTranslation(surahNumber);
+        }
+        
+        // Các ngôn ngữ khác: dùng API cũ
+        return await this.getOtherLanguageTranslation(language, surahNumber);
+        
+      } catch (error) {
+        console.warn(`Translation not available for ${language} surah ${surahNumber}:`, error);
         return [];
       }
     }
-  
+
     // Lấy audio index
     async getAudioIndex(surahNumber: number): Promise<AudioIndex> {
       try {
@@ -138,27 +265,23 @@ class QuranAPI {
       }
     }
   
-    // Tạo URL audio stream (không cache, stream trực tiếp)
+    // Tạo URL audio stream
     getAudioUrl(surahNumber: number, verseIndex: number): string {
       const paddedSurah = surahNumber.toString().padStart(3, '0');
     
       if (surahNumber === 1) {
-        // Al-Fatiha
         const paddedVerse = (verseIndex + 1).toString().padStart(3, '0');
         return `${this.baseUrl}/audio/${paddedSurah}/${paddedVerse}.mp3`;
       } else if (surahNumber === 9) {
-        // Al-Tawba: không có verse_0
         const paddedVerse = (verseIndex + 1).toString().padStart(3, '0');
         return `${this.baseUrl}/audio/${paddedSurah}/${paddedVerse}.mp3`;
       } else {
-        // Các surah khác
         const paddedVerse = verseIndex.toString().padStart(3, '0');
         return `${this.baseUrl}/audio/${paddedSurah}/${paddedVerse}.mp3`;
       }
     }
-    
 
-    // Get cached audio element or create new one
+    // Get cached audio element
     getCachedAudio(surahNumber: number, verseIndex: number): HTMLAudioElement {
       const audioKey = `${surahNumber}-${verseIndex}`;
       
@@ -171,13 +294,11 @@ class QuranAPI {
       audio.crossOrigin = 'anonymous';
       audio.src = this.getAudioUrl(surahNumber, verseIndex);
       
-      // Cache the audio element
       this.audioCache.set(audioKey, audio);
-      
       return audio;
     }
 
-    // Preload audio for entire surah with error handling
+    // Preload audio
     async preloadSurahAudio(surahNumber: number, verses: any[]): Promise<void> {
       const preloadPromises: Promise<void>[] = [];
       const actualVerseCount = verses.length;
@@ -200,8 +321,8 @@ class QuranAPI {
             const handleError = () => {
               audio.removeEventListener('canplaythrough', handleCanPlay);
               audio.removeEventListener('error', handleError);
-              console.warn(`Failed to preload audio for verse ${i + 1} of surah ${surahNumber}: ${audio.src}`);
-              resolve(); // Don't fail the whole process
+              console.warn(`Failed to preload audio for verse ${i + 1} of surah ${surahNumber}`);
+              resolve();
             };
             
             if (audio.readyState >= 4) {
@@ -210,7 +331,6 @@ class QuranAPI {
               audio.addEventListener('canplaythrough', handleCanPlay);
               audio.addEventListener('error', handleError);
               
-              // Add timeout to prevent hanging
               setTimeout(() => {
                 if (audio.readyState < 4) {
                   audio.removeEventListener('canplaythrough', handleCanPlay);
@@ -236,7 +356,7 @@ class QuranAPI {
       }
     }
 
-    // Clear audio cache for memory management
+    // Clear caches
     clearAudioCache(): void {
       this.audioCache.forEach(audio => {
         audio.pause();
@@ -247,12 +367,11 @@ class QuranAPI {
       this.audioPreloadQueue.clear();
     }
   
-    // Clear cache khi cần
     clearCache(): void {
       this.cache.clear();
     }
   
-    // Preload critical data
+    // Preload essential data
     async preloadEssentialData(): Promise<void> {
       try {
         await Promise.all([
@@ -262,6 +381,33 @@ class QuranAPI {
         console.log('Essential Quran data preloaded');
       } catch (error) {
         console.error('Failed to preload essential data:', error);
+      }
+    }
+
+    // Test method để verify mapping
+    async testTranslationMapping(surahNumber: number): Promise<void> {
+      try {
+        const [arabicData, vietnameseData] = await Promise.all([
+          this.getSurah(surahNumber),
+          this.getVietnameseTranslation(surahNumber)
+        ]);
+        
+        console.log(`\n=== SURAH ${surahNumber} MAPPING TEST ===`);
+        console.log(`Arabic verses: ${arabicData.verses.length}`);
+        console.log(`Vietnamese translations: ${vietnameseData.length}`);
+        
+        // Test first few verses
+        for (let i = 0; i < Math.min(3, arabicData.verses.length); i++) {
+          const arabicVerse = arabicData.verses[i];
+          const translation = vietnameseData.find(t => t.index === i);
+          
+          console.log(`\nIndex ${i}:`);
+          console.log(`Arabic: ${arabicVerse?.verse?.substring(0, 50)}...`);
+          console.log(`Vietnamese: ${translation?.text?.substring(0, 50)}...`);
+          console.log(`Match: ${translation ? '✅' : '❌'}`);
+        }
+      } catch (error) {
+        console.error(`Test failed for surah ${surahNumber}:`, error);
       }
     }
   }

@@ -21,7 +21,10 @@ export interface VanBanGiaoDien {
   readonly title: string;
   readonly loading: string;
   readonly errorLoadingContent: string;
-  readonly selectSurah: string;
+  readonly errorLoadingTranslation: string; // NEW: For translation-specific errors
+  readonly  retryTranslation: string; 
+  readonly translationUnavailable: string; // NEW: When translation is not available
+  readonly footnotes: string; 
   readonly settings: string;
   readonly settingsDescription: string;
   readonly translation: string;

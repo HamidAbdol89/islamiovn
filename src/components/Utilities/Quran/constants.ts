@@ -1,11 +1,12 @@
 // constants.ts - Vietnamese constants for QuranReader
 import type { NgonNgu, VanBanGiaoDien } from './types';
 
-// Languages configuration
+// Languages configuration - UPDATED: Added Vietnamese
 export const NGON_NGU: readonly NgonNgu[] = [
+  { code: 'vi', name: 'Tiếng Việt', flag: '🇻🇳' },
   { code: 'id', name: 'Tiếng Indonesia', flag: '🇮🇩' },
   { code: 'en', name: 'Tiếng Anh', flag: '🇺🇸' },
-  { code: 'ms', name: 'Tiếng Malay', flag: '🇲🇾' },
+  { code: 'ar', name: 'Tiếng Arap', flag: '🇦🇪' },
 ] as const;
 
 // Vietnamese UI text constants
@@ -13,10 +14,13 @@ export const VAN_BAN_GIAO_DIEN: VanBanGiaoDien = {
   title: 'Đọc Quran',
   loading: 'Đang tải Quran...',
   errorLoadingContent: 'Lỗi khi tải nội dung Quran',
-  selectSurah: 'Chọn Surah',
+  errorLoadingTranslation: 'Lỗi khi tải bản dịch',
+  retryTranslation: 'Thử lại bản dịch',
   settings: 'Cài đặt',
   settingsDescription: 'Tùy chỉnh cài đặt đọc Quran',
   translation: 'Bản dịch',
+  translationUnavailable: 'Bản dịch không có sẵn',
+  footnotes: 'Ghi chú',
   tajweed: 'Tajweed',
   tajweedGuide: 'Hướng dẫn Tajweed',
   tajweedLegend: 'Hướng dẫn Tajweed',
@@ -37,9 +41,9 @@ export const VAN_BAN_GIAO_DIEN: VanBanGiaoDien = {
   previous: 'Trước đó'
 } as const;
 
-// Default values
+// Default values - UPDATED: Changed default language to Vietnamese
 export const GIA_TRI_MAC_DINH = {
-  NGON_NGU_MAC_DINH: 'id',
+  NGON_NGU_MAC_DINH: 'vi', // Changed from 'id' to 'vi'
   AM_LUONG_MAC_DINH: 1,
   HIEN_THI_BAN_DICH: true,
   HIEN_THI_TAJWEED: false,

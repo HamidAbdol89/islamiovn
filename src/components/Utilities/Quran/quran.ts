@@ -55,6 +55,7 @@ export interface SurahInfo {
   export interface Translation {
     index: number;
     text: string;
+    footnotes?: string;
   }
   
   export interface AudioIndex {

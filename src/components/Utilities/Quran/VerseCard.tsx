@@ -1,8 +1,9 @@
-// VerseCard.tsx - Individual verse card component
+// VerseCard.tsx
 import React from 'react';
 import { Play, Pause, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import TajweedVerse from './TajweedVerse';
 import type { VerseCardProps } from './types';
 
@@ -22,40 +23,6 @@ const VerseCard: React.FC<VerseCardProps> = React.memo(({
     onToggleAudio(index);
   }, [onToggleAudio, index]);
 
-  const cardClassName = React.useMemo(() => `
-    bg-card rounded-xl p-6 border transition-all duration-300
-    ${isCurrentlyPlaying 
-      ? 'bg-luxury-gradient text-white shadow-luxury ring-2 ring-primary/20' 
-      : 'border-border hover:shadow-lg'
-    }
-  `, [isCurrentlyPlaying]);
-
-  const badgeClassName = React.useMemo(() => 
-    isCurrentlyPlaying ? "bg-white/20 text-white" : "",
-    [isCurrentlyPlaying]
-  );
-
-  const buttonClassName = React.useMemo(() => 
-    isCurrentlyPlaying ? "bg-white/20 text-white hover:bg-white/30" : "",
-    [isCurrentlyPlaying]
-  );
-
-  const arabicTextClassName = React.useMemo(() => `
-    text-2xl leading-loose text-right ${
-      isCurrentlyPlaying ? 'text-white' : 'text-foreground'
-    }
-  `, [isCurrentlyPlaying]);
-
-  const plainArabicClassName = React.useMemo(() => `
-    ${arabicTextClassName} font-arabic
-  `, [arabicTextClassName]);
-
-  const translationClassName = React.useMemo(() => `
-    text-base leading-relaxed ${
-      isCurrentlyPlaying ? 'text-white/90' : 'text-muted-foreground'
-    }
-  `, [isCurrentlyPlaying]);
-
   const renderPlayButton = React.useMemo(() => {
     if (verseState?.loading) {
       return <RefreshCw className="h-4 w-4 animate-spin" />;
@@ -68,61 +35,99 @@ const VerseCard: React.FC<VerseCardProps> = React.memo(({
   }, [verseState?.loading, verseState?.isPlaying]);
 
   return (
-    <div
+    <Card 
       id={`verse-${index}`}
-      className={cardClassName}
+      className={`
+        transition-colors duration-300
+        ${isCurrentlyPlaying 
+          ? 'bg-[#1a365d] text-white border-blue-600/30 shadow-lg' 
+          : 'bg-card text-card-foreground border-border hover:bg-accent/5'
+        }
+      `}
     >
-      {/* Verse Header */}
-      <div className="flex items-center justify-between mb-4">
+      <CardHeader className="flex flex-row items-center justify-between p-5 pb-3 space-y-0">
         <Badge 
           variant={isCurrentlyPlaying ? "secondary" : "outline"}
-          className={badgeClassName}
+          className={`
+            font-medium
+            ${isCurrentlyPlaying 
+              ? "bg-blue-500 text-white border-blue-400" 
+              : ""
+            }
+          `}
         >
           {uiText.verse} {index + 1}
         </Badge>
-        
+
         <Button
-          variant={isCurrentlyPlaying ? "secondary" : "ghost"}
+          variant={isCurrentlyPlaying ? "secondary" : "outline"}
           size="sm"
           onClick={handleToggleAudio}
           disabled={verseState?.loading}
-          className={buttonClassName}
+          className={`
+            ${isCurrentlyPlaying 
+              ? "bg-blue-500 text-white border-blue-400 hover:bg-blue-600" 
+              : ""
+            }
+          `}
         >
           {renderPlayButton}
         </Button>
-      </div>
+      </CardHeader>
 
-      {/* Arabic Text */}
-      <div className="mb-4">
-        {showTajweed && tajweedRules.length > 0 ? (
-          <TajweedVerse 
-            verse={verse.verse}
-            tajweedRules={tajweedRules}
-            className={arabicTextClassName}
-          />
-        ) : (
-          <p className={plainArabicClassName}>
-            {verse.verse}
-          </p>
-        )}
-      </div>
-
-      {/* Translation */}
-      {showTranslation && translation && (
-        <div className="pt-4 border-t border-border/20">
-          <p className={translationClassName}>
-            {translation}
-          </p>
+      <CardContent className="p-5 pt-0">
+        {/* Arabic Text */}
+        <div className="mb-4 mt-4">
+          {showTajweed && tajweedRules.length > 0 ? (
+            <TajweedVerse 
+              verse={verse.verse}
+              tajweedRules={tajweedRules}
+              className={`
+                text-3xl leading-loose text-right font-arabic font-medium
+                ${isCurrentlyPlaying 
+                  ? 'text-white' 
+                  : 'text-card-foreground'
+                }
+              `}
+            />
+          ) : (
+            <p className={`
+              text-3xl leading-loose text-right font-arabic font-medium
+              ${isCurrentlyPlaying 
+                ? 'text-white' 
+                : 'text-card-foreground'
+              }
+            `}>
+              {verse.verse}
+            </p>
+          )}
         </div>
-      )}
+
+        {/* Translation */}
+        {showTranslation && translation && (
+          <div className={`pt-4 border-t ${isCurrentlyPlaying ? 'border-blue-400/20' : 'border-border'}`}>
+            <p className={`
+              text-base leading-relaxed
+              ${isCurrentlyPlaying 
+                ? 'text-blue-100' 
+                : 'text-muted-foreground'
+              }
+            `}>
+              {translation}
+            </p>
+          </div>
+        )}
+      </CardContent>
 
       {/* Error Display */}
       {verseState?.error && (
-        <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-          <p className="text-sm text-destructive">{verseState.error}</p>
-        </div>
+        <CardFooter className="p-5 pt-0">
+          <div className="w-full p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+            <p className="text-sm text-destructive">{verseState.error}</p>
+          </div>
+        </CardFooter>
       )}
-    </div>
+    </Card>
   );
 });
 

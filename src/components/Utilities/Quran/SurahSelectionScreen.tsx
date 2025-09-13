@@ -51,7 +51,7 @@ const SurahSelectionScreen: React.FC<SurahSelectionProps> = React.memo(
                   <Button
                     key={surah.index}
                     variant="outline"
-                    className="h-auto p-4 justify-between rounded-xl hover:bg-primary hover:text-white transition-all duration-200"
+                    className="h-auto p-4 justify-between rounded-xl  hover:text-white transition-all duration-200"
                     onClick={() => handleSurahClick(surah.index)}
                   >
                     <div className="flex items-center gap-3">
