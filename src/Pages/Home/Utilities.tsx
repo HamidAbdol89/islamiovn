@@ -153,56 +153,60 @@ const Utilities: React.FC = () => {
       <main className="w-full flex-1 p-4 max-w-md mx-auto overflow-y-auto">
         {/* Carousel Card */}
         <div className="mb-5">
-          <Card className="overflow-hidden">
-            <CardContent className="p-0 relative">
-              {/* Carousel Container */}
-              <div className="relative h-40 overflow-hidden">
-                {CAROUSEL_IMAGES.map((image, index) => (
-                  <CarouselSlide
-                    key={image}
-                    image={image}
-                    index={index}
-                    isActive={index === currentSlide}
-                  />
-                ))}
-                {/* Carousel Indicators */}
-                <div className="absolute bottom-3 left-4 flex space-x-1.5">
-                  {CAROUSEL_IMAGES.map((_, index) => (
-                    <div
-                      key={index}
-                      className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                        index === currentSlide
-                          ? 'bg-primary'
-                          : 'bg-muted-foreground/50'
-                      }`}
-                    />
-                  ))}
-                </div>
+        <Card className="relative overflow-hidden">
+  <CardContent className="p-0 relative">
+    <div className="relative h-40 overflow-hidden">
+      {CAROUSEL_IMAGES.map((image, index) => (
+        <CarouselSlide
+          key={image}
+          image={image}
+          index={index}
+          isActive={index === currentSlide}
+        />
+      ))}
 
-                {/* Content */}
-                <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="pb-2">
-                      <div className="flex items-center mb-1">
-                        <MapPin size={14} className="mr-1.5 text-primary" />
-                        <h3 className="text-primary font-semibold text-sm">Khám phá Masjid</h3>
-                      </div>
-                      <p className="text-muted-foreground text-xs">Thánh đường Hồi giáo tại VN</p>
-                    </div>
+      {/* Light mode: hạ tông card bằng overlay mờ */}
+      <div className="absolute inset-0 bg-black/10 dark:hidden pointer-events-none" />
 
-                    <Button
-                      onClick={handleExploreMasjids}
-                      variant="secondary"
-                      size="sm"
-                      className="rounded-full flex items-center gap-1"
-                    >
-                      Xem Masjid<ChevronRight size={12} />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+      {/* Carousel Indicators */}
+      <div className="absolute bottom-3 left-4 flex space-x-1.5">
+        {CAROUSEL_IMAGES.map((_, index) => (
+          <div
+            key={index}
+            className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+              index === currentSlide ? 'bg-primary' : 'bg-muted-foreground/50'
+            }`}
+          />
+        ))}
+      </div>
+
+      {/* Content */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 text-gray-900 dark:text-white">
+        <div className="flex items-center justify-between">
+          <div className="pb-2">
+            <div className="flex items-center mb-1">
+              <MapPin size={14} className="mr-1.5 text-primary" />
+              <h3 className="font-semibold text-sm">Khám phá Masjid</h3>
+            </div>
+            <p className="text-xs text-gray-800/90 dark:text-white/80">
+              Thánh đường Hồi giáo tại VN
+            </p>
+          </div>
+
+          <Button
+            onClick={handleExploreMasjids}
+            variant="default"
+            size="sm"
+            className="rounded-full flex items-center gap-1"
+          >
+            Xem<ChevronRight size={12} />
+          </Button>
+        </div>
+      </div>
+    </div>
+  </CardContent>
+</Card>
+
         </div>
 
         {/* AI Assistant Card */}

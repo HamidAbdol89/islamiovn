@@ -85,13 +85,14 @@ const UtilityButton = memo<{
   ), [isPressed, isDisabled, isActive]);
 
   const iconContainerClasses = useMemo(() => cn(
-    "relative w-10 h-10 rounded-md flex items-center justify-center mb-1",
+    "relative w-10 h-10 rounded-xl flex items-center justify-center mb-1",
     "transition-all duration-150",
     isActive && 'ring-2 ring-primary/50',
     isDisabled 
       ? 'bg-muted' 
       : `bg-gradient-to-br ${utility.gradient}`
   ), [isActive, isDisabled, utility.gradient]);
+  
 
   const iconClasses = useMemo(() => cn(
     "w-5 h-5 object-contain transition-transform duration-150",
