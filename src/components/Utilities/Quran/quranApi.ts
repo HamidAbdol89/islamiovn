@@ -141,19 +141,22 @@ class QuranAPI {
     // Tạo URL audio stream (không cache, stream trực tiếp)
     getAudioUrl(surahNumber: number, verseIndex: number): string {
       const paddedSurah = surahNumber.toString().padStart(3, '0');
-      
+    
       if (surahNumber === 1) {
-        // Al-Fatiha: verse_1 -> 001.mp3, verse_2 -> 002.mp3, etc.
-        // So verse index 0 (verse_1) -> 001.mp3, verse index 1 (verse_2) -> 002.mp3
+        // Al-Fatiha
+        const paddedVerse = (verseIndex + 1).toString().padStart(3, '0');
+        return `${this.baseUrl}/audio/${paddedSurah}/${paddedVerse}.mp3`;
+      } else if (surahNumber === 9) {
+        // Al-Tawba: không có verse_0
         const paddedVerse = (verseIndex + 1).toString().padStart(3, '0');
         return `${this.baseUrl}/audio/${paddedSurah}/${paddedVerse}.mp3`;
       } else {
-        // Other surahs: verse_0 -> 000.mp3, verse_1 -> 001.mp3, etc.
-        // So verse index 0 (verse_0) -> 000.mp3, verse index 1 (verse_1) -> 001.mp3
+        // Các surah khác
         const paddedVerse = verseIndex.toString().padStart(3, '0');
         return `${this.baseUrl}/audio/${paddedSurah}/${paddedVerse}.mp3`;
       }
     }
+    
 
     // Get cached audio element or create new one
     getCachedAudio(surahNumber: number, verseIndex: number): HTMLAudioElement {
