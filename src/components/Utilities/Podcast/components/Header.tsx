@@ -54,12 +54,24 @@ const Header: React.FC<HeaderProps> = React.memo(({
     }
   }, [isSearchExpanded]);
 
-  // Handle outside clicks
+  // Handle outside clicks - Only close if not clicking on search results
   useEffect(() => {
     if (!isSearchExpanded) return;
 
     const handleOutsideInteraction = (event: Event) => {
       const target = event.target as Node;
+      
+      // Don't close if clicking on search results or search overlay
+      if (target instanceof Element) {
+        // Check if clicking on search overlay or search results
+        const isClickingOnSearchOverlay = target.closest('[data-search-overlay="true"]');
+        const isClickingOnSearchResult = target.closest('[data-search-result="true"]');
+        
+        if (isClickingOnSearchOverlay || isClickingOnSearchResult) {
+          return; // Don't close search
+        }
+      }
+      
       if (headerRef.current && !headerRef.current.contains(target)) {
         handleSearchClose();
       }

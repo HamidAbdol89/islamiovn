@@ -14,10 +14,15 @@ const ScholarCard: React.FC<ScholarCardProps> = React.memo(({
   onClick, 
   isFeatured = false 
 }) => {
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onClick();
+  };
   if (isFeatured) {
     return (
       <div
-        onClick={onClick}
+        onClick={handleClick}
         className="flex-shrink-0 w-[80vw] sm:w-[280px] rounded-xl shadow-luxury dark:shadow-luxury-dark bg-card border-border transition-smooth hover:shadow-xl snap-start cursor-pointer"
       >
         <div className="relative p-4 flex items-center space-x-4 h-full">
@@ -47,7 +52,7 @@ const ScholarCard: React.FC<ScholarCardProps> = React.memo(({
 
   return (
     <div
-      onClick={onClick}
+      onClick={handleClick}
       className="rounded-xl p-4 cursor-pointer transition-smooth bg-card border-border hover:bg-accent shadow-luxury dark:shadow-luxury-dark hover:shadow-xl"
     >
       <div className="flex items-center space-x-3">
