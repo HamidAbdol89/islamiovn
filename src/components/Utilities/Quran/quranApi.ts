@@ -4,6 +4,8 @@ import type { SurahInfo, JuzInfo, Surah, TajweedVerse, TajweedSurah, TajweedRule
 class QuranAPI {
     private baseUrl = 'https://quranvietapp.pages.dev';
     private cache = new Map<string, any>();
+    private audioCache = new Map<string, HTMLAudioElement>();
+    private audioPreloadQueue = new Set<string>();
   
     // Fetch và cache JSON data
     private async fetchJSON<T>(path: string): Promise<T> {
@@ -44,11 +46,16 @@ class QuranAPI {
         verse: value as string
       }));
       
+      // Re-index all verses to start from 0 (verse_1 becomes index 0, verse_2 becomes index 1, etc.)
+      verses.forEach((verse, idx) => {
+        verse.index = idx;
+      });
+      
       return {
         index: parseInt(rawData.index),
         title: rawData.name,
         titleAr: rawData.name, // Use name as titleAr for now
-        count: rawData.count,
+        count: verses.length, // Update count to include Bismillah
         verses
       };
     }
@@ -132,10 +139,109 @@ class QuranAPI {
     }
   
     // Tạo URL audio stream (không cache, stream trực tiếp)
-    getAudioUrl(surahNumber: number, verseNumber: number): string {
+    getAudioUrl(surahNumber: number, verseIndex: number): string {
       const paddedSurah = surahNumber.toString().padStart(3, '0');
-      const paddedVerse = verseNumber.toString().padStart(3, '0');
-      return `${this.baseUrl}/audio/${paddedSurah}/${paddedVerse}.mp3`;
+      
+      if (surahNumber === 1) {
+        // Al-Fatiha: verse_1 -> 001.mp3, verse_2 -> 002.mp3, etc.
+        // So verse index 0 (verse_1) -> 001.mp3, verse index 1 (verse_2) -> 002.mp3
+        const paddedVerse = (verseIndex + 1).toString().padStart(3, '0');
+        return `${this.baseUrl}/audio/${paddedSurah}/${paddedVerse}.mp3`;
+      } else {
+        // Other surahs: verse_0 -> 000.mp3, verse_1 -> 001.mp3, etc.
+        // So verse index 0 (verse_0) -> 000.mp3, verse index 1 (verse_1) -> 001.mp3
+        const paddedVerse = verseIndex.toString().padStart(3, '0');
+        return `${this.baseUrl}/audio/${paddedSurah}/${paddedVerse}.mp3`;
+      }
+    }
+
+    // Get cached audio element or create new one
+    getCachedAudio(surahNumber: number, verseIndex: number): HTMLAudioElement {
+      const audioKey = `${surahNumber}-${verseIndex}`;
+      
+      if (this.audioCache.has(audioKey)) {
+        return this.audioCache.get(audioKey)!;
+      }
+      
+      const audio = new Audio();
+      audio.preload = 'auto';
+      audio.crossOrigin = 'anonymous';
+      audio.src = this.getAudioUrl(surahNumber, verseIndex);
+      
+      // Cache the audio element
+      this.audioCache.set(audioKey, audio);
+      
+      return audio;
+    }
+
+    // Preload audio for entire surah with error handling
+    async preloadSurahAudio(surahNumber: number, verses: any[]): Promise<void> {
+      const preloadPromises: Promise<void>[] = [];
+      const actualVerseCount = verses.length;
+      
+      for (let i = 0; i < actualVerseCount; i++) {
+        const audioKey = `${surahNumber}-${i}`;
+        
+        if (!this.audioPreloadQueue.has(audioKey)) {
+          this.audioPreloadQueue.add(audioKey);
+          
+          const preloadPromise = new Promise<void>((resolve) => {
+            const audio = this.getCachedAudio(surahNumber, i);
+            
+            const handleCanPlay = () => {
+              audio.removeEventListener('canplaythrough', handleCanPlay);
+              audio.removeEventListener('error', handleError);
+              resolve();
+            };
+            
+            const handleError = () => {
+              audio.removeEventListener('canplaythrough', handleCanPlay);
+              audio.removeEventListener('error', handleError);
+              console.warn(`Failed to preload audio for verse ${i + 1} of surah ${surahNumber}: ${audio.src}`);
+              resolve(); // Don't fail the whole process
+            };
+            
+            if (audio.readyState >= 4) {
+              resolve();
+            } else {
+              audio.addEventListener('canplaythrough', handleCanPlay);
+              audio.addEventListener('error', handleError);
+              
+              // Add timeout to prevent hanging
+              setTimeout(() => {
+                if (audio.readyState < 4) {
+                  audio.removeEventListener('canplaythrough', handleCanPlay);
+                  audio.removeEventListener('error', handleError);
+                  console.warn(`Timeout preloading verse ${i + 1} of surah ${surahNumber}`);
+                  resolve();
+                }
+              }, 5000);
+              
+              audio.load();
+            }
+          });
+          
+          preloadPromises.push(preloadPromise);
+        }
+      }
+      
+      try {
+        await Promise.all(preloadPromises);
+        console.log(`Preloaded audio for surah ${surahNumber} (${actualVerseCount} verses)`);
+      } catch (error) {
+        console.error(`Error preloading surah ${surahNumber} audio:`, error);
+      }
+    }
+
+    // Clear audio cache for memory management
+    clearAudioCache(): void {
+      this.audioCache.forEach(audio => {
+        audio.pause();
+        audio.src = '';
+        audio.load();
+      });
+      this.audioCache.clear();
+      this.audioPreloadQueue.clear();
     }
   
     // Clear cache khi cần

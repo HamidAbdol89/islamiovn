@@ -5,6 +5,7 @@ export interface SurahInfo {
     titleAr: string;
     count: number;
     juz: number[];
+    type: string;
   }
   
   export interface JuzInfo {
