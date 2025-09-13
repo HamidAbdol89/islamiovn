@@ -13,32 +13,32 @@ export const FEATURED_SCHOLARS = [
 export const SCHOLAR_CATEGORIES: ScholarCategory[] = [
   {
     id: 'tafsir',
-    name: "Qur'an Tafsir",
+    name: "Giải Thích Qur'an",
     scholarIds: ['nouman-ali-khan', 'abdul-nasir-jangda', 'taimiyyah-zubair']
   },
   {
     id: 'fiqh',
-    name: "Islamic Jurisprudence",
+    name: "Luật Học Islam",
     scholarIds: ['mufti-menk', 'yasir-qadhi', 'bilal-philips', 'muhammad-west']
   },
   {
     id: 'aqidah',
-    name: "Theology & Creed",
+    name: "Thần Học & Tín Ngưỡng",
     scholarIds: ['shady-alsuleiman', 'hamza-yusuf', 'omar-suleiman']
   },
   {
     id: 'tazkiyah',
-    name: "Spirituality & Ethics",
+    name: "Tâm Linh & Đạo Đức",
     scholarIds: ['haifaa-younis', 'hasan-ali', 'muiz-bukhary']
   },
   {
     id: 'contemporary',
-    name: "Contemporary Issues",
+    name: "Vấn Đề Đương Đại",
     scholarIds: ['moutasem-al-hameedy', 'ismail-kamdar', 'wahaj-tarin']
   },
   {
     id: 'inspiration',
-    name: "Inspirational",
+    name: "Truyền Cảm Hứng",
     scholarIds: ['mohamed-hoblos', 'abdulbary-yahya', 'zahir-mahmood']
   }
 ];
@@ -47,8 +47,8 @@ export const INITIAL_SCHOLARS: Scholar[] = [
   {
     id: 'mufti-menk',
     name: 'Mufti Menk',
-    title: 'Grand Mufti of Zimbabwe',
-    bio: 'Inspirational scholar known for ethical teachings and practical life advice.',
+    title: 'Đại Mufti của Zimbabwe',
+    bio: 'Học giả truyền cảm hứng nổi tiếng với những lời dạy về đạo đức và lời khuyên thực tế trong cuộc sống.',
     avatar: '/images/podcast/mufti-menk.webp',
     color: 'bg-gradient-to-r from-emerald-500 to-teal-600',
     tags: ['fiqh'],
@@ -58,8 +58,8 @@ export const INITIAL_SCHOLARS: Scholar[] = [
   {
     id: 'nouman-ali-khan',
     name: 'Nouman Ali Khan',
-    title: 'Qur\'anic Arabic Instructor',
-    bio: 'Founder of Bayyinah Institute, specializing in easy-to-understand Qur\'an explanations.',
+    title: 'Giảng Viên Tiếng Ả Rập Qur\'an',
+    bio: 'Người sáng lập Viện Bayyinah, chuyên về việc giải thích Qur\'an dễ hiểu.',
     avatar: '/images/podcast/nouman-ali-khan.webp',
     color: 'bg-gradient-to-r from-blue-500 to-indigo-600',
     tags: ['tafsir'],
@@ -69,8 +69,8 @@ export const INITIAL_SCHOLARS: Scholar[] = [
   {
     id: 'omar-suleiman',
     name: 'Omar Suleiman',
-    title: 'Islamic Scholar & Activist',
-    bio: 'Expert in theology and contemporary Muslim social issues.',
+    title: 'Học Giả Islam & Nhà Hoạt Động',
+    bio: 'Chuyên gia về thần học và các vấn đề xã hội đương đại của người Muslim.',
     avatar: '/images/podcast/omar-suleiman.webp',
     color: 'bg-gradient-to-r from-purple-500 to-pink-600',
     tags: ['contemporary'],
@@ -80,8 +80,8 @@ export const INITIAL_SCHOLARS: Scholar[] = [
   {
     id: 'yasir-qadhi',
     name: 'Yasir Qadhi',
-    title: 'Islamic Theologian',
-    bio: 'Expert in Aqidah & classical Islamic history, known for in-depth teachings.',
+    title: 'Nhà Thần Học Islam',
+    bio: 'Chuyên gia về Aqidah và lịch sử Islam cổ điển, nổi tiếng với những bài giảng sâu sắc.',
     avatar: '/images/podcast/yasir-qadhi.webp',
     color: 'bg-gradient-to-r from-orange-500 to-red-600',
     tags: ['fiqh'],
@@ -91,8 +91,8 @@ export const INITIAL_SCHOLARS: Scholar[] = [
   {
     id: 'bilal-philips',
     name: 'Bilal Philips',
-    title: 'Dr. & International Professor',
-    bio: 'Founder of Islamic Online University, specializing in Aqidah & Islamic education.',
+    title: 'Tiến Sĩ & Giáo Sư Quốc Tế',
+    bio: 'Người sáng lập Đại học Islam Trực tuyến, chuyên về Aqidah và giáo dục Islam.',
     avatar: '/images/podcast/bilal-philips.webp',
     color: 'bg-gradient-to-r from-sky-500 to-cyan-600',
     tags: ['fiqh'],
@@ -102,8 +102,8 @@ export const INITIAL_SCHOLARS: Scholar[] = [
   {
     id: 'hamza-yusuf',
     name: 'Hamza Yusuf',
-    title: 'Islamic Scholar & Philosopher',
-    bio: 'Co-founder of Zaytuna College, known for profound thinking and philosophical analysis.',
+    title: 'Học Giả Islam & Triết Gia',
+    bio: 'Đồng sáng lập Trường Đại học Zaytuna, nổi tiếng với tư duy sâu sắc và phân tích triết học.',
     avatar: '/images/podcast/hamza-yusuf.webp',
     color: 'bg-gradient-to-r from-amber-500 to-yellow-600',
     tags: ['aqidah', 'tazkiyah'],
@@ -113,8 +113,8 @@ export const INITIAL_SCHOLARS: Scholar[] = [
   {
     id: 'abdul-nasir-jangda',
     name: 'Abdul Nasir Jangda',
-    title: 'Director of Qalam Institute',
-    bio: 'Specializes in Tafsir, Fiqh, and practical Islamic instructor training in the US.',
+    title: 'Giám Đốc Viện Qalam',
+    bio: 'Chuyên về Tafsir, Fiqh và đào tạo giảng viên Islam thực tế tại Mỹ.',
     avatar: '/images/podcast/abdul-nasir-jangda.webp',
     color: 'bg-gradient-to-r from-rose-500 to-fuchsia-600',
     tags: ['tafsir'],
@@ -124,8 +124,8 @@ export const INITIAL_SCHOLARS: Scholar[] = [
   {
     id: 'wahaj-tarin',
     name: 'Wahaj Tarin',
-    title: 'Islamic Speaker & Educator',
-    bio: 'Practical teachings with strong logic, inspiring Muslim youth.',
+    title: 'Diễn Giả & Nhà Giáo Dục Islam',
+    bio: 'Giảng dạy thực tế với logic mạnh mẽ, truyền cảm hứng cho thanh niên Muslim.',
     avatar: '/images/podcast/wahaj-tarin.webp',
     color: 'bg-gradient-to-r from-gray-700 to-neutral-800',
     tags: ['contemporary'],
@@ -135,8 +135,8 @@ export const INITIAL_SCHOLARS: Scholar[] = [
   {
     id: 'mohamed-hoblos',
     name: 'Mohamed Hoblos',
-    title: 'Inspirational Speaker',
-    bio: 'Moving voice, emotional style, conveying deep Islamic messages.',
+    title: 'Diễn Giả Truyền Cảm Hứng',
+    bio: 'Giọng nói cảm động, phong cách đầy cảm xúc, truyền tải thông điệp Islam sâu sắc.',
     avatar: '/images/podcast/mohamed-hoblos.webp',
     color: 'bg-gradient-to-r from-lime-500 to-green-700',
     tags: ['inspiration'],
@@ -146,8 +146,8 @@ export const INITIAL_SCHOLARS: Scholar[] = [
   {
     id: 'haifaa-younis',
     name: 'Haifaa Younis',
-    title: 'Dr. & Islamic Lecturer',
-    bio: 'Specializes in psychology, Tazkiyah & the role of modern Muslim women.',
+    title: 'Tiến Sĩ & Giảng Viên Islam',
+    bio: 'Chuyên về tâm lý học, Tazkiyah và vai trò của phụ nữ Muslim hiện đại.',
     avatar: '/images/podcast/haifaa-younis.webp',
     color: 'bg-gradient-to-r from-pink-500 to-rose-600',
     tags: ['tazkiyah'],
@@ -157,8 +157,8 @@ export const INITIAL_SCHOLARS: Scholar[] = [
   {
     id: 'abdulbary-yahya',
     name: 'AbdulBary Yahya',
-    title: 'Scholar & Speaker in USA',
-    bio: 'Relatable, practical teachings attracting Western Muslim youth.',
+    title: 'Học Giả & Diễn Giả tại Mỹ',
+    bio: 'Giảng dạy dễ hiểu, thực tế, thu hút thanh niên Muslim phương Tây.',
     avatar: '/images/podcast/abdulbary-yahya.webp',
     color: 'bg-gradient-to-r from-blue-800 to-cyan-700',
     tags: ['inspiration'],
@@ -168,8 +168,8 @@ export const INITIAL_SCHOLARS: Scholar[] = [
   {
     id: 'zahir-mahmood',
     name: 'Zahir Mahmood',
-    title: 'Historian & Islamic Thinker',
-    bio: 'Heroic style, vivid storytelling about Sahaba history and the Ummah.',
+    title: 'Sử Gia & Nhà Tư Tưởng Islam',
+    bio: 'Phong cách hùng hồn, kể chuyện sinh động về lịch sử Sahaba và Ummah.',
     avatar: '/images/podcast/zahir-mahmood.webp',
     color: 'bg-gradient-to-r from-yellow-800 to-orange-600',
     tags: ['inspiration'],
@@ -179,8 +179,8 @@ export const INITIAL_SCHOLARS: Scholar[] = [
   {
     id: 'ismail-kamdar',
     name: 'Ismail Kamdar',
-    title: 'Author & Lecturer from South Africa',
-    bio: 'Specializes in applying Islam to time management and personal development.',
+    title: 'Tác Giả & Giảng Viên từ Nam Phi',
+    bio: 'Chuyên về việc áp dụng Islam vào quản lý thời gian và phát triển cá nhân.',
     avatar: '/images/podcast/ismail-kamdar.webp',
     color: 'bg-gradient-to-r from-indigo-600 to-purple-700',
     tags: ['contemporary'],
@@ -190,8 +190,8 @@ export const INITIAL_SCHOLARS: Scholar[] = [
   {
     id: 'taimiyyah-zubair',
     name: 'Taimiyyah Zubair',
-    title: 'Qur\'an & Tafsir Instructor',
-    bio: 'Academic style, meticulous, prominent among female Islamic scholars.',
+    title: 'Giảng Viên Qur\'an & Tafsir',
+    bio: 'Phong cách học thuật, tỉ mỉ, nổi bật trong số các học giả Islam nữ.',
     avatar: '/images/podcast/taimiyyah-zubair.webp',
     color: 'bg-gradient-to-r from-purple-500 to-violet-700',
     tags: ['tafsir', 'tazkiyah'],
@@ -201,8 +201,8 @@ export const INITIAL_SCHOLARS: Scholar[] = [
   {
     id: 'hasan-ali',
     name: 'Hasan Ali',
-    title: 'Tazkiyah & Emotional Instructor',
-    bio: 'Emotional, moving style helping reconnect with Allah from within.',
+    title: 'Giảng Viên Tazkiyah & Cảm Xúc',
+    bio: 'Phong cách đầy cảm xúc, cảm động, giúp kết nối lại với Allah từ bên trong.',
     avatar: '/images/podcast/hasan-ali.webp',
     color: 'bg-gradient-to-r from-red-600 to-rose-700',
     tags: ['tazkiyah'],
@@ -212,8 +212,8 @@ export const INITIAL_SCHOLARS: Scholar[] = [
   {
     id: 'shady-alsuleiman',
     name: 'Shady Alsuleiman',
-    title: 'Aqidah & Seerah Scholar',
-    bio: 'Strong style, clear thinking, specializing in the Prophet\'s life and correct beliefs.',
+    title: 'Học Giả Aqidah & Seerah',
+    bio: 'Phong cách mạnh mẽ, tư duy rõ ràng, chuyên về cuộc đời Tiên tri và tín ngưỡng đúng đắn.',
     avatar: '/images/podcast/shady-alsuleiman.webp',
     color: 'bg-gradient-to-r from-teal-700 to-emerald-700',
     tags: ['aqidah'],
@@ -223,8 +223,8 @@ export const INITIAL_SCHOLARS: Scholar[] = [
   {
     id: 'moutasem-al-hameedy',
     name: 'Moutasem Al-Hameedy',
-    title: 'Speaker on Logic & Critical Thinking',
-    bio: 'Logical, coherent style with intelligent critique based on Qur\'an & Sunnah.',
+    title: 'Diễn Giả về Logic & Tư Duy Phản Biện',
+    bio: 'Phong cách logic, mạch lạc với phê phán thông minh dựa trên Qur\'an & Sunnah.',
     avatar: '/images/podcast/moutasem-al-hameedy.webp',
     color: 'bg-gradient-to-r from-gray-800 to-slate-600',
     tags: ['contemporary'],
@@ -234,8 +234,8 @@ export const INITIAL_SCHOLARS: Scholar[] = [
   {
     id: 'muhammad-west',
     name: 'Muhammad West',
-    title: 'Contemporary Fiqh Scholar',
-    bio: 'Specializes in applied Fiqh topics, practical Hajj and Umrah series.',
+    title: 'Học Giả Fiqh Đương Đại',
+    bio: 'Chuyên về các chủ đề Fiqh ứng dụng, chuỗi bài thực tế về Hajj và Umrah.',
     avatar: '/images/podcast/muhammad-west.webp',
     color: 'bg-gradient-to-r from-yellow-600 to-amber-700',
     tags: ['fiqh'],
@@ -245,8 +245,8 @@ export const INITIAL_SCHOLARS: Scholar[] = [
   {
     id: 'muiz-bukhary',
     name: 'Muiz Bukhary',
-    title: 'Qur\'an & Hadith Instructor',
-    bio: 'Warm voice, simple teaching style, accessible for new Muslims.',
+    title: 'Giảng Viên Qur\'an & Hadith',
+    bio: 'Giọng nói ấm áp, phong cách giảng dạy đơn giản, dễ tiếp cận cho Muslim mới.',
     avatar: '/images/podcast/muiz-bukhary.webp',
     color: 'bg-gradient-to-r from-indigo-600 to-blue-700',
     tags: ['tazkiyah'],

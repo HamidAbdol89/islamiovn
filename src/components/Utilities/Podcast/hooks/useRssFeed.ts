@@ -1,7 +1,25 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import type { Scholar } from '../types';
 
+// Memoized server URL outside component to prevent recreation
+const getServerUrl = () => {
+  return import.meta.env.VITE_API_BASE_URL_PODCAST
+    || (window.location.hostname === 'localhost'
+        ? 'http://localhost:8080'
+        : 'https://podcast-production-e25a.up.railway.app');
+};
+
+// Memoized error messages in Vietnamese
+const ERROR_MESSAGES = {
+  FETCH_FAILED: 'Gặp lỗi khi tải dữ liệu. Vui lòng thử lại.',
+  NETWORK_ERROR: 'Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet.',
+  SERVER_ERROR: 'Lỗi máy chủ. Vui lòng thử lại sau.',
+} as const;
+
 export const useRssFeed = () => {
+  // Memoize server URL to prevent recalculation
+  const serverUrl = useMemo(() => getServerUrl(), []);
+
   const fetchRSSFeed = useCallback(async (
     scholarId: string, 
     setScholars: React.Dispatch<React.SetStateAction<Scholar[]>>
@@ -11,15 +29,6 @@ export const useRssFeed = () => {
         s.id === scholarId ? { ...s, isLoading: true, error: undefined } : s
       ));
 
-      // Dynamic server URL - using environment variable or fallback
-      const serverUrl = import.meta.env.VITE_API_BASE_URL_PODCAST
-      || (window.location.hostname === 'localhost'
-          ? 'http://localhost:8080'
-          : 'https://podcast-production-e25a.up.railway.app');
-    
-    
-
-
       const response = await fetch(`${serverUrl}/api/rss/${scholarId}`, {
         method: 'GET',
         headers: {
@@ -28,13 +37,16 @@ export const useRssFeed = () => {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorMessage = response.status >= 500 
+          ? ERROR_MESSAGES.SERVER_ERROR 
+          : ERROR_MESSAGES.NETWORK_ERROR;
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || 'Failed to fetch episodes');
+        throw new Error(data.error || ERROR_MESSAGES.FETCH_FAILED);
       }
 
       const episodes = data.episodes || [];
@@ -47,13 +59,15 @@ export const useRssFeed = () => {
 
     } catch (error) {
       console.error('Error fetching RSS feed:', error);
+      const errorMessage = error instanceof Error ? error.message : ERROR_MESSAGES.FETCH_FAILED;
+      
       setScholars(prev => prev.map(s => 
         s.id === scholarId 
-          ? { ...s, isLoading: false, error: 'Encountered an error. Please try again.' }
+          ? { ...s, isLoading: false, error: errorMessage }
           : s
       ));
     }
-  }, []);
+  }, [serverUrl]);
 
   const retryFetch = useCallback((
     scholarId: string, 

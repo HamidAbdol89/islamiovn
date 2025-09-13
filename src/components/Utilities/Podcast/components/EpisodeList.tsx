@@ -6,7 +6,6 @@ import { LoadingState, ErrorState, EmptyState } from './LoadingState';
 
 interface EpisodeListProps {
   scholar: Scholar;
-  isDarkMode: boolean;
   currentEpisode: PodcastEpisode | null;
   isPlaying: boolean;
   paginatedEpisodes: PodcastEpisode[];
@@ -20,7 +19,6 @@ interface EpisodeListProps {
 
 const EpisodeList: React.FC<EpisodeListProps> = React.memo(({
   scholar,
-  isDarkMode,
   currentEpisode,
   isPlaying,
   paginatedEpisodes,
@@ -36,9 +34,7 @@ const EpisodeList: React.FC<EpisodeListProps> = React.memo(({
   return (
     <div className="p-4 space-y-4">
       {/* Scholar Info */}
-      <div className={`rounded-xl p-6 ${
-        isDarkMode ? 'bg-gray-800' : 'bg-white'
-      } shadow-lg`}>
+      <div className="rounded-xl p-6 bg-card border-border shadow-luxury dark:shadow-luxury-dark transition-smooth">
         <div className="flex items-center space-x-4 mb-4">
           {/* Changed from rounded-full to rounded-lg and increased size */}
           <div className={`w-24 h-24 rounded-lg ${scholar.color} flex items-center justify-center overflow-hidden`}>
@@ -49,23 +45,21 @@ const EpisodeList: React.FC<EpisodeListProps> = React.memo(({
             />
           </div>
           <div>
-            <h2 className="text-xl font-bold">{scholar.name}</h2>
-            <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+            <h3 className="text-xl font-bold mb-4 px-4 text-[var(--foreground)]">{scholar.name}</h3>
+            <p className="text-sm text-muted-foreground">
               {scholar.title}
             </p>
           </div>
         </div>
-        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+        <p className="text-sm text-muted-foreground">
           {scholar.bio}
         </p>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-4">
             {/* Scholar avatar and info */}
           </div>
-          <span className={`text-sm ${
-            isDarkMode ? 'text-gray-400' : 'text-gray-500'
-          }`}>
-            {episodeCount} lectures
+          <span className="text-sm text-muted-foreground">
+            {episodeCount} Bài giảng
           </span>
         </div>
       </div>
@@ -74,13 +68,12 @@ const EpisodeList: React.FC<EpisodeListProps> = React.memo(({
       <div className="space-y-3">
         {/* Loading State */}
         {scholar.isLoading && (
-          <LoadingState isDarkMode={isDarkMode} />
+          <LoadingState />
         )}
 
         {/* Error State */}
         {scholar.error && (
           <ErrorState 
-            isDarkMode={isDarkMode}
             error={scholar.error}
             onRetry={onRetry}
           />
@@ -90,10 +83,9 @@ const EpisodeList: React.FC<EpisodeListProps> = React.memo(({
         {!scholar.isLoading && !scholar.error && (
           <>
             {/* Display when no episodes */}
-            {episodeCount === 0 ? (
+            {paginatedEpisodes.length === 0 ? (
               <EmptyState 
-                isDarkMode={isDarkMode}
-                message="No lectures available yet"
+                message="Không tìm thấy bài giảng nào phù hợp"
               />
             ) : (
               <>
@@ -103,7 +95,6 @@ const EpisodeList: React.FC<EpisodeListProps> = React.memo(({
                     key={episode.id}
                     episode={episode}
                     scholar={scholar}
-                    isDarkMode={isDarkMode}
                     isCurrentEpisode={currentEpisode?.id === episode.id}
                     isPlaying={isPlaying}
                     onPlay={() => onEpisodePlay(episode)}
@@ -115,7 +106,6 @@ const EpisodeList: React.FC<EpisodeListProps> = React.memo(({
                 <PaginationControls
                   currentPage={currentPage}
                   totalPages={totalPages}
-                  isDarkMode={isDarkMode}
                   onPageChange={onPageChange}
                 />
               </>

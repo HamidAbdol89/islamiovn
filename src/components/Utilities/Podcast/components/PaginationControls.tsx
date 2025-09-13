@@ -1,67 +1,132 @@
 import React from 'react';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationPrevious,
+  PaginationNext,
+  PaginationEllipsis,
+} from '@/components/ui/pagination';
 
 interface PaginationControlsProps {
   currentPage: number;
   totalPages: number;
-  isDarkMode: boolean;
   onPageChange: (page: number) => void;
 }
 
-const PaginationControls: React.FC<PaginationControlsProps> = React.memo(({
+// Vietnamese UI text constants
+const UI_TEXT = {
+  PREVIOUS: 'Trang trước',
+  NEXT: 'Trang sau',
+} as const;
+
+const PaginationControls: React.FC<PaginationControlsProps> = ({
   currentPage,
   totalPages,
-  isDarkMode,
-  onPageChange
+  onPageChange,
 }) => {
-  const handlePrevious = () => {
-    onPageChange(Math.max(currentPage - 1, 1));
-  };
-
-  const handleNext = () => {
-    onPageChange(Math.min(currentPage + 1, totalPages));
-  };
-
   if (totalPages <= 1) return null;
 
+  // Generate page numbers to display - ít hơn trên mobile
+  const getPageNumbers = () => {
+    const pages = [];
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const maxVisiblePages = isMobile ? 3 : 5;
+    
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    // Add first page and ellipsis if needed
+    if (startPage > 1) {
+      pages.push(1);
+      if (startPage > 2) {
+        pages.push('ellipsis-left');
+      }
+    }
+
+    // Add page numbers
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+
+    // Add last page and ellipsis if needed
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        pages.push('ellipsis-right');
+      }
+      pages.push(totalPages);
+    }
+
+    return pages;
+  };
+
+  const pageNumbers = getPageNumbers();
+
   return (
-    <div className={`flex justify-center items-center space-x-4 mt-6 ${
-      isDarkMode ? 'text-gray-300' : 'text-gray-600'
-    }`}>
-      <button
-        onClick={handlePrevious}
-        disabled={currentPage === 1}
-        className={`p-2 rounded-full ${
-          currentPage === 1 
-            ? 'opacity-50 cursor-not-allowed' 
-            : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-        }`}
-      >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
+    <div className="w-full overflow-x-auto py-2">
+      <Pagination className="mt-6 w-auto min-w-min">
+        <PaginationContent className="flex-wrap justify-center">
+          <PaginationItem className="hidden sm:inline-flex">
+            <PaginationPrevious
+              onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
+              className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+              aria-label={UI_TEXT.PREVIOUS}
+            />
+          </PaginationItem>
 
-      <span className="text-sm">
-        Page {currentPage} of {totalPages}
-      </span>
+          {pageNumbers.map((page, index) => (
+            <PaginationItem key={index} className="hidden sm:inline-flex">
+              {page === 'ellipsis-left' || page === 'ellipsis-right' ? (
+                <PaginationEllipsis />
+              ) : (
+                <PaginationLink
+                  isActive={currentPage === page}
+                  onClick={() => onPageChange(page as number)}
+                  className="cursor-pointer"
+                >
+                  {page}
+                </PaginationLink>
+              )}
+            </PaginationItem>
+          ))}
 
-      <button
-        onClick={handleNext}
-        disabled={currentPage >= totalPages}
-        className={`p-2 rounded-full ${
-          currentPage >= totalPages
-            ? 'opacity-50 cursor-not-allowed' 
-            : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-        }`}
-      >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
+          <PaginationItem className="hidden sm:inline-flex">
+            <PaginationNext
+              onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
+              className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+              aria-label={UI_TEXT.NEXT}
+            />
+          </PaginationItem>
+
+          {/* Mobile version - simplified */}
+          <PaginationItem className="sm:hidden flex items-center space-x-2">
+            <PaginationPrevious
+              onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
+              className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+              aria-label={UI_TEXT.PREVIOUS}
+              size="sm"
+            />
+            
+            <span className="text-sm font-medium px-2">
+              {currentPage} / {totalPages}
+            </span>
+            
+            <PaginationNext
+              onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
+              className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+              aria-label={UI_TEXT.NEXT}
+              size="sm"
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
     </div>
   );
-});
-
-PaginationControls.displayName = 'PaginationControls';
+};
 
 export default PaginationControls;

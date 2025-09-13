@@ -1,57 +1,64 @@
 import React from 'react';
-import { RefreshCw, AlertCircle } from 'lucide-react';
+import { RefreshCw, AlertCircle, FileX } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
-interface LoadingStateProps {
-  isDarkMode: boolean;
-}
+interface LoadingStateProps {}
 
 interface ErrorStateProps {
-  isDarkMode: boolean;
   error: string;
   onRetry: () => void;
 }
 
 interface EmptyStateProps {
-  isDarkMode: boolean;
   message: string;
 }
 
-export const LoadingState: React.FC<LoadingStateProps> = React.memo(({ isDarkMode }) => (
-  <div className={`rounded-xl p-8 text-center ${
-    isDarkMode ? 'bg-gray-800' : 'bg-white'
-  } shadow-lg`}>
-    <RefreshCw className="w-8 h-8 mx-auto mb-4 animate-spin text-blue-500" />
-    <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-      Loading lecture list...
-    </p>
-  </div>
+// Vietnamese UI text constants
+const UI_TEXT = {
+  LOADING: 'Đang tải danh sách bài giảng...',
+  TRY_AGAIN: 'Thử lại',
+  EMPTY_MESSAGE: 'Chưa có bài giảng nào',
+} as const;
+
+export const LoadingState: React.FC<LoadingStateProps> = React.memo(() => (
+  <Card className="bg-card border-border shadow-luxury dark:shadow-luxury-dark transition-smooth">
+    <CardContent className="p-8 text-center">
+      <RefreshCw className="w-8 h-8 mx-auto mb-4 animate-spin text-primary" />
+      <p className="text-muted-foreground">
+        {UI_TEXT.LOADING}
+      </p>
+    </CardContent>
+  </Card>
 ));
 
-export const ErrorState: React.FC<ErrorStateProps> = React.memo(({ isDarkMode, error, onRetry }) => (
-  <div className={`rounded-xl p-6 text-center ${
-    isDarkMode ? 'bg-gray-800' : 'bg-white'
-  } shadow-lg`}>
-    <AlertCircle className="w-8 h-8 mx-auto mb-4 text-red-500" />
-    <p className={`mb-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-      {error}
-    </p>
-    <button
-      onClick={onRetry}
-      className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
-    >
-      Try Again
-    </button>
-  </div>
+export const ErrorState: React.FC<ErrorStateProps> = React.memo(({ error, onRetry }) => (
+  <Card className="bg-card border-border shadow-luxury dark:shadow-luxury-dark transition-smooth">
+    <CardContent className="p-6 text-center">
+      <AlertCircle className="w-8 h-8 mx-auto mb-4 text-destructive" />
+      <p className="mb-4 text-muted-foreground">
+        {error}
+      </p>
+      <Button
+        onClick={onRetry}
+        variant="default"
+        className="bg-luxury-gradient hover:opacity-90 text-white transition-smooth"
+      >
+        {UI_TEXT.TRY_AGAIN}
+      </Button>
+    </CardContent>
+  </Card>
 ));
 
-export const EmptyState: React.FC<EmptyStateProps> = React.memo(({ isDarkMode, message }) => (
-  <div className={`rounded-xl p-8 text-center ${
-    isDarkMode ? 'bg-gray-800' : 'bg-white'
-  } shadow-lg`}>
-    <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-      {message}
-    </p>
-  </div>
+export const EmptyState: React.FC<EmptyStateProps> = React.memo(({ message }) => (
+  <Card className="bg-card border-border shadow-luxury dark:shadow-luxury-dark transition-smooth">
+    <CardContent className="p-8 text-center">
+      <FileX className="w-8 h-8 mx-auto mb-4 text-muted-foreground" />
+      <p className="text-muted-foreground">
+        {message}
+      </p>
+    </CardContent>
+  </Card>
 ));
 
 LoadingState.displayName = 'LoadingState';

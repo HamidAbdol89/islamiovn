@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/lib/routes';
 import { AnimatePresence } from 'framer-motion';
 import LoadingSpinner from './LoadingSpinner';
@@ -24,6 +24,11 @@ const Setting = React.lazy(() => import('@/Pages/Setting/Setting'));
 
 const AnimatedRoutes: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  
+  const handleBackToHome = () => {
+    navigate(ROUTES.HOME);
+  };
   
   return (
     <AnimatePresence mode="wait">
@@ -161,7 +166,7 @@ const AnimatedRoutes: React.FC = () => {
           element={
             <AnimatedPage>
               <Suspense fallback={<LoadingSpinner />}>
-                <Podcast />
+                <Podcast handleBackToHome={handleBackToHome} />
               </Suspense>
             </AnimatedPage>
           } 
