@@ -20,15 +20,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import SavedHadithsView from './components/SavedHadithsView';
+import SavedQuranView from './components/SavedQuranView';
 import { storageUtils } from '@/components/Utilities/Hadith/utils';
+import { quranStorageUtils } from '@/components/Utilities/Quran/utils/storage';
 
 const Setting: React.FC = () => {
   const { theme, setTheme } = useTheme();
-  const [currentView, setCurrentView] = useState<'main' | 'saved-hadiths'>('main');
+  const [currentView, setCurrentView] = useState<'main' | 'saved-hadiths' | 'saved-quran'>('main');
   
   // Get counts for badges
-  const favoritesCount = storageUtils.getFavorites().length;
-  const bookmarksCount = storageUtils.getBookmarks().length;
+  const hadithFavoritesCount = storageUtils.getFavorites().length;
+  const hadithBookmarksCount = storageUtils.getBookmarks().length;
+  const quranFavoritesCount = quranStorageUtils.getFavorites().length;
+  const quranBookmarksCount = quranStorageUtils.getBookmarks().length;
 
   const themeOptions = [
     { id: 'light', name: 'Sáng', icon: Sun },
@@ -37,7 +41,7 @@ const Setting: React.FC = () => {
   ];
 
   // Handle navigation
-  const handleViewChange = (view: 'main' | 'saved-hadiths') => {
+  const handleViewChange = (view: 'main' | 'saved-hadiths' | 'saved-quran') => {
     setCurrentView(view);
   };
 
@@ -69,18 +73,21 @@ const Setting: React.FC = () => {
     }
   };
 
-  // Show SavedHadithsView if selected
+  // Render different views based on currentView
   if (currentView === 'saved-hadiths') {
-    return (
-      <SavedHadithsView onBack={() => setCurrentView('main')} />
-    );
+    return <SavedHadithsView onBack={() => handleViewChange('main')} />;
+  }
+
+  if (currentView === 'saved-quran') {
+    return <SavedQuranView onBack={() => handleViewChange('main')} />;
   }
 
   return (
-    <div className="min-h-screen p-4 bg-background text-foreground">
-      <div className="flex justify-center mb-6">
-        <img src="/logo.png" alt="Biểu tượng" className="h-32 w-auto" />
-      </div>
+    <div className="min-h-screen bg-background">
+ <div className="container mx-auto p-4 sm:p-6 max-w-4xl flex justify-center">
+  <img src="/logo.png" alt="Biểu tượng" className="h-32 w-auto" />
+</div>
+
 
       {/* Phần Tùy chỉnh */}
       <Card className="mb-6">
@@ -133,7 +140,7 @@ const Setting: React.FC = () => {
       {/* Phần Hadith */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="text-lg">Hadith</CardTitle>
+          <CardTitle className="text-lg">Đã lưu</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 p-0">
           <Button
@@ -146,16 +153,16 @@ const Setting: React.FC = () => {
               <span>Hadith đã lưu</span>
             </div>
             <div className="flex items-center gap-2">
-              {(favoritesCount > 0 || bookmarksCount > 0) && (
+              {(hadithFavoritesCount > 0 || hadithBookmarksCount > 0) && (
                 <div className="flex items-center gap-1">
-                  {favoritesCount > 0 && (
+                  {hadithFavoritesCount > 0 && (
                     <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                      {favoritesCount}
+                      {hadithFavoritesCount}
                     </span>
                   )}
-                  {bookmarksCount > 0 && (
+                  {hadithBookmarksCount > 0 && (
                     <span className="bg-blue-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                      {bookmarksCount}
+                      {hadithBookmarksCount}
                     </span>
                   )}
                 </div>
@@ -164,17 +171,38 @@ const Setting: React.FC = () => {
             </div>
           </Button>
           <Separator />
+          
+          {/* Quran Saved Items */}
           <Button
             variant="ghost"
             className="w-full flex justify-between items-center p-4 rounded-lg"
-            onClick={handleShareApp}
+            onClick={() => handleViewChange('saved-quran')}
           >
             <div className="flex items-center">
-              <Share2 className="mr-3 w-5 h-5" />
-              <span>Chia sẻ ứng dụng</span>
+              <Heart className="mr-3 w-5 h-5" />
+              <span>Quran đã lưu</span>
             </div>
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            <div className="flex items-center gap-2">
+              {(quranFavoritesCount > 0 || quranBookmarksCount > 0) && (
+                <div className="flex items-center gap-1">
+                  {quranFavoritesCount > 0 && (
+                    <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                      {quranFavoritesCount}
+                    </span>
+                  )}
+                  {quranBookmarksCount > 0 && (
+                    <span className="bg-blue-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                      {quranBookmarksCount}
+                    </span>
+                  )}
+                </div>
+              )}
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </div>
           </Button>
+          <Separator />
+          
+       
         </CardContent>
       </Card>
 
@@ -260,6 +288,21 @@ const Setting: React.FC = () => {
             <ChevronRight className="w-4 h-4 text-muted-foreground" />
           </Button>
           <Separator />
+
+
+          <Button
+            variant="ghost"
+            className="w-full flex justify-between items-center p-4 rounded-lg"
+            onClick={handleShareApp}
+          >
+            <div className="flex items-center">
+              <Share2 className="mr-3 w-5 h-5" />
+              <span>Chia sẻ ứng dụng</span>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </Button>
+
+              
           <Button
             variant="ghost"
             className="w-full flex justify-between items-center p-4 rounded-lg"

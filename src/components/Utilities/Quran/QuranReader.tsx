@@ -193,6 +193,8 @@ useEffect(() => {
                   showTajweed={showTajweed}
                   onToggleAudio={toggleAudio}
                   uiText={uiText}
+                  surahNumber={selectedSurah || undefined}
+                  surahName={currentSurahInfo?.title}
                 />
               );
             })}

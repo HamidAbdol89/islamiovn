@@ -94,6 +94,8 @@ export interface VerseCardProps {
   showTajweed: boolean;
   onToggleAudio: (index: number) => void;
   uiText: VanBanGiaoDien;
+  surahNumber?: number;
+  surahName?: string;
 }
 
 export interface LoadingStateProps {

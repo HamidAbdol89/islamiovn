@@ -1,6 +1,7 @@
 // SettingsPanel.tsx - Settings panel component for QuranReader
 import React from 'react';
-import { Languages, Palette, Info, Volume2 } from 'lucide-react';
+import { Languages, Palette, Info, Volume2, Type, ZoomIn, ZoomOut } from 'lucide-react';
+import { quranStorageUtils } from './utils/storage';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -23,6 +24,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = React.memo(({
   languages,
   uiText
 }) => {
+  const [fontSize, setFontSize] = React.useState(() => quranStorageUtils.getFontSize());
   const handleLanguageClick = React.useCallback((languageCode: string) => {
     onLanguageChange(languageCode);
   }, [onLanguageChange]);
@@ -30,6 +32,33 @@ const SettingsPanel: React.FC<SettingsPanelProps> = React.memo(({
   const handleVolumeChange = React.useCallback(([value]: number[]) => {
     onVolumeChange(value);
   }, [onVolumeChange]);
+
+  // Font size handlers
+  const increaseFontSize = React.useCallback(() => {
+    const newSize = Math.min(fontSize + 0.1, 2.0); // Max 200%
+    setFontSize(newSize);
+    quranStorageUtils.setFontSize(newSize);
+    // Apply to document root for immediate effect
+    document.documentElement.style.setProperty('--quran-font-size', `${newSize}rem`);
+  }, [fontSize]);
+
+  const decreaseFontSize = React.useCallback(() => {
+    const newSize = Math.max(fontSize - 0.1, 0.6); // Min 60%
+    setFontSize(newSize);
+    quranStorageUtils.setFontSize(newSize);
+    document.documentElement.style.setProperty('--quran-font-size', `${newSize}rem`);
+  }, [fontSize]);
+
+  const resetFontSize = React.useCallback(() => {
+    setFontSize(1.0);
+    quranStorageUtils.setFontSize(1.0);
+    document.documentElement.style.setProperty('--quran-font-size', '1rem');
+  }, []);
+
+  // Apply font size on mount
+  React.useEffect(() => {
+    document.documentElement.style.setProperty('--quran-font-size', `${fontSize}rem`);
+  }, [fontSize]);
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
@@ -93,6 +122,46 @@ const SettingsPanel: React.FC<SettingsPanelProps> = React.memo(({
               <Info className="h-4 w-4 mr-2" />
               {uiText.tajweedLegend}
             </Button>
+          </div>
+
+          <Separator />
+
+          {/* Font Size Control */}
+          <div>
+            <label className="text-sm font-medium mb-3 block">
+              <Type className="h-4 w-4 inline mr-2" />
+              Cỡ chữ Arabic ({Math.round(fontSize * 100)}%)
+            </label>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={decreaseFontSize}
+                disabled={fontSize <= 0.6}
+                className="h-8 w-8 p-0"
+              >
+                <ZoomOut className="h-3 w-3" />
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={resetFontSize}
+                className="h-8 px-3 text-xs"
+              >
+                100%
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={increaseFontSize}
+                disabled={fontSize >= 2.0}
+                className="h-8 w-8 p-0"
+              >
+                <ZoomIn className="h-3 w-3" />
+              </Button>
+            </div>
           </div>
 
           <Separator />
