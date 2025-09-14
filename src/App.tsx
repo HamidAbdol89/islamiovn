@@ -22,6 +22,7 @@ const preloadComponents = () => {
     import('@/components/Utilities/Podcast/Podcast'),
     import('@/components/Utilities/Zakat/ZakatCalculator'),
     import('@/components/Utilities/Quran/QuranReader'),
+    import('@/components/Utilities/Hadith/hadith'),
     
   ];
   

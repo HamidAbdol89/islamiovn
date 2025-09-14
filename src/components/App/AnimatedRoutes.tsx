@@ -22,6 +22,7 @@ const Podcast = React.lazy(() => import('@/components/Utilities/Podcast/Podcast'
 const Zakat = React.lazy(() => import('@/components/Utilities/Zakat/ZakatCalculator'));
 const Setting = React.lazy(() => import('@/Pages/Setting/Setting'));
 const QuranReader = React.lazy(() => import('@/components/Utilities/Quran/QuranReader'));
+const HadithApp = React.lazy(() => import('@/components/Utilities/Hadith/hadith'));
 
 const AnimatedRoutes: React.FC = () => {
   const location = useLocation();
@@ -190,6 +191,18 @@ const AnimatedRoutes: React.FC = () => {
             <AnimatedPage>
               <Suspense fallback={<LoadingSpinner />}>
                 <Zakat />
+              </Suspense>
+            </AnimatedPage>
+          } 
+        />
+        
+        <Route 
+          path={ROUTES.UTILITIES.HADITH} 
+          element={
+            <AnimatedPage>
+              <Suspense fallback={<LoadingSpinner />}
+              >
+                <HadithApp />
               </Suspense>
             </AnimatedPage>
           } 

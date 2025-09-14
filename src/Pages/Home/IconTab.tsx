@@ -266,7 +266,7 @@ const UTILITIES_DATA: UtilityItem[] = [
     gradient: 'from-blue-400 to-purple-600',
     iconUrl: hadihIcon,
     route: '/utilities/hadith',
-    isAvailable: false,
+    isAvailable: true,
     description: 'Đọc và tìm hiểu Hadith',
     accentColor: 'blue'
   },
