@@ -23,6 +23,7 @@ const Zakat = React.lazy(() => import('@/components/Utilities/Zakat/ZakatCalcula
 const Setting = React.lazy(() => import('@/Pages/Setting/Setting'));
 const QuranReader = React.lazy(() => import('@/components/Utilities/Quran/QuranReader'));
 const HadithApp = React.lazy(() => import('@/components/Utilities/Hadith/hadith'));
+const AuthCallback = React.lazy(() => import('@/components/Auth/AuthCallback'));
 
 const AnimatedRoutes: React.FC = () => {
   const location = useLocation();
@@ -221,7 +222,18 @@ const AnimatedRoutes: React.FC = () => {
             </MainLayout>
           } 
         />
-      
+
+        {/* Auth Callback Route */}
+        <Route 
+          path="/auth/callback" 
+          element={
+            <AnimatedPage>
+              <Suspense fallback={<LoadingSpinner />}>
+                <AuthCallback />
+              </Suspense>
+            </AnimatedPage>
+          } 
+        />
 
         {/* Redirect old routes */}
         <Route path="/home" element={<Navigate to={ROUTES.HOME} replace />} />

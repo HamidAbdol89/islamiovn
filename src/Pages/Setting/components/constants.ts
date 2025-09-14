@@ -4,7 +4,7 @@ import type { ThemeOption } from './types';
 export const THEME_OPTIONS: readonly ThemeOption[] = [
   { id: 'light', name: 'Sáng', icon: Sun },
   { id: 'dark', name: 'Tối', icon: Moon },
-  { id: 'islamic', name: 'Hồi giáo', icon: Globe }
+  { id: 'islamic', name: 'Mặc định', icon: Globe }
 ] as const;
 
 export const SHARE_DATA = {
@@ -18,6 +18,7 @@ export const MESSAGES = {
 } as const;
 
 export const SECTION_TITLES = {
+  ACCOUNT: 'Tài khoản',
   CUSTOMIZATION: 'Tùy chỉnh',
   SAVED: 'Đã lưu',
   GENERAL: 'Chung',
@@ -37,4 +38,18 @@ export const SETTING_LABELS = {
   EXPORT_PRAYER_TIMES: 'Xuất thời gian cầu nguyện',
   SHARE_APP: 'Chia sẻ ứng dụng',
   PRIVACY_POLICY: 'Chính sách quyền riêng tư',
+  GOOGLE_LOGIN: 'Đăng nhập Google',
+  ACCOUNT: 'Tài khoản',
+  LOGOUT: 'Đăng xuất',
+} as const;
+
+export const AUTH_MESSAGES = {
+  LOGIN_SUCCESS: 'Đăng nhập thành công!',
+  LOGIN_ERROR: 'Không thể đăng nhập. Vui lòng thử lại.',
+  LOGOUT_SUCCESS: 'Đã đăng xuất thành công!',
+  LOGOUT_ERROR: 'Không thể đăng xuất. Vui lòng thử lại.',
+  LOADING: 'Đang xử lý...',
+  WELCOME_BACK: 'Chào mừng trở lại',
+  NOT_SIGNED_IN: 'Chưa đăng nhập',
+  SIGN_IN_TO_SYNC: 'Đăng nhập để đồng bộ dữ liệu',
 } as const;

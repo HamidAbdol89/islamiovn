@@ -3,6 +3,7 @@ import SavedHadithsView from './components/SavedHadithsView';
 import SavedQuranView from './components/SavedQuranView';
 import {
   SettingHeader,
+  AccountSection,
   CustomizationSection,
   SavedItemsSection,
   GeneralSettingsSection,
@@ -35,6 +36,7 @@ const Setting: React.FC = () => {
   return (
     <div className="min-h-screen bg-background">
       <SettingHeader />
+      <AccountSection />
       <CustomizationSection />
       <SavedItemsSection 
         counts={savedItemCounts} 

@@ -1,4 +1,3 @@
-export { default as SavedHadithsView } from './SavedHadithsView';
 export { default as SettingHeader } from './SettingHeader';
 export { default as SettingSection } from './SettingSection';
 export { default as SettingItem } from './SettingItem';
@@ -7,7 +6,13 @@ export { default as CustomizationSection } from './CustomizationSection';
 export { default as SavedItemsSection } from './SavedItemsSection';
 export { default as GeneralSettingsSection } from './GeneralSettingsSection';
 export { default as OtherSettingsSection } from './OtherSettingsSection';
+export { default as SavedHadithsView } from './SavedHadithsView';
+export { default as SavedQuranView } from './SavedQuranView';
+export { default as AccountSection } from './AccountSection';
+export { default as GoogleLogin } from './GoogleLogin';
 
-// Types and hooks
-export type * from './types';
-export * from './hooks';
+// Hooks
+export { useSavedItemCounts } from './hooks/useSavedItemCounts';
+
+// Types
+export type { ViewType, SettingNavigationProps, GoogleUser, AuthContextType } from './types';

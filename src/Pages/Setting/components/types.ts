@@ -30,3 +30,29 @@ export interface SettingNavigationProps {
   readonly currentView: ViewType;
   readonly onViewChange: (view: ViewType) => void;
 }
+
+export interface GoogleUser {
+  readonly id: string;
+  readonly email: string;
+  readonly name: string;
+  readonly picture?: string;
+  readonly verified_email: boolean;
+}
+
+export interface AuthContextType {
+  readonly user: GoogleUser | null;
+  readonly isLoading: boolean;
+  readonly isAuthenticated: boolean;
+  readonly login: () => Promise<void>;
+  readonly logout: () => Promise<void>;
+  readonly error: string | null;
+  readonly setUser: (user: GoogleUser | null) => void;
+  readonly setError: (error: string | null) => void;
+  readonly exchangeCodeForToken: (code: string) => Promise<GoogleUser>;
+}
+
+export interface GoogleLoginButtonProps {
+  readonly onSuccess?: (user: GoogleUser) => void;
+  readonly onError?: (error: string) => void;
+  readonly disabled?: boolean;
+}
