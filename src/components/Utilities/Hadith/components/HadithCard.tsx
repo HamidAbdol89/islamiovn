@@ -22,9 +22,10 @@ const HadithCard = memo<HadithCardProps>(({ hadith, isFavorite, isBookmarked, on
       onClick={handleClick}
     >
       <CardHeader className="pb-2 sm:pb-3">
-        <CardTitle className="text-sm sm:text-base line-clamp-2 group-hover:text-primary transition-colors">
-          {hadith.title || VIETNAMESE_TEXT.CONTENT.NO_TITLE}
-        </CardTitle>
+      <CardTitle className="text-sm sm:text-base line-clamp-2 group-hover:text-primary transition-colors">
+  {(hadith.title || VIETNAMESE_TEXT.CONTENT.NO_TITLE)?.replace(/[{}]/g, "")}
+</CardTitle>
+
       </CardHeader>
       <CardContent className="space-y-3 sm:space-y-4">
         {previewText ? (

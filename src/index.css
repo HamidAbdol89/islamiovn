@@ -57,33 +57,43 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
-
   .islamic {
-    --background: 220 40% 10%;
-    --foreground: 0 0% 98%;
-    --card: 220 40% 15%;
+    --background: 210 30% 8%;       /* nền xanh-đen */
+    --foreground: 0 0% 98%;         /* text trắng */
+    
+    --card: 210 28% 12%;            /* card hơi sáng hơn nền */
     --card-foreground: 0 0% 98%;
-    --popover: 220 40% 15%;
+  
+    --popover: 210 28% 12%;
     --popover-foreground: 0 0% 98%;
-    --primary: 220 70% 35%;
+  
+    --primary: 210 80% 50%;         /* xanh dương tươi (giống nút Follow của X) */
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 30% 20%;
+  
+    --secondary: 210 25% 18%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 220 30% 20%;
-    --muted-foreground: 220 20% 70%;
-    --accent: 0 0% 14.9%;
+  
+    --muted: 210 25% 18%;
+    --muted-foreground: 210 15% 65%;
+  
+    --accent: 210 20% 14%;          /* accent hơi xám xanh */
     --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+  
+    --destructive: 0 62% 40%;
     --destructive-foreground: 0 0% 98%;
-    --border: 220 30% 25%;
-    --input: 220 30% 25%;
-    --ring: 220 70% 35%;
+  
+    --border: 210 25% 20%;
+    --input: 210 25% 20%;
+    --ring: 210 80% 50%;
+  
     --radius: 0.65rem;
-    --chart-1: 220 70% 35%;
-    --chart-2: 220 60% 45%;
-    --chart-3: 180 60% 45%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+  
+    /* chart colors */
+    --chart-1: 210 80% 50%;
+    --chart-2: 200 65% 45%;
+    --chart-3: 280 65% 55%;
+    --chart-4: 160 60% 45%;
+    --chart-5: 340 70% 55%;
   }
   
   .dark.islamic {

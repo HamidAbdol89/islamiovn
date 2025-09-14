@@ -24,13 +24,24 @@ const HadithDetailSheet = memo<HadithDetailSheetProps>(({
 }) => {
   return (
     <Sheet open={!!selectedHadith} onOpenChange={onClose}>
-      <SheetContent className="w-[95vw] sm:w-[540px] max-w-none p-4 sm:p-6 overflow-y-auto">
-        <SheetHeader className="pb-4">
+<SheetContent
+  side="right"
+  className="
+    w-screen h-screen max-w-none 
+    sm:w-[800px] md:w-[1024px] lg:w-[1280px] 
+    p-4 sm:p-6 overflow-y-auto
+  "
+>
+
+
+<SheetHeader className="pt-8 pb-4">
           <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
-              <SheetTitle className="text-lg sm:text-xl line-clamp-3 mb-2 pr-2">
-                {selectedHadith?.title}
-              </SheetTitle>
+            <SheetTitle className="text-lg sm:text-xl line-clamp-3 mb-2 pr-2 mt-2">
+  {selectedHadith?.title?.replace(/{/g, "")}
+</SheetTitle>
+
+
               {selectedHadith?.attribution && (
                 <SheetDescription className="text-sm sm:text-base">
                   {selectedHadith.attribution}
