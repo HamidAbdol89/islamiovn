@@ -1,21 +1,22 @@
 // src/context/ThemeContext.tsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'dark' | 'light';
+type Theme = 'dark' | 'light' | 'islamic';
 
 interface ThemeContextType {
   theme: Theme;
+  setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>(() => {
+  const [theme, setThemeState] = useState<Theme>(() => {
     // Khôi phục theme từ localStorage nếu có
-    const savedTheme = localStorage.getItem('prayer-dark-mode');
-    if (savedTheme) {
-      return savedTheme === 'true' ? 'dark' : 'light';
+    const savedTheme = localStorage.getItem('prayer-theme') as Theme;
+    if (savedTheme && ['dark', 'light', 'islamic'].includes(savedTheme)) {
+      return savedTheme;
     }
     
     // Kiểm tra system preference
@@ -26,20 +27,48 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return 'light';
   });
 
+  const setTheme = (newTheme: Theme) => {
+    setThemeState(newTheme);
+    localStorage.setItem('prayer-theme', newTheme);
+  };
+
   const toggleTheme = () => {
-    setTheme(prevTheme => {
-      const newTheme = prevTheme === 'dark' ? 'light' : 'dark';
-      localStorage.setItem('prayer-dark-mode', newTheme === 'dark' ? 'true' : 'false');
+    setThemeState(prevTheme => {
+      let newTheme: Theme;
+      switch (prevTheme) {
+        case 'light':
+          newTheme = 'dark';
+          break;
+        case 'dark':
+          newTheme = 'islamic';
+          break;
+        case 'islamic':
+          newTheme = 'light';
+          break;
+        default:
+          newTheme = 'light';
+      }
+      localStorage.setItem('prayer-theme', newTheme);
       return newTheme;
     });
   };
 
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark');
+    const root = document.documentElement;
+    
+    // Xóa tất cả các class theme cũ
+    root.classList.remove('light', 'dark', 'islamic');
+    
+    // Thêm class theme mới
+    if (theme === 'islamic') {
+      root.classList.add('islamic');
+    } else {
+      root.classList.add(theme);
+    }
   }, [theme]);
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );

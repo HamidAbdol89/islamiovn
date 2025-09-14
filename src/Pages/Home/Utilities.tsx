@@ -181,16 +181,17 @@ const Utilities: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 text-gray-900 dark:text-white">
-        <div className="flex items-center justify-between">
+      <div className="absolute bottom-0 left-0 right-0 p-4 text-foreground">
+      <div className="flex items-center justify-between">
           <div className="pb-2">
             <div className="flex items-center mb-1">
               <MapPin size={14} className="mr-1.5 text-primary" />
               <h3 className="font-semibold text-sm">Khám phá Masjid</h3>
             </div>
-            <p className="text-xs text-gray-800/90 dark:text-white/80">
-              Thánh đường Hồi giáo tại VN
-            </p>
+            <p className="text-xs text-foreground">
+  Thánh đường Hồi giáo tại VN
+</p>
+
           </div>
 
           <Button

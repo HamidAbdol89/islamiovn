@@ -1,8 +1,8 @@
 import React from 'react';
 import { useTheme } from '@/context/ThemeContext';
-import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { 
   Moon, 
+  Sun,
   Globe, 
   MapPin, 
   Calendar,
@@ -11,15 +11,21 @@ import {
   Cloud,
   Download,
   Shield,
-  ChevronRight
+  ChevronRight,
+  Check
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 
 const Setting: React.FC = () => {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
+
+  const themeOptions = [
+    { id: 'light', name: 'Sáng', icon: Sun },
+    { id: 'dark', name: 'Tối', icon: Moon },
+    { id: 'islamic', name: 'Hồi giáo', icon: Globe }
+  ];
 
   return (
     <div className="min-h-screen p-4 bg-background text-foreground">
@@ -33,17 +39,34 @@ const Setting: React.FC = () => {
           <CardTitle className="text-lg">Tùy chỉnh</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 p-0">
-          <Button
-            variant="ghost"
-            className="w-full flex justify-between items-center p-4 rounded-lg"
-            onClick={toggleTheme}
-          >
-            <div className="flex items-center">
+          <div className="p-4">
+            <div className="flex items-center mb-3">
               <Moon className="mr-3 w-5 h-5" />
               <span>Chủ đề</span>
             </div>
-            <ThemeToggle theme={theme} onToggle={toggleTheme} />
-          </Button>
+            <div className="grid grid-cols-3 gap-2">
+              {themeOptions.map((option) => {
+                const IconComponent = option.icon;
+                return (
+                  <button
+                    key={option.id}
+                    onClick={() => setTheme(option.id as any)}
+                    className={`flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all ${
+                      theme === option.id
+                        ? 'border-primary bg-primary/10'
+                        : 'border-muted hover:border-primary/50'
+                    }`}
+                  >
+                    <IconComponent className="w-5 h-5 mb-1" />
+                    <span className="text-xs">{option.name}</span>
+                    {theme === option.id && (
+                      <Check className="w-4 h-4 text-primary absolute top-1 right-1" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
           <Separator />
           <Button
             variant="ghost"
@@ -93,7 +116,9 @@ const Setting: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">thông báo</span>
-              <Switch defaultChecked />
+              <div className="relative inline-flex w-12 h-6 rounded-full bg-muted transition-colors">
+                <span className="inline-block w-5 h-5 transform rounded-full bg-white shadow-md transition-transform translate-x-0.5" />
+              </div>
             </div>
           </div>
           <Separator />
