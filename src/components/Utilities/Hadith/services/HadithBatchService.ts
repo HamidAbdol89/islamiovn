@@ -1,4 +1,4 @@
-import type { HadithSummary, ApiResponse, Category } from '../types';
+import type { HadithSummary, ApiResponse } from '../types';
 import { API_BASE } from '../constants';
 
 interface BatchProgress {
