@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback, memo } from 'react';
 
 import prayerIcon from '@/assets/icon/prayer.png';
 import compassIcon from '@/assets/icon/compass.png';
-import bookIcon from '@/assets/icon/book.png';
+import bookIcon from '@/assets/icon/quran.png';
 import buildingIcon from '@/assets/icon/building.png';
 import tasbihIcon from '@/assets/icon/tasbih.png';
 import doaIcon from '@/assets/icon/doa.png';
@@ -34,7 +34,6 @@ type UtilityId =
 interface UtilityItem {
   id: UtilityId;
   label: string;
-  gradient: string;
   iconUrl: string;
   route: string;
   isAvailable: boolean; 
@@ -78,7 +77,6 @@ const UtilityButton = memo<{
   const buttonClasses = useMemo(() => cn(
     "group relative flex flex-col items-center w-full h-auto p-1.5 rounded-lg",
     "transition-all duration-150 ease-out",
-    "focus:outline-none focus:ring-2 focus:ring-primary",
     isPressed ? 'scale-95 opacity-80' : '',
     isDisabled && 'cursor-not-allowed opacity-50',
     isActive && 'bg-primary/10'
@@ -90,13 +88,13 @@ const UtilityButton = memo<{
     isActive && 'ring-2 ring-primary/50',
     isDisabled 
       ? 'bg-muted' 
-      : `bg-gradient-to-br ${utility.gradient}`
-  ), [isActive, isDisabled, utility.gradient]);
+      : 'bg-transparent'
+  ), [isActive, isDisabled, utility]);
   
   
 
   const iconClasses = useMemo(() => cn(
-    "w-5 h-5 object-contain transition-transform duration-150",
+    "w-8 h-8 object-contain transition-transform duration-150",
     isDisabled && 'grayscale opacity-70'
   ), [isDisabled]);
 
@@ -193,7 +191,6 @@ const UTILITIES_DATA: UtilityItem[] = [
   {
     id: 'prayers',
     label: 'Cầu Nguyện',
-    gradient: 'from-primary/80 to-primary',
     iconUrl: prayerIcon,
     route: '/utilities/prayers',
     isAvailable: true,
@@ -203,7 +200,6 @@ const UTILITIES_DATA: UtilityItem[] = [
   {
     id: 'qiblah',
     label: 'Qiblah',
-    gradient: 'from-purple-400 to-indigo-600',
     iconUrl: compassIcon,
     route: '/utilities/qiblah',
     isAvailable: true,
@@ -213,7 +209,6 @@ const UTILITIES_DATA: UtilityItem[] = [
   {
     id: 'calendar',
     label: 'Lịch Hijri',
-    gradient: 'from-orange-400 to-red-500',
     iconUrl: scheduleIcon,
     route: '/utilities/calendar',
     isAvailable: true,
@@ -223,7 +218,6 @@ const UTILITIES_DATA: UtilityItem[] = [
   {
     id: 'quranreader',
     label: 'Kinh Qur\'an',
-    gradient: 'from-cyan-400 to-blue-600',
     iconUrl: bookIcon,
     route: '/utilities/quranreader',
     isAvailable: true,
@@ -233,7 +227,6 @@ const UTILITIES_DATA: UtilityItem[] = [
   {
     id: 'masjid',
     label: 'Masjid',
-    gradient: 'from-rose-400 to-red-600',
     iconUrl: buildingIcon,
     route: '/utilities/masjid',
     isAvailable: true,
@@ -243,7 +236,6 @@ const UTILITIES_DATA: UtilityItem[] = [
   {
     id: 'tasbih',
     label: 'Tasbih',
-    gradient: 'from-yellow-400 to-orange-600',
     iconUrl: tasbihIcon,
     route: '/utilities/tasbih',
     isAvailable: true,
@@ -253,7 +245,6 @@ const UTILITIES_DATA: UtilityItem[] = [
   {
     id: 'dua',
     label: 'Dua',
-    gradient: 'from-violet-400 to-fuchsia-600',
     iconUrl: doaIcon,
     route: '/utilities/dua',
     isAvailable: true,
@@ -263,7 +254,6 @@ const UTILITIES_DATA: UtilityItem[] = [
   {
     id: 'hadith',
     label: 'Hadith',
-    gradient: 'from-blue-400 to-purple-600',
     iconUrl: hadihIcon,
     route: '/utilities/hadith',
     isAvailable: true,
@@ -273,7 +263,6 @@ const UTILITIES_DATA: UtilityItem[] = [
   {
     id: 'nameallah',
     label: '99 Tên Allah',
-    gradient: 'from-emerald-400 to-cyan-600',
     iconUrl: nameIcon,
     route: '/utilities/nameallah',
     isAvailable: true,
@@ -283,7 +272,6 @@ const UTILITIES_DATA: UtilityItem[] = [
   {
     id: 'podcast',
     label: 'Podcast',
-    gradient: 'from-sky-400 to-indigo-600',
     iconUrl: podcastIcon,
     route: '/utilities/podcast',
     isAvailable: true,
@@ -293,7 +281,6 @@ const UTILITIES_DATA: UtilityItem[] = [
   {
     id: 'study',
     label: 'Học Tập',
-    gradient: 'from-pink-400 to-red-600',
     iconUrl: studyIcon,
     route: '/utilities/study',
     isAvailable: false,
@@ -303,7 +290,6 @@ const UTILITIES_DATA: UtilityItem[] = [
   {
     id: 'zakat',
     label: 'Zakat',
-    gradient: 'from-lime-400 to-emerald-600',
     iconUrl: zakatIcon,
     route: '/utilities/zakat',
     isAvailable: true,
