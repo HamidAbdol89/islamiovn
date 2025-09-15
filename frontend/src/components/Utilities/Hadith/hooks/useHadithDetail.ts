@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { hadithApi } from '../api';
+import { hadithApi } from '@/components/Utilities/Hadith/api';
 import { QUERY_KEYS, CACHE_CONFIG } from '../constants';
 
 export const useHadithDetail = (hadithId: number | null) => {

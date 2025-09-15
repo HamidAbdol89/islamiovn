@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Heart, Bookmark, ChevronRight } from 'lucide-react';
 import type { HadithCardProps } from '../types';
-import { VIETNAMESE_TEXT } from '../constants';
+import { VIETNAMESE_TEXT } from '@/components/Utilities/Hadith/constants';
 
 const HadithCard = memo<HadithCardProps>(({ 
   hadith, 
