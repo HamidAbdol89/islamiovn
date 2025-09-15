@@ -14,21 +14,47 @@ const allowedOrigins = [
   'https://muslimviet.vercel.app'
 ];
 
+// Configure CORS with proper preflight handling
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log('CORS blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'X-Requested-With',
+    'Accept',
+    'Origin',
+    'Access-Control-Request-Method',
+    'Access-Control-Request-Headers'
+  ],
+  exposedHeaders: ['Authorization'],
+  optionsSuccessStatus: 200, // Some legacy browsers choke on 204
+  preflightContinue: false
+};
+
+app.use(cors(corsOptions));
+
+// CORS debugging middleware
 app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Vary', 'Origin');
-  }
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
-  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  console.log('CORS Debug:', {
+    method: req.method,
+    origin: req.headers.origin,
+    path: req.path,
+    headers: req.headers
+  });
   next();
 });
-
-
-
 
 // Security middleware
 app.use(helmet());
