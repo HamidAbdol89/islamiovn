@@ -7,11 +7,6 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': 'http://localhost:8080', 
-      '/api/hadith': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/hadith/, '/api/hadith'),
-      },
     },
   },
   plugins: [
