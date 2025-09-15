@@ -45,11 +45,14 @@ class ApiService {
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    retryCount = 0
   ): Promise<T> {
+    const maxRetries = 3;
+    const retryDelay = 1000 * (retryCount + 1); // Exponential backoff: 1s, 2s, 3s
     const url = `${this.baseURL}${endpoint}`;
     
-    console.log('BackendAPI: Making request to:', url);
+    console.log('BackendAPI: Making request to:', url, `(attempt ${retryCount + 1}/${maxRetries + 1})`);
     console.log('BackendAPI: Token exists:', !!this.token);
     
     const headers: Record<string, string> = {
@@ -77,6 +80,14 @@ class ApiService {
           this.clearToken();
           throw new Error('Authentication required');
         }
+        
+        // Retry on rate limiting (429) or server errors (5xx)
+        if ((response.status === 429 || response.status >= 500) && retryCount < maxRetries) {
+          console.log(`BackendAPI: Rate limited or server error, retrying in ${retryDelay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, retryDelay));
+          return this.request<T>(endpoint, options, retryCount + 1);
+        }
+        
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 

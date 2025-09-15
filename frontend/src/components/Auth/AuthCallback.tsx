@@ -1,19 +1,22 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/context/AuthContext';
 import { AUTH_MESSAGES } from '@/Pages/Setting/components/constants';
 import apiService from '@/services/backendApi';
-import { hybridFavoriteService } from '@/services/hybridFavoriteService';
-import { hybridBookmarkService } from '@/services/hybridBookmarkService';
+// Removed hybrid services - no longer needed
 
 const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, setUser, setError, exchangeCodeForToken } = useAuth();
+  const hasProcessed = useRef(false);
 
   useEffect(() => {
+    // Prevent multiple executions
+    if (hasProcessed.current) return;
+    hasProcessed.current = true;
     const processCallback = async () => {
       try {
         // Check if we have OAuth code in URL params
@@ -81,19 +84,6 @@ const AuthCallback: React.FC = () => {
               
               setUser(response.user);
               
-              // Sync local data to backend
-              try {
-                console.log('AuthCallback: Syncing local data to backend...');
-                await Promise.all([
-                  hybridFavoriteService.syncLocalToBackend(true),
-                  hybridBookmarkService.syncLocalToBackend(true)
-                ]);
-                console.log('AuthCallback: Local data synced to backend successfully');
-              } catch (syncError) {
-                console.error('AuthCallback: Failed to sync local data to backend:', syncError);
-                // Don't show error to user, just log it
-              }
-              
               toast.success(AUTH_MESSAGES.LOGIN_SUCCESS);
               
               // Clean up Google token
@@ -133,7 +123,7 @@ const AuthCallback: React.FC = () => {
     };
 
     processCallback();
-  }, [navigate, setUser, setError]);
+  }, []); // Empty dependency array - only run once
 
   return (
     <motion.div 

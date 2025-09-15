@@ -21,8 +21,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from 'sonner';
-import { hybridBookmarkService } from '@/services/hybridBookmarkService';
-import { hybridFavoriteService } from '@/services/hybridFavoriteService';
+import { useSimpleBookmarkService } from '@/services/simpleBookmarkService';
+import { useSimpleFavoriteService } from '@/services/simpleFavoriteService';
 import { hadithApi } from '@/components/Utilities/Hadith/api';
 import type { HadithDetail } from '@/components/Utilities/Hadith/types';
 import { useAuth } from '@/context/AuthContext';
@@ -38,20 +38,26 @@ const SavedHadithsView = memo<SavedHadithsViewProps>(({ onBack }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedHadith, setSelectedHadith] = useState<HadithDetail | null>(null);
   const { isAuthenticated } = useAuth();
+  
+  // Use simple services
+  const favoriteService = useSimpleFavoriteService();
+  const bookmarkService = useSimpleBookmarkService();
 
-  // Get saved data (local or backend based on auth status)
+  // Get saved data (only for authenticated users)
   const { data: favorites = [], isLoading: loadingFavorites, error: favoritesError } = useQuery({
     queryKey: ['hadith-favorites', isAuthenticated],
-    queryFn: () => hybridFavoriteService.getFavorites(isAuthenticated, 'hadith'),
+    queryFn: () => favoriteService.getFavorites('hadith'),
     retry: 1,
     retryDelay: 1000,
+    enabled: isAuthenticated,
   });
 
   const { data: bookmarks = [], isLoading: loadingBookmarks, error: bookmarksError } = useQuery({
     queryKey: ['hadith-bookmarks', isAuthenticated],
-    queryFn: () => hybridBookmarkService.getBookmarks(isAuthenticated, 'hadith'),
+    queryFn: () => bookmarkService.getBookmarks('hadith'),
     retry: 1,
     retryDelay: 1000,
+    enabled: isAuthenticated,
   });
 
   const currentData = viewType === 'favorites' ? favorites : bookmarks;
@@ -118,6 +124,11 @@ const SavedHadithsView = memo<SavedHadithsViewProps>(({ onBack }) => {
   }, []);
 
   const toggleFavorite = useCallback(async (hadithId: number) => {
+    if (!isAuthenticated) {
+      toast.error('Vui lòng đăng nhập để sử dụng chức năng yêu thích');
+      return;
+    }
+    
     try {
       const hadith = savedHadiths?.find(h => h.id === hadithId);
       if (!hadith) return;
@@ -133,17 +144,26 @@ const SavedHadithsView = memo<SavedHadithsViewProps>(({ onBack }) => {
         }
       };
 
-  await hybridFavoriteService.toggleFavorite(isAuthenticated, hadithData);
+      await favoriteService.toggleFavorite(hadithData);
       
       // Refetch data
       window.location.reload(); // Simple refresh for now
     } catch (error) {
       console.error('Failed to toggle favorite:', error);
-      toast.error('Không thể cập nhật yêu thích');
+      if (error instanceof Error && error.message.includes('đăng nhập')) {
+        toast.error(error.message);
+      } else {
+        toast.error('Không thể cập nhật yêu thích');
+      }
     }
-  }, [savedHadiths]);
+  }, [savedHadiths, isAuthenticated]);
 
   const toggleBookmark = useCallback(async (hadithId: number) => {
+    if (!isAuthenticated) {
+      toast.error('Vui lòng đăng nhập để sử dụng chức năng đánh dấu');
+      return;
+    }
+    
     try {
       const hadith = savedHadiths?.find(h => h.id === hadithId);
       if (!hadith) return;
@@ -159,15 +179,19 @@ const SavedHadithsView = memo<SavedHadithsViewProps>(({ onBack }) => {
         }
       };
 
-      await hybridBookmarkService.toggleBookmark(isAuthenticated, hadithData);
+      await bookmarkService.toggleBookmark(hadithData);
       
       // Refetch data
       window.location.reload(); // Simple refresh for now
     } catch (error) {
       console.error('Failed to toggle bookmark:', error);
-      toast.error('Không thể cập nhật đánh dấu');
+      if (error instanceof Error && error.message.includes('đăng nhập')) {
+        toast.error(error.message);
+      } else {
+        toast.error('Không thể cập nhật đánh dấu');
+      }
     }
-  }, [savedHadiths]);
+  }, [savedHadiths, isAuthenticated]);
 
   const HadithCard = memo(({ hadith }: { hadith: HadithDetail }) => (
     <Card className="hover:shadow-md transition-shadow cursor-pointer">
@@ -321,7 +345,20 @@ const SavedHadithsView = memo<SavedHadithsViewProps>(({ onBack }) => {
         </div>
 
         {/* Content */}
-        {(loadingFavorites || loadingBookmarks || isLoading) ? (
+        {!isAuthenticated ? (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
+              <Heart className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-medium mb-2">Vui lòng đăng nhập</h3>
+            <p className="text-muted-foreground mb-4">
+              Bạn cần đăng nhập để xem các hadith đã lưu
+            </p>
+            <Button onClick={() => window.location.href = '/setting'}>
+              Đăng nhập ngay
+            </Button>
+          </div>
+        ) : (loadingFavorites || loadingBookmarks || isLoading) ? (
           <div className="space-y-4">
             {Array.from({ length: 3 }).map((_, i) => (
               <Card key={i}>

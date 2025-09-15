@@ -3,8 +3,7 @@ import { toast } from 'react-hot-toast';
 import type { AuthContextType, GoogleUser } from '@/Pages/Setting/components/types';
 import { AUTH_MESSAGES } from '@/Pages/Setting/components/constants';
 import apiService from '@/services/backendApi';
-import { hybridFavoriteService } from '@/services/hybridFavoriteService';
-import { hybridBookmarkService } from '@/services/hybridBookmarkService';
+// Removed hybrid services - no longer needed
 
 // Extend window interface for queryClient
 declare global {
@@ -148,19 +147,6 @@ export const AuthProvider = React.memo<AuthProviderProps>(({ children }) => {
         window.queryClient.invalidateQueries(['hadith-favorites-count']);
         window.queryClient.invalidateQueries(['hadith-bookmarks-count']);
         console.log('React Query cache cleared');
-      }
-      
-      // Sync local data to backend
-      try {
-        console.log('Syncing local data to backend...');
-        await Promise.all([
-          hybridFavoriteService.syncLocalToBackend(true),
-          hybridBookmarkService.syncLocalToBackend(true)
-        ]);
-        console.log('Local data synced to backend successfully');
-      } catch (syncError) {
-        console.error('Failed to sync local data to backend:', syncError);
-        // Don't show error to user, just log it
       }
       
       toast.success(AUTH_MESSAGES.LOGIN_SUCCESS);

@@ -3,8 +3,8 @@ import { useQueryClient } from '@tanstack/react-query';
 
 // Internal imports
 import { useCategories, useHadithDetail, useBatchHadiths } from './hooks';
-import { hybridBookmarkService } from '@/services/hybridBookmarkService';
-import { hybridFavoriteService } from '@/services/hybridFavoriteService';
+import { useSimpleBookmarkService } from '@/services/simpleBookmarkService';
+import { useSimpleFavoriteService } from '@/services/simpleFavoriteService';
 import { useAuth } from '@/context/AuthContext';
 import {
   LoadingSkeleton,
@@ -26,6 +26,10 @@ const HadithApp = memo(() => {
   const [favorites, setFavorites] = useState<number[]>([]);
   const [bookmarks, setBookmarks] = useState<number[]>([]);
   const [loadingBookmarks, setLoadingBookmarks] = useState(false);
+  
+  // Use simple services
+  const favoriteService = useSimpleFavoriteService();
+  const bookmarkService = useSimpleBookmarkService();
   // React Query hooks
   const { data: categories, isLoading: categoriesLoading, error: categoriesError } = useCategories();
   const { data: selectedHadith, isLoading: hadithDetailLoading } = useHadithDetail(selectedHadithId);
@@ -46,33 +50,42 @@ const HadithApp = memo(() => {
     }
   }, [selectedCategory, loadAllHadiths]);
 
-  // Load bookmarks and favorites (local or backend based on auth status)
+  // Load bookmarks and favorites (only for authenticated users)
   useEffect(() => {
     const loadBookmarks = async () => {
+      if (!isAuthenticated) {
+        setFavorites([]);
+        setBookmarks([]);
+        return;
+      }
+      
       setLoadingBookmarks(true);
       try {
         const [favoritesData, bookmarksData] = await Promise.all([
-          hybridFavoriteService.getFavorites(isAuthenticated, 'hadith'),
-          hybridBookmarkService.getBookmarks(isAuthenticated, 'hadith')
+          favoriteService.getFavorites('hadith'),
+          bookmarkService.getBookmarks('hadith')
         ]);
-        
         
         const favoriteIds = favoritesData.map(f => parseInt(f.itemId));
         const bookmarkIds = bookmarksData.map(b => parseInt(b.itemId));
         
+        console.log('🔴 Favorites loaded:', favoriteIds);
+        console.log('🔵 Bookmarks loaded:', bookmarkIds);
         
         setFavorites(favoriteIds);
         setBookmarks(bookmarkIds);
-        
       } catch (error) {
         console.error('Failed to load bookmarks:', error);
+        // Set empty arrays on error to avoid showing stale data
+        setFavorites([]);
+        setBookmarks([]);
       } finally {
         setLoadingBookmarks(false);
       }
     };
 
     loadBookmarks();
-  }, [isAuthenticated]);
+  }, [isAuthenticated]); // Only depend on isAuthenticated
 
   // Pagination for displaying hadiths
   const HADITHS_PER_PAGE = 20;
@@ -105,6 +118,14 @@ const HadithApp = memo(() => {
   }, []);
 
   const toggleFavorite = useCallback(async (hadithId: number) => {
+    console.log('🔴 Toggle favorite called for hadith:', hadithId);
+    
+    if (!isAuthenticated) {
+      // Show login message
+      alert('Vui lòng đăng nhập để sử dụng chức năng yêu thích');
+      return;
+    }
+    
     try {
       // Try to find hadith from allHadiths first, then from selectedHadith
       let hadith = allHadiths.find(h => h.id === hadithId);
@@ -128,22 +149,35 @@ const HadithApp = memo(() => {
         }
       };
 
-      const result = await hybridFavoriteService.toggleFavorite(isAuthenticated, hadithData);
+      const result = await favoriteService.toggleFavorite(hadithData);
+      console.log('🔴 Toggle favorite result:', result);
       
+      // Update local state based on result
       const isNowFavorited = result?.isFavorited || false;
+      console.log('🔴 Is now favorited:', isNowFavorited);
       
       setFavorites(prev => {
         const newFavorites = isNowFavorited 
           ? [...prev, hadithId]
           : prev.filter(id => id !== hadithId);
+        console.log('🔴 New favorites state:', newFavorites);
         return newFavorites;
       });
     } catch (error) {
       console.error('Failed to toggle favorite:', error);
+      if (error instanceof Error && error.message.includes('đăng nhập')) {
+        alert(error.message);
+      }
     }
   }, [allHadiths, selectedCategory, selectedHadith, isAuthenticated]);
 
   const toggleBookmark = useCallback(async (hadithId: number) => {
+    if (!isAuthenticated) {
+      // Show login message
+      alert('Vui lòng đăng nhập để sử dụng chức năng đánh dấu');
+      return;
+    }
+    
     try {
       // Try to find hadith from allHadiths first, then from selectedHadith
       let hadith = allHadiths.find(h => h.id === hadithId);
@@ -167,9 +201,9 @@ const HadithApp = memo(() => {
         }
       };
 
-      const isNowBookmarked = await hybridBookmarkService.toggleBookmark(isAuthenticated, hadithData);
+      const isNowBookmarked = await bookmarkService.toggleBookmark(hadithData);
       
-      
+      // Update local state based on result
       setBookmarks(prev => {
         const newBookmarks = isNowBookmarked 
           ? [...prev, hadithId]
@@ -178,6 +212,9 @@ const HadithApp = memo(() => {
       });
     } catch (error) {
       console.error('Failed to toggle bookmark:', error);
+      if (error instanceof Error && error.message.includes('đăng nhập')) {
+        alert(error.message);
+      }
     }
   }, [allHadiths, selectedCategory, selectedHadith, isAuthenticated]);
 

@@ -147,6 +147,7 @@ favorites.includes(selectedHadith.id)
                           : 'text-muted-foreground'
                       }`} 
                     />
+                   
                   </Button>
                   <Button
                     variant="ghost"
@@ -163,6 +164,7 @@ bookmarks.includes(selectedHadith.id)
                           : 'text-muted-foreground'
                       }`} 
                     />
+                  
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
