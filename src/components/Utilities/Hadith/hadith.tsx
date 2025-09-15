@@ -3,7 +3,9 @@ import { useQueryClient } from '@tanstack/react-query';
 
 // Internal imports
 import { useCategories, useHadithDetail, useBatchHadiths } from './hooks';
-import { storageUtils } from './utils';
+import { hybridBookmarkService } from '@/services/hybridBookmarkService';
+import { hybridFavoriteService } from '@/services/hybridFavoriteService';
+import { useAuth } from '@/context/AuthContext';
 import {
   LoadingSkeleton,
   CategoryCard,
@@ -17,11 +19,13 @@ import type { Category, HadithSummary } from './types';
 
 const HadithApp = memo(() => {
   const queryClient = useQueryClient();
+  const { isAuthenticated } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedHadithId, setSelectedHadithId] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [favorites, setFavorites] = useState<number[]>(() => storageUtils.getFavorites());
-  const [bookmarks, setBookmarks] = useState<number[]>(() => storageUtils.getBookmarks());
+  const [favorites, setFavorites] = useState<number[]>([]);
+  const [bookmarks, setBookmarks] = useState<number[]>([]);
+  const [loadingBookmarks, setLoadingBookmarks] = useState(false);
   // React Query hooks
   const { data: categories, isLoading: categoriesLoading, error: categoriesError } = useCategories();
   const { data: selectedHadith, isLoading: hadithDetailLoading } = useHadithDetail(selectedHadithId);
@@ -41,6 +45,34 @@ const HadithApp = memo(() => {
       loadAllHadiths(selectedCategory.id);
     }
   }, [selectedCategory, loadAllHadiths]);
+
+  // Load bookmarks and favorites (local or backend based on auth status)
+  useEffect(() => {
+    const loadBookmarks = async () => {
+      setLoadingBookmarks(true);
+      try {
+        const [favoritesData, bookmarksData] = await Promise.all([
+          hybridFavoriteService.getFavorites(isAuthenticated, 'hadith'),
+          hybridBookmarkService.getBookmarks(isAuthenticated, 'hadith')
+        ]);
+        
+        
+        const favoriteIds = favoritesData.map(f => parseInt(f.itemId));
+        const bookmarkIds = bookmarksData.map(b => parseInt(b.itemId));
+        
+        
+        setFavorites(favoriteIds);
+        setBookmarks(bookmarkIds);
+        
+      } catch (error) {
+        console.error('Failed to load bookmarks:', error);
+      } finally {
+        setLoadingBookmarks(false);
+      }
+    };
+
+    loadBookmarks();
+  }, [isAuthenticated]);
 
   // Pagination for displaying hadiths
   const HADITHS_PER_PAGE = 20;
@@ -72,25 +104,82 @@ const HadithApp = memo(() => {
     setCurrentPage(page);
   }, []);
 
-  const toggleFavorite = useCallback((hadithId: number) => {
-    setFavorites(prev => {
-      const newFavorites = prev.includes(hadithId)
-        ? prev.filter(id => id !== hadithId)
-        : [...prev, hadithId];
-      storageUtils.setFavorites(newFavorites);
-      return newFavorites;
-    });
-  }, []);
+  const toggleFavorite = useCallback(async (hadithId: number) => {
+    try {
+      // Try to find hadith from allHadiths first, then from selectedHadith
+      let hadith = allHadiths.find(h => h.id === hadithId);
+      if (!hadith && selectedHadith && selectedHadith.id === hadithId) {
+        hadith = selectedHadith;
+      }
+      
+      if (!hadith) {
+        console.error('Hadith not found for ID:', hadithId);
+        return;
+      }
 
-  const toggleBookmark = useCallback((hadithId: number) => {
-    setBookmarks(prev => {
-      const newBookmarks = prev.includes(hadithId)
-        ? prev.filter(id => id !== hadithId)
-        : [...prev, hadithId];
-      storageUtils.setBookmarks(newBookmarks);
-      return newBookmarks;
-    });
-  }, []);
+      const hadithData = {
+        type: 'hadith' as const,
+        itemId: hadithId.toString(),
+        title: hadith.title || `Hadith ${hadithId}`,
+        content: hadith.hadeeth || hadith.title || `Hadith ${hadithId}`,
+        metadata: {
+          category: selectedCategory?.title || 'Unknown',
+          hadithNumber: hadithId.toString()
+        }
+      };
+
+      const result = await hybridFavoriteService.toggleFavorite(isAuthenticated, hadithData);
+      
+      const isNowFavorited = result?.isFavorited || false;
+      
+      setFavorites(prev => {
+        const newFavorites = isNowFavorited 
+          ? [...prev, hadithId]
+          : prev.filter(id => id !== hadithId);
+        return newFavorites;
+      });
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error);
+    }
+  }, [allHadiths, selectedCategory, selectedHadith, isAuthenticated]);
+
+  const toggleBookmark = useCallback(async (hadithId: number) => {
+    try {
+      // Try to find hadith from allHadiths first, then from selectedHadith
+      let hadith = allHadiths.find(h => h.id === hadithId);
+      if (!hadith && selectedHadith && selectedHadith.id === hadithId) {
+        hadith = selectedHadith;
+      }
+      
+      if (!hadith) {
+        console.error('Hadith not found for ID:', hadithId);
+        return;
+      }
+
+      const hadithData = {
+        type: 'hadith' as const,
+        itemId: hadithId.toString(),
+        title: hadith.title || `Hadith ${hadithId}`,
+        content: hadith.hadeeth || hadith.title || `Hadith ${hadithId}`,
+        category: selectedCategory?.title || 'Unknown',
+        metadata: {
+          hadithNumber: hadithId.toString()
+        }
+      };
+
+      const isNowBookmarked = await hybridBookmarkService.toggleBookmark(isAuthenticated, hadithData);
+      
+      
+      setBookmarks(prev => {
+        const newBookmarks = isNowBookmarked 
+          ? [...prev, hadithId]
+          : prev.filter(id => id !== hadithId);
+        return newBookmarks;
+      });
+    } catch (error) {
+      console.error('Failed to toggle bookmark:', error);
+    }
+  }, [allHadiths, selectedCategory, selectedHadith, isAuthenticated]);
 
   const goBack = useCallback(() => {
     if (selectedHadithId) {
@@ -162,6 +251,8 @@ const HadithApp = memo(() => {
                   hadith={hadith}
                   isFavorite={favorites.includes(hadith.id)}
                   isBookmarked={bookmarks.includes(hadith.id)}
+                  isAuthenticated={isAuthenticated}
+                  loadingBookmarks={loadingBookmarks}
                   onClick={handleHadithSelect}
                 />
               ))}
@@ -187,10 +278,13 @@ const HadithApp = memo(() => {
       </div>
 
       <HadithDetailSheet 
+        key={`${selectedHadith?.id}-${favorites.length}-${bookmarks.length}`}
         selectedHadith={selectedHadith || null}
         isLoading={hadithDetailLoading}
         favorites={favorites}
         bookmarks={bookmarks}
+        isAuthenticated={isAuthenticated}
+        loadingBookmarks={loadingBookmarks}
         onClose={() => setSelectedHadithId(null)}
         onToggleFavorite={toggleFavorite}
         onToggleBookmark={toggleBookmark}

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Data Sync</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Test Data Sync</h1>
+    
+    <div class="test-section">
+        <h3>1. Test Local Storage</h3>
+        <button onclick="testLocalStorage()">Test Local Storage</button>
+        <div id="localStorageResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. Test Bookmark Service</h3>
+        <button onclick="testBookmarkService()">Test Bookmark Service</button>
+        <div id="bookmarkResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. Test Favorite Service</h3>
+        <button onclick="testFavoriteService()">Test Favorite Service</button>
+        <div id="favoriteResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>4. Clear All Data</h3>
+        <button onclick="clearAllData()">Clear All Data</button>
+        <div id="clearResult"></div>
+    </div>
+
+    <script>
+        // Mock services for testing
+        class MockHybridBookmarkService {
+            constructor() {
+                this.STORAGE_KEY = 'muslimviet_bookmarks';
+            }
+            
+            getLocalBookmarks() {
+                try {
+                    const stored = localStorage.getItem(this.STORAGE_KEY);
+                    return stored ? JSON.parse(stored) : [];
+                } catch (error) {
+                    console.error('Failed to get local bookmarks:', error);
+                    return [];
+                }
+            }
+            
+            saveLocalBookmarks(bookmarks) {
+                try {
+                    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(bookmarks));
+                } catch (error) {
+                    console.error('Failed to save local bookmarks:', error);
+                }
+            }
+            
+            addBookmark(bookmarkData) {
+                const newBookmark = {
+                    id: `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                    ...bookmarkData,
+                    createdAt: new Date().toISOString()
+                };
+                
+                const localBookmarks = this.getLocalBookmarks();
+                localBookmarks.push(newBookmark);
+                this.saveLocalBookmarks(localBookmarks);
+                return newBookmark;
+            }
+            
+            syncLocalToBackend(isAuthenticated) {
+                if (!isAuthenticated) {
+                    return Promise.resolve();
+                }
+                
+                const localBookmarks = this.getLocalBookmarks();
+                console.log(`Syncing ${localBookmarks.length} local bookmarks to backend...`);
+                
+                // Simulate backend sync
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        this.saveLocalBookmarks([]);
+                        console.log('Local bookmarks synced to backend successfully');
+                        resolve();
+                    }, 1000);
+                });
+            }
+        }
+        
+        class MockHybridFavoriteService {
+            constructor() {
+                this.STORAGE_KEY = 'muslimviet_favorites';
+            }
+            
+            getLocalFavorites() {
+                try {
+                    const stored = localStorage.getItem(this.STORAGE_KEY);
+                    return stored ? JSON.parse(stored) : [];
+                } catch (error) {
+                    console.error('Failed to get local favorites:', error);
+                    return [];
+                }
+            }
+            
+            saveLocalFavorites(favorites) {
+                try {
+                    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(favorites));
+                } catch (error) {
+                    console.error('Failed to save local favorites:', error);
+                }
+            }
+            
+            addFavorite(favoriteData) {
+                const newFavorite = {
+                    id: `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                    ...favoriteData,
+                    createdAt: new Date().toISOString()
+                };
+                
+                const localFavorites = this.getLocalFavorites();
+                localFavorites.push(newFavorite);
+                this.saveLocalFavorites(localFavorites);
+                return newFavorite;
+            }
+            
+            syncLocalToBackend(isAuthenticated) {
+                if (!isAuthenticated) {
+                    return Promise.resolve();
+                }
+                
+                const localFavorites = this.getLocalFavorites();
+                console.log(`Syncing ${localFavorites.length} local favorites to backend...`);
+                
+                // Simulate backend sync
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        this.saveLocalFavorites([]);
+                        console.log('Local favorites synced to backend successfully');
+                        resolve();
+                    }, 1000);
+                });
+            }
+        }
+        
+        const bookmarkService = new MockHybridBookmarkService();
+        const favoriteService = new MockHybridFavoriteService();
+        
+        function testLocalStorage() {
+            const result = document.getElementById('localStorageResult');
+            try {
+                const bookmarks = bookmarkService.getLocalBookmarks();
+                const favorites = favoriteService.getLocalFavorites();
+                
+                result.innerHTML = `
+                    <div class="success">
+                        <h4>Local Storage Test - SUCCESS</h4>
+                        <p>Bookmarks: ${bookmarks.length}</p>
+                        <p>Favorites: ${favorites.length}</p>
+                        <pre>${JSON.stringify({bookmarks, favorites}, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="error">
+                        <h4>Local Storage Test - ERROR</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function testBookmarkService() {
+            const result = document.getElementById('bookmarkResult');
+            try {
+                // Add test bookmark
+                const testBookmark = bookmarkService.addBookmark({
+                    type: 'hadith',
+                    itemId: '123',
+                    title: 'Test Hadith',
+                    content: 'Test content',
+                    category: 'Test Category'
+                });
+                
+                const bookmarks = bookmarkService.getLocalBookmarks();
+                
+                result.innerHTML = `
+                    <div class="success">
+                        <h4>Bookmark Service Test - SUCCESS</h4>
+                        <p>Added bookmark: ${testBookmark.id}</p>
+                        <p>Total bookmarks: ${bookmarks.length}</p>
+                        <pre>${JSON.stringify(bookmarks, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="error">
+                        <h4>Bookmark Service Test - ERROR</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function testFavoriteService() {
+            const result = document.getElementById('favoriteResult');
+            try {
+                // Add test favorite
+                const testFavorite = favoriteService.addFavorite({
+                    type: 'hadith',
+                    itemId: '456',
+                    title: 'Test Favorite',
+                    content: 'Test favorite content'
+                });
+                
+                const favorites = favoriteService.getLocalFavorites();
+                
+                result.innerHTML = `
+                    <div class="success">
+                        <h4>Favorite Service Test - SUCCESS</h4>
+                        <p>Added favorite: ${testFavorite.id}</p>
+                        <p>Total favorites: ${favorites.length}</p>
+                        <pre>${JSON.stringify(favorites, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="error">
+                        <h4>Favorite Service Test - ERROR</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function clearAllData() {
+            const result = document.getElementById('clearResult');
+            try {
+                // Test sync before clearing
+                await Promise.all([
+                    bookmarkService.syncLocalToBackend(true),
+                    favoriteService.syncLocalToBackend(true)
+                ]);
+                
+                const bookmarks = bookmarkService.getLocalBookmarks();
+                const favorites = favoriteService.getLocalFavorites();
+                
+                result.innerHTML = `
+                    <div class="success">
+                        <h4>Clear All Data - SUCCESS</h4>
+                        <p>Synced and cleared all data</p>
+                        <p>Remaining bookmarks: ${bookmarks.length}</p>
+                        <p>Remaining favorites: ${favorites.length}</p>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="error">
+                        <h4>Clear All Data - ERROR</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Auto-run tests on load
+        window.onload = function() {
+            testLocalStorage();
+        };
+    </script>
+</body>
+</html>

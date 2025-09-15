@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Favorite & Bookmark Buttons</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        .button-test { display: flex; gap: 10px; margin: 10px 0; }
+        .heart, .bookmark { width: 20px; height: 20px; cursor: pointer; }
+        .heart.active { fill: red; color: red; }
+        .bookmark.active { fill: blue; color: blue; }
+    </style>
+</head>
+<body>
+    <h1>🐛 Debug Favorite & Bookmark Buttons</h1>
+    
+    <div class="test-section">
+        <h3>1. Test Service Calls</h3>
+        <button onclick="testServiceCalls()">Test Service Calls</button>
+        <div id="serviceResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. Test Button Interactions</h3>
+        <div class="button-test">
+            <button onclick="toggleFavorite()">❤️ Toggle Favorite</button>
+            <button onclick="toggleBookmark()">🔖 Toggle Bookmark</button>
+        </div>
+        <div id="buttonResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. Test Visual States</h3>
+        <div class="button-test">
+            <svg class="heart" onclick="toggleHeart()" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+            <svg class="bookmark" onclick="toggleBookmarkIcon()" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+            </svg>
+        </div>
+        <div id="visualResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>4. Check Console Logs</h3>
+        <button onclick="checkConsoleLogs()">Check Console Logs</button>
+        <div id="consoleResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>5. Test Local Storage</h3>
+        <button onclick="testLocalStorage()">Test Local Storage</button>
+        <div id="storageResult"></div>
+    </div>
+
+    <script>
+        // Mock services
+        class MockHybridFavoriteService {
+            constructor() {
+                this.STORAGE_KEY = 'muslimviet_favorites';
+            }
+            
+            getLocalFavorites() {
+                try {
+                    const stored = localStorage.getItem(this.STORAGE_KEY);
+                    return stored ? JSON.parse(stored) : [];
+                } catch (error) {
+                    console.error('Failed to get local favorites:', error);
+                    return [];
+                }
+            }
+            
+            saveLocalFavorites(favorites) {
+                try {
+                    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(favorites));
+                } catch (error) {
+                    console.error('Failed to save local favorites:', error);
+                }
+            }
+            
+            async toggleFavorite(isAuthenticated, favoriteData) {
+                console.log('🔄 toggleFavorite called:', { isAuthenticated, favoriteData });
+                
+                const newFavorite = {
+                    id: `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                    ...favoriteData,
+                    createdAt: new Date().toISOString()
+                };
+                
+                if (isAuthenticated) {
+                    console.log('🔐 Adding favorite to backend:', newFavorite.title);
+                    return Promise.resolve({ isFavorited: true, favorite: newFavorite });
+                } else {
+                    console.log('💾 Adding favorite to local storage:', newFavorite.title);
+                    const localFavorites = this.getLocalFavorites();
+                    localFavorites.push(newFavorite);
+                    this.saveLocalFavorites(localFavorites);
+                    return Promise.resolve({ isFavorited: true, favorite: newFavorite });
+                }
+            }
+        }
+        
+        class MockHybridBookmarkService {
+            constructor() {
+                this.STORAGE_KEY = 'muslimviet_bookmarks';
+            }
+            
+            getLocalBookmarks() {
+                try {
+                    const stored = localStorage.getItem(this.STORAGE_KEY);
+                    return stored ? JSON.parse(stored) : [];
+                } catch (error) {
+                    console.error('Failed to get local bookmarks:', error);
+                    return [];
+                }
+            }
+            
+            saveLocalBookmarks(bookmarks) {
+                try {
+                    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(bookmarks));
+                } catch (error) {
+                    console.error('Failed to save local bookmarks:', error);
+                }
+            }
+            
+            async toggleBookmark(isAuthenticated, bookmarkData) {
+                console.log('🔄 toggleBookmark called:', { isAuthenticated, bookmarkData });
+                
+                const newBookmark = {
+                    id: `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                    ...bookmarkData,
+                    createdAt: new Date().toISOString()
+                };
+                
+                if (isAuthenticated) {
+                    console.log('🔐 Adding bookmark to backend:', newBookmark.title);
+                    return Promise.resolve(true);
+                } else {
+                    console.log('💾 Adding bookmark to local storage:', newBookmark.title);
+                    const localBookmarks = this.getLocalBookmarks();
+                    localBookmarks.push(newBookmark);
+                    this.saveLocalBookmarks(localBookmarks);
+                    return Promise.resolve(true);
+                }
+            }
+        }
+        
+        const favoriteService = new MockHybridFavoriteService();
+        const bookmarkService = new MockHybridBookmarkService();
+        
+        let isFavorited = false;
+        let isBookmarked = false;
+        
+        function testServiceCalls() {
+            const result = document.getElementById('serviceResult');
+            try {
+                console.log('🧪 Testing service calls...');
+                
+                const testData = {
+                    type: 'hadith',
+                    itemId: '123',
+                    title: 'Test Hadith',
+                    content: 'Test content'
+                };
+                
+                // Test favorite service
+                favoriteService.toggleFavorite(false, testData).then(result => {
+                    console.log('Favorite result:', result);
+                });
+                
+                // Test bookmark service
+                bookmarkService.toggleBookmark(false, testData).then(result => {
+                    console.log('Bookmark result:', result);
+                });
+                
+                result.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Service Calls Test</h4>
+                        <p>Check console for detailed logs</p>
+                        <p>Both services should be called successfully</p>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Service Calls Test Failed</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function toggleFavorite() {
+            const result = document.getElementById('buttonResult');
+            try {
+                console.log('❤️ Toggle favorite clicked');
+                
+                const testData = {
+                    type: 'hadith',
+                    itemId: '123',
+                    title: 'Test Hadith',
+                    content: 'Test content'
+                };
+                
+                favoriteService.toggleFavorite(false, testData).then(result => {
+                    console.log('Favorite toggle result:', result);
+                    isFavorited = result.isFavorited;
+                    updateButtonResult();
+                });
+                
+            } catch (error) {
+                console.error('Toggle favorite error:', error);
+                result.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Toggle Favorite Failed</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function toggleBookmark() {
+            const result = document.getElementById('buttonResult');
+            try {
+                console.log('🔖 Toggle bookmark clicked');
+                
+                const testData = {
+                    type: 'hadith',
+                    itemId: '123',
+                    title: 'Test Hadith',
+                    content: 'Test content'
+                };
+                
+                bookmarkService.toggleBookmark(false, testData).then(result => {
+                    console.log('Bookmark toggle result:', result);
+                    isBookmarked = result;
+                    updateButtonResult();
+                });
+                
+            } catch (error) {
+                console.error('Toggle bookmark error:', error);
+                result.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Toggle Bookmark Failed</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function updateButtonResult() {
+            const result = document.getElementById('buttonResult');
+            result.innerHTML = `
+                <div class="info">
+                    <h4>📊 Button States</h4>
+                    <p><strong>Favorite:</strong> ${isFavorited ? '✅ Active' : '❌ Inactive'}</p>
+                    <p><strong>Bookmark:</strong> ${isBookmarked ? '✅ Active' : '❌ Inactive'}</p>
+                </div>
+            `;
+        }
+        
+        function toggleHeart() {
+            const heart = document.querySelector('.heart');
+            isFavorited = !isFavorited;
+            heart.classList.toggle('active', isFavorited);
+            console.log('Heart toggled:', isFavorited);
+        }
+        
+        function toggleBookmarkIcon() {
+            const bookmark = document.querySelector('.bookmark');
+            isBookmarked = !isBookmarked;
+            bookmark.classList.toggle('active', isBookmarked);
+            console.log('Bookmark toggled:', isBookmarked);
+        }
+        
+        function checkConsoleLogs() {
+            const result = document.getElementById('consoleResult');
+            result.innerHTML = `
+                <div class="info">
+                    <h4>📝 Console Logs</h4>
+                    <p>Open browser console (F12) to see detailed logs</p>
+                    <p>Look for messages starting with:</p>
+                    <ul>
+                        <li>🔄 toggleFavorite called</li>
+                        <li>🔄 toggleBookmark called</li>
+                        <li>💾 Adding to local storage</li>
+                        <li>🔐 Adding to backend</li>
+                    </ul>
+                </div>
+            `;
+        }
+        
+        function testLocalStorage() {
+            const result = document.getElementById('storageResult');
+            try {
+                const favorites = favoriteService.getLocalFavorites();
+                const bookmarks = bookmarkService.getLocalBookmarks();
+                
+                result.innerHTML = `
+                    <div class="info">
+                        <h4>💾 Local Storage</h4>
+                        <p><strong>Favorites:</strong> ${favorites.length} items</p>
+                        <p><strong>Bookmarks:</strong> ${bookmarks.length} items</p>
+                        <details>
+                            <summary>View Raw Data</summary>
+                            <pre>${JSON.stringify({favorites, bookmarks}, null, 2)}</pre>
+                        </details>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Local Storage Test Failed</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Auto-run initial test
+        window.onload = function() {
+            testServiceCalls();
+        };
+    </script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 import type { HadithSummary, ApiResponse } from '../types';
-import { API_BASE } from '../constants';
+import { VITE_API_BASE } from '../constants';
 
 interface BatchProgress {
   current: number;
@@ -61,7 +61,7 @@ class HadithBatchService {
 
     try {
       // Try multiple approaches to get all hadiths
-      let apiUrl = `${API_BASE}/hadeeths/list/?language=vi&category_id=${categoryId}`;
+      let apiUrl = `${VITE_API_BASE}/hadeeths/list/?language=vi&category_id=${categoryId}`;
       
       // First try with high per_page limit
       const urls = [
@@ -69,7 +69,7 @@ class HadithBatchService {
         `${apiUrl}&per_page=500`, 
         `${apiUrl}&limit=1000`,
         `${apiUrl}`,
-        `${API_BASE}/hadeeths/?language=vi&category_id=${categoryId}`,
+        `${VITE_API_BASE}/hadeeths/?language=vi&category_id=${categoryId}`,
       ];
       
       let firstPageResponse;
@@ -139,7 +139,7 @@ class HadithBatchService {
             await this.delay(delayBetweenRequests);
             
             const response = await this.rateLimitedFetch(
-              `${API_BASE}/hadeeths/list/?language=vi&category_id=${categoryId}&page=${page}`
+              `${VITE_API_BASE}/hadeeths/list/?language=vi&category_id=${categoryId}&page=${page}`
             );
             
             if (!response.ok) {

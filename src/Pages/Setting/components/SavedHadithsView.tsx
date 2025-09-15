@@ -21,9 +21,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from 'sonner';
-import { storageUtils } from '@/components/Utilities/Hadith/utils';
+import { hybridBookmarkService } from '@/services/hybridBookmarkService';
+import { hybridFavoriteService } from '@/services/hybridFavoriteService';
 import { hadithApi } from '@/components/Utilities/Hadith/api';
 import type { HadithDetail } from '@/components/Utilities/Hadith/types';
+import { useAuth } from '@/context/AuthContext';
 
 interface SavedHadithsViewProps {
   onBack: () => void;
@@ -35,11 +37,28 @@ const SavedHadithsView = memo<SavedHadithsViewProps>(({ onBack }) => {
   const [viewType, setViewType] = useState<ViewType>('favorites');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedHadith, setSelectedHadith] = useState<HadithDetail | null>(null);
+  const { isAuthenticated } = useAuth();
 
-  // Get saved IDs from localStorage
-  const favorites = storageUtils.getFavorites();
-  const bookmarks = storageUtils.getBookmarks();
-  const currentIds = viewType === 'favorites' ? favorites : bookmarks;
+  // Get saved data (local or backend based on auth status)
+  const { data: favorites = [], isLoading: loadingFavorites, error: favoritesError } = useQuery({
+    queryKey: ['hadith-favorites', isAuthenticated],
+    queryFn: () => hybridFavoriteService.getFavorites(isAuthenticated, 'hadith'),
+    retry: 1,
+    retryDelay: 1000,
+  });
+
+  const { data: bookmarks = [], isLoading: loadingBookmarks, error: bookmarksError } = useQuery({
+    queryKey: ['hadith-bookmarks', isAuthenticated],
+    queryFn: () => hybridBookmarkService.getBookmarks(isAuthenticated, 'hadith'),
+    retry: 1,
+    retryDelay: 1000,
+  });
+
+  const currentData = viewType === 'favorites' ? favorites : bookmarks;
+  
+  // Ensure currentData is an array
+  const safeCurrentData = Array.isArray(currentData) ? currentData : [];
+  const currentIds = safeCurrentData.map(item => parseInt(item.itemId));
 
   // Fetch hadith details for saved IDs
   const { data: savedHadiths, isLoading, error } = useQuery({
@@ -57,6 +76,7 @@ const SavedHadithsView = memo<SavedHadithsViewProps>(({ onBack }) => {
         .map(result => result.value);
     },
     enabled: currentIds.length > 0,
+    initialData: [],
   });
 
   // Filter hadiths based on search query
@@ -97,29 +117,57 @@ const SavedHadithsView = memo<SavedHadithsViewProps>(({ onBack }) => {
     setSelectedHadith(hadith);
   }, []);
 
-  const toggleFavorite = useCallback((hadithId: number) => {
-    const newFavorites = favorites.includes(hadithId)
-      ? favorites.filter(id => id !== hadithId)
-      : [...favorites, hadithId];
-    storageUtils.setFavorites(newFavorites);
-    
-    // If we're viewing favorites and removed this item, we need to refetch
-    if (viewType === 'favorites') {
-      window.location.reload(); // Simple refresh for now
-    }
-  }, [favorites, viewType]);
+  const toggleFavorite = useCallback(async (hadithId: number) => {
+    try {
+      const hadith = savedHadiths?.find(h => h.id === hadithId);
+      if (!hadith) return;
 
-  const toggleBookmark = useCallback((hadithId: number) => {
-    const newBookmarks = bookmarks.includes(hadithId)
-      ? bookmarks.filter(id => id !== hadithId)
-      : [...bookmarks, hadithId];
-    storageUtils.setBookmarks(newBookmarks);
-    
-    // If we're viewing bookmarks and removed this item, we need to refetch
-    if (viewType === 'bookmarks') {
+      const hadithData = {
+        type: 'hadith' as const,
+        itemId: hadithId.toString(),
+        title: hadith.title,
+        content: hadith.hadeeth,
+        metadata: {
+          hadithNumber: hadithId.toString(),
+          attribution: hadith.attribution
+        }
+      };
+
+  await hybridFavoriteService.toggleFavorite(isAuthenticated, hadithData);
+      
+      // Refetch data
       window.location.reload(); // Simple refresh for now
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error);
+      toast.error('Không thể cập nhật yêu thích');
     }
-  }, [bookmarks, viewType]);
+  }, [savedHadiths]);
+
+  const toggleBookmark = useCallback(async (hadithId: number) => {
+    try {
+      const hadith = savedHadiths?.find(h => h.id === hadithId);
+      if (!hadith) return;
+
+      const hadithData = {
+        type: 'hadith' as const,
+        itemId: hadithId.toString(),
+        title: hadith.title,
+        content: hadith.hadeeth,
+        category: 'Unknown', // We don't have category info here
+        metadata: {
+          hadithNumber: hadithId.toString()
+        }
+      };
+
+      await hybridBookmarkService.toggleBookmark(isAuthenticated, hadithData);
+      
+      // Refetch data
+      window.location.reload(); // Simple refresh for now
+    } catch (error) {
+      console.error('Failed to toggle bookmark:', error);
+      toast.error('Không thể cập nhật đánh dấu');
+    }
+  }, [savedHadiths]);
 
   const HadithCard = memo(({ hadith }: { hadith: HadithDetail }) => (
     <Card className="hover:shadow-md transition-shadow cursor-pointer">
@@ -143,7 +191,7 @@ const SavedHadithsView = memo<SavedHadithsViewProps>(({ onBack }) => {
             >
               <Heart 
                 className={`h-4 w-4 ${
-                  favorites.includes(hadith.id) 
+                  currentIds.includes(hadith.id) && viewType === 'favorites'
                     ? 'fill-red-500 text-red-500' 
                     : 'text-muted-foreground'
                 }`} 
@@ -160,7 +208,7 @@ const SavedHadithsView = memo<SavedHadithsViewProps>(({ onBack }) => {
             >
               <Bookmark 
                 className={`h-4 w-4 ${
-                  bookmarks.includes(hadith.id) 
+                  currentIds.includes(hadith.id) && viewType === 'bookmarks'
                     ? 'fill-blue-500 text-blue-500' 
                     : 'text-muted-foreground'
                 }`} 
@@ -248,7 +296,7 @@ const SavedHadithsView = memo<SavedHadithsViewProps>(({ onBack }) => {
             className="flex items-center gap-2"
           >
             <Heart className="h-4 w-4" />
-            Yêu thích ({favorites.length})
+            Yêu thích ({(favorites || []).length})
           </Button>
           <Button
             variant={viewType === 'bookmarks' ? 'default' : 'outline'}
@@ -257,7 +305,7 @@ const SavedHadithsView = memo<SavedHadithsViewProps>(({ onBack }) => {
             className="flex items-center gap-2"
           >
             <Bookmark className="h-4 w-4" />
-            Đánh dấu ({bookmarks.length})
+            Đánh dấu ({(bookmarks || []).length})
           </Button>
         </div>
 
@@ -273,7 +321,37 @@ const SavedHadithsView = memo<SavedHadithsViewProps>(({ onBack }) => {
         </div>
 
         {/* Content */}
-        {currentIds.length === 0 ? (
+        {(loadingFavorites || loadingBookmarks || isLoading) ? (
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Card key={i}>
+                <CardHeader>
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-1/2" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-20 w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (favoritesError || bookmarksError) ? (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+              <Heart className="h-8 w-8 text-red-500" />
+            </div>
+            <h3 className="text-lg font-medium mb-2">Lỗi tải dữ liệu</h3>
+            <p className="text-muted-foreground mb-4">
+              Không thể tải danh sách hadith đã lưu. Vui lòng thử lại sau.
+            </p>
+            <Button 
+              onClick={() => window.location.reload()}
+              variant="outline"
+            >
+              Thử lại
+            </Button>
+          </div>
+        ) : safeCurrentData.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
               {viewType === 'favorites' ? (
@@ -366,7 +444,7 @@ const SavedHadithsView = memo<SavedHadithsViewProps>(({ onBack }) => {
                     >
                       <Heart 
                         className={`h-4 w-4 ${
-                          favorites.includes(selectedHadith.id) 
+                          Array.isArray(favorites) ? favorites.some(fav => fav.itemId === selectedHadith.id.toString()) : false
                             ? 'fill-red-500 text-red-500' 
                             : 'text-muted-foreground'
                         }`} 
@@ -380,7 +458,7 @@ const SavedHadithsView = memo<SavedHadithsViewProps>(({ onBack }) => {
                     >
                       <Bookmark 
                         className={`h-4 w-4 ${
-                          bookmarks.includes(selectedHadith.id) 
+                          Array.isArray(bookmarks) ? bookmarks.some(bm => bm.itemId === selectedHadith.id.toString()) : false
                             ? 'fill-blue-500 text-blue-500' 
                             : 'text-muted-foreground'
                         }`} 

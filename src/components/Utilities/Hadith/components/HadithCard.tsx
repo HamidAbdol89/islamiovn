@@ -5,7 +5,12 @@ import { Heart, Bookmark, ChevronRight } from 'lucide-react';
 import type { HadithCardProps } from '../types';
 import { VIETNAMESE_TEXT } from '../constants';
 
-const HadithCard = memo<HadithCardProps>(({ hadith, isFavorite, isBookmarked, onClick }) => {
+const HadithCard = memo<HadithCardProps>(({ 
+  hadith, 
+  isFavorite, 
+  isBookmarked, 
+  onClick 
+}) => {
   const handleClick = useCallback(() => {
     onClick(hadith);
   }, [hadith, onClick]);

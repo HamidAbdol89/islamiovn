@@ -4,6 +4,9 @@ import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/context/AuthContext';
 import { AUTH_MESSAGES } from '@/Pages/Setting/components/constants';
+import apiService from '@/services/backendApi';
+import { hybridFavoriteService } from '@/services/hybridFavoriteService';
+import { hybridBookmarkService } from '@/services/hybridBookmarkService';
 
 const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
@@ -35,10 +38,11 @@ const AuthCallback: React.FC = () => {
           console.log('AuthCallback: Processing OAuth code directly');
           
           try {
-            // Exchange code for token using googleAuth method
+            // Exchange code for token using backend API
             const userData = await exchangeCodeForToken(code);
             console.log('AuthCallback: Got user data:', userData);
             
+            // Set user data (backend API already handles storage)
             setUser(userData);
             toast.success(AUTH_MESSAGES.LOGIN_SUCCESS);
             
@@ -64,15 +68,45 @@ const AuthCallback: React.FC = () => {
         if (authSuccess) {
           localStorage.removeItem('muslimviet_auth_success');
           
-          // Get user data from localStorage
-          const storedUserData = localStorage.getItem('muslimviet_user');
-          console.log('AuthCallback: Processing success, user data:', storedUserData);
+          // Get Google token from callback.js
+          const googleToken = localStorage.getItem('muslimviet_google_token');
+          console.log('AuthCallback: Processing success with Google token:', googleToken);
           
-          if (storedUserData) {
-            const userData = JSON.parse(storedUserData);
-            console.log('AuthCallback: Setting user:', userData);
-            setUser(userData);
-            toast.success(AUTH_MESSAGES.LOGIN_SUCCESS);
+          if (googleToken) {
+            try {
+              console.log('AuthCallback: Calling backend API with Google token...');
+              // Use backend API to authenticate with Google token
+              const response = await apiService.googleAuth(googleToken);
+              console.log('AuthCallback: Backend auth successful:', response);
+              
+              setUser(response.user);
+              
+              // Sync local data to backend
+              try {
+                console.log('AuthCallback: Syncing local data to backend...');
+                await Promise.all([
+                  hybridFavoriteService.syncLocalToBackend(true),
+                  hybridBookmarkService.syncLocalToBackend(true)
+                ]);
+                console.log('AuthCallback: Local data synced to backend successfully');
+              } catch (syncError) {
+                console.error('AuthCallback: Failed to sync local data to backend:', syncError);
+                // Don't show error to user, just log it
+              }
+              
+              toast.success(AUTH_MESSAGES.LOGIN_SUCCESS);
+              
+              // Clean up Google token
+              localStorage.removeItem('muslimviet_google_token');
+              
+              console.log('AuthCallback: JWT token saved:', localStorage.getItem('muslimviet_jwt_token'));
+            } catch (error) {
+              console.error('AuthCallback: Backend auth failed:', error);
+              setError('Authentication failed');
+              toast.error('Đăng nhập thất bại');
+            }
+          } else {
+            console.log('AuthCallback: No Google token found in localStorage');
           }
         } else if (authError) {
           localStorage.removeItem('muslimviet_auth_error');

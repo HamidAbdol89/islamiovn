@@ -1,4 +1,4 @@
-import { memo, useState } from 'react';
+import { useState } from 'react';
 import {
   Sheet,
   SheetContent,
@@ -19,7 +19,7 @@ import {
 import type { HadithDetailSheetProps } from '../types';
 import { VIETNAMESE_TEXT } from '../constants';
 
-const HadithDetailSheet = memo<HadithDetailSheetProps>(({
+const HadithDetailSheet = ({
   selectedHadith,
   isLoading,
   favorites,
@@ -27,7 +27,7 @@ const HadithDetailSheet = memo<HadithDetailSheetProps>(({
   onClose,
   onToggleFavorite,
   onToggleBookmark,
-}) => {
+}: HadithDetailSheetProps) => {
   const [fontSize, setFontSize] = useState<number>(1); // 1 = 100%, 1.1 = 110%, etc.
 
   const increaseFontSize = () => {
@@ -136,12 +136,13 @@ ${selectedHadith.hadeeth.replace(/<[^>]*>/g, '')}
                     variant="ghost"
                     size="sm"
                     onClick={() => onToggleFavorite(selectedHadith.id)}
+                    // disabled={loadingBookmarks}
                     className="h-8 w-8 p-0"
                     title="Thêm vào yêu thích"
                   >
                     <Heart 
                       className={`h-4 w-4 ${
-                        favorites.includes(selectedHadith.id) 
+favorites.includes(selectedHadith.id)
                           ? 'fill-red-500 text-red-500' 
                           : 'text-muted-foreground'
                       }`} 
@@ -151,12 +152,13 @@ ${selectedHadith.hadeeth.replace(/<[^>]*>/g, '')}
                     variant="ghost"
                     size="sm"
                     onClick={() => onToggleBookmark(selectedHadith.id)}
+                    // disabled={loadingBookmarks}
                     className="h-8 w-8 p-0"
                     title="Đánh dấu"
                   >
                     <Bookmark 
                       className={`h-4 w-4 ${
-                        bookmarks.includes(selectedHadith.id) 
+bookmarks.includes(selectedHadith.id)
                           ? 'fill-blue-500 text-blue-500' 
                           : 'text-muted-foreground'
                       }`} 
@@ -247,7 +249,7 @@ ${selectedHadith.hadeeth.replace(/<[^>]*>/g, '')}
                     </h3>
                     <div className="bg-accent/50 p-3 sm:p-4 rounded-lg border">
                       <ul className="space-y-2 sm:space-y-3">
-                        {selectedHadith.fawaed.map((fayda, index) => (
+                        {selectedHadith.fawaed.map((fayda: string, index: number) => (
                           <li 
                             key={index} 
                             className="text-accent-foreground leading-relaxed flex items-start gap-2"
@@ -268,8 +270,6 @@ ${selectedHadith.hadeeth.replace(/<[^>]*>/g, '')}
       </SheetContent>
     </Sheet>
   );
-});
-
-HadithDetailSheet.displayName = 'HadithDetailSheet';
+};
 
 export default HadithDetailSheet;

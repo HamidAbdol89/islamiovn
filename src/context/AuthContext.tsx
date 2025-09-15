@@ -2,6 +2,16 @@ import React, { createContext, useContext, useState, useCallback, useEffect, use
 import { toast } from 'react-hot-toast';
 import type { AuthContextType, GoogleUser } from '@/Pages/Setting/components/types';
 import { AUTH_MESSAGES } from '@/Pages/Setting/components/constants';
+import apiService from '@/services/backendApi';
+import { hybridFavoriteService } from '@/services/hybridFavoriteService';
+import { hybridBookmarkService } from '@/services/hybridBookmarkService';
+
+// Extend window interface for queryClient
+declare global {
+  interface Window {
+    queryClient?: any;
+  }
+}
 
 // Google OAuth Configuration
 const GOOGLE_CONFIG = {
@@ -10,8 +20,8 @@ const GOOGLE_CONFIG = {
   scope: 'openid profile email https://www.googleapis.com/auth/userinfo.profile',
 } as const;
 
-// Real Google Auth API
-const googleAuth = {
+// Backend API Authentication
+const backendAuth = {
   signIn: async (): Promise<GoogleUser> => {
     try {
       // Store current location for redirect back
@@ -40,28 +50,20 @@ const googleAuth = {
 
   signOut: async (): Promise<void> => {
     try {
-      // Revoke Google token if exists
-      const accessToken = localStorage.getItem('muslimviet_access_token');
-      if (accessToken) {
-        await fetch(`https://oauth2.googleapis.com/revoke?token=${accessToken}`, {
-          method: 'POST',
-        }).catch(() => {
-          // Ignore revoke errors
-        });
-      }
+      await apiService.logout();
     } catch (error) {
       console.error('Sign out error:', error);
     }
   },
 
   getCurrentUser: (): GoogleUser | null => {
-    const stored = localStorage.getItem('muslimviet_user');
-    return stored ? JSON.parse(stored) : null;
+    // This will be handled by the backend API
+    return null;
   },
 
   exchangeCodeForToken: async (code: string): Promise<GoogleUser> => {
     try {
-      // Exchange authorization code for access token
+      // Get Google access token first
       const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
         headers: {
@@ -81,33 +83,12 @@ const googleAuth = {
       }
 
       const tokenData = await tokenResponse.json();
-      const accessToken = tokenData.access_token;
+      const googleAccessToken = tokenData.access_token;
 
-      // Store access token
-      localStorage.setItem('muslimviet_access_token', accessToken);
-
-      // Get user info
-      const userResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      if (!userResponse.ok) {
-        throw new Error('Failed to get user info');
-      }
-
-      const userData = await userResponse.json();
-
-      console.log('Google API userData:', userData);
+      // Use backend API to authenticate with Google token
+      const response = await apiService.googleAuth(googleAccessToken);
       
-      return {
-        id: userData.id,
-        email: userData.email,
-        name: userData.name,
-        picture: userData.picture,
-        verified_email: userData.verified_email,
-      };
+      return response.user;
     } catch (error) {
       console.error('Token exchange error:', error);
       throw error;
@@ -126,13 +107,28 @@ export const AuthProvider = React.memo<AuthProviderProps>(({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Initialize user from localStorage and handle auth callbacks
+  // Initialize user from backend API
   useEffect(() => {
-    const storedUser = googleAuth.getCurrentUser();
-    console.log('AuthContext: Initial stored user:', storedUser);
-    if (storedUser) {
-      setUser(storedUser);
-    }
+    const initializeAuth = async () => {
+      try {
+        console.log('AuthContext: Initializing auth...');
+        console.log('AuthContext: JWT token exists:', !!apiService.getToken());
+        
+        if (apiService.isAuthenticated()) {
+          console.log('AuthContext: User is authenticated, getting current user');
+          const userData = await apiService.getCurrentUser();
+          console.log('AuthContext: Got user data:', userData);
+          setUser(userData.user);
+        } else {
+          console.log('AuthContext: User not authenticated');
+        }
+      } catch (error) {
+        console.log('AuthContext: Failed to get current user, clearing auth:', error);
+        apiService.logout();
+      }
+    };
+
+    initializeAuth();
   }, []);
 
   const login = useCallback(async (): Promise<void> => {
@@ -140,11 +136,32 @@ export const AuthProvider = React.memo<AuthProviderProps>(({ children }) => {
       setIsLoading(true);
       setError(null);
       
-      const userData = await googleAuth.signIn();
+      const userData = await backendAuth.signIn();
       
       // Store user data
-      localStorage.setItem('muslimviet_user', JSON.stringify(userData));
       setUser(userData);
+      
+      // Clear React Query cache to force refresh
+      if (window.queryClient) {
+        window.queryClient.invalidateQueries(['hadith-favorites']);
+        window.queryClient.invalidateQueries(['hadith-bookmarks']);
+        window.queryClient.invalidateQueries(['hadith-favorites-count']);
+        window.queryClient.invalidateQueries(['hadith-bookmarks-count']);
+        console.log('React Query cache cleared');
+      }
+      
+      // Sync local data to backend
+      try {
+        console.log('Syncing local data to backend...');
+        await Promise.all([
+          hybridFavoriteService.syncLocalToBackend(true),
+          hybridBookmarkService.syncLocalToBackend(true)
+        ]);
+        console.log('Local data synced to backend successfully');
+      } catch (syncError) {
+        console.error('Failed to sync local data to backend:', syncError);
+        // Don't show error to user, just log it
+      }
       
       toast.success(AUTH_MESSAGES.LOGIN_SUCCESS);
     } catch (err) {
@@ -161,11 +178,9 @@ export const AuthProvider = React.memo<AuthProviderProps>(({ children }) => {
       setIsLoading(true);
       setError(null);
       
-      await googleAuth.signOut();
+      await backendAuth.signOut();
       
       // Clear user data
-      localStorage.removeItem('muslimviet_user');
-      localStorage.removeItem('muslimviet_access_token');
       setUser(null);
       
       toast.success(AUTH_MESSAGES.LOGOUT_SUCCESS);
@@ -181,7 +196,7 @@ export const AuthProvider = React.memo<AuthProviderProps>(({ children }) => {
   const isAuthenticated = useMemo(() => user !== null, [user]);
 
   const exchangeCodeForToken = useCallback(async (code: string): Promise<GoogleUser> => {
-    return await googleAuth.exchangeCodeForToken(code);
+    return await backendAuth.exchangeCodeForToken(code);
   }, []);
 
   const contextValue = useMemo<AuthContextType>(() => ({

@@ -1,6 +1,6 @@
 // API Configuration
-export const API_BASE = 'https://hadeethenc.com/api/v1';
-
+// constants.ts
+export const VITE_API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001/api/hadith';
 // Query Keys
 export const QUERY_KEYS = {
   categories: ['hadith', 'categories'] as const,

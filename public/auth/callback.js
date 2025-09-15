@@ -43,6 +43,8 @@ async function handleCallback() {
 
         const tokenData = await response.json();
         const accessToken = tokenData.access_token;
+        const refreshToken = tokenData.refresh_token;
+        const expiresIn = tokenData.expires_in || 3600; // Default 1 hour
 
         // Get user info
         const userResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
@@ -65,18 +67,12 @@ async function handleCallback() {
             verified_email: userData.verified_email,
         };
 
-        // Store user data and redirect back to app
-        console.log('Callback.js: Storing user data:', user);
-        localStorage.setItem('muslimviet_user', JSON.stringify(user));
-        localStorage.setItem('muslimviet_access_token', accessToken);
+        // Store Google access token for backend API to use
+        console.log('Callback.js: Storing Google access token');
+        localStorage.setItem('muslimviet_google_token', accessToken);
         localStorage.setItem('muslimviet_auth_success', 'true');
         
-        console.log('Callback.js: Data stored, redirecting to /auth/callback');
-        console.log('Callback.js: localStorage check:', {
-            user: localStorage.getItem('muslimviet_user'),
-            token: localStorage.getItem('muslimviet_access_token'),
-            success: localStorage.getItem('muslimviet_auth_success')
-        });
+        console.log('Callback.js: Redirecting to /auth/callback');
         
         // Always redirect to /auth/callback route in React app
         window.location.href = '/auth/callback';

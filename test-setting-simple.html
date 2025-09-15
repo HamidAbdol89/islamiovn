@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Setting Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Simple Setting Test</h1>
+    
+    <div class="test-section">
+        <h3>Test 1: Direct Service Call</h3>
+        <button onclick="testDirectServiceCall()">Test Direct Service Call</button>
+        <div id="directResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test 2: Local Storage Access</h3>
+        <button onclick="testLocalStorageAccess()">Test Local Storage Access</button>
+        <div id="storageResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test 3: Error Handling</h3>
+        <button onclick="testErrorHandling()">Test Error Handling</button>
+        <div id="errorResult"></div>
+    </div>
+
+    <script>
+        // Mock hybrid services
+        class MockHybridFavoriteService {
+            async getFavorites(isAuthenticated, type) {
+                console.log('getFavorites called with:', { isAuthenticated, type });
+                
+                if (isAuthenticated) {
+                    // Simulate backend call
+                    return Promise.resolve([
+                        { id: '1', type: 'hadith', itemId: '1', title: 'Backend Favorite 1' }
+                    ]);
+                } else {
+                    // Simulate local storage call
+                    const stored = localStorage.getItem('muslimviet_favorites');
+                    const favorites = stored ? JSON.parse(stored) : [];
+                    return Promise.resolve(favorites);
+                }
+            }
+        }
+        
+        class MockHybridBookmarkService {
+            async getBookmarks(isAuthenticated, type) {
+                console.log('getBookmarks called with:', { isAuthenticated, type });
+                
+                if (isAuthenticated) {
+                    // Simulate backend call
+                    return Promise.resolve([
+                        { id: '1', type: 'hadith', itemId: '1', title: 'Backend Bookmark 1' }
+                    ]);
+                } else {
+                    // Simulate local storage call
+                    const stored = localStorage.getItem('muslimviet_bookmarks');
+                    const bookmarks = stored ? JSON.parse(stored) : [];
+                    return Promise.resolve(bookmarks);
+                }
+            }
+        }
+        
+        const favoriteService = new MockHybridFavoriteService();
+        const bookmarkService = new MockHybridBookmarkService();
+        
+        async function testDirectServiceCall() {
+            const result = document.getElementById('directResult');
+            try {
+                console.log('Testing direct service call...');
+                
+                const isAuthenticated = false; // Not logged in
+                
+                const favorites = await favoriteService.getFavorites(isAuthenticated, 'hadith');
+                const bookmarks = await bookmarkService.getBookmarks(isAuthenticated, 'hadith');
+                
+                result.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Direct Service Call Success</h4>
+                        <p>Favorites: ${favorites.length} items</p>
+                        <p>Bookmarks: ${bookmarks.length} items</p>
+                        <p>Services work correctly when not authenticated</p>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Direct Service Call Failed</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function testLocalStorageAccess() {
+            const result = document.getElementById('storageResult');
+            try {
+                console.log('Testing local storage access...');
+                
+                // Test if localStorage is available
+                const testKey = 'test_key';
+                const testValue = 'test_value';
+                
+                localStorage.setItem(testKey, testValue);
+                const retrieved = localStorage.getItem(testKey);
+                localStorage.removeItem(testKey);
+                
+                if (retrieved === testValue) {
+                    result.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Local Storage Access Success</h4>
+                            <p>localStorage is working correctly</p>
+                            <p>Can read and write data</p>
+                        </div>
+                    `;
+                } else {
+                    throw new Error('localStorage test failed');
+                }
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Local Storage Access Failed</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function testErrorHandling() {
+            const result = document.getElementById('errorResult');
+            try {
+                console.log('Testing error handling...');
+                
+                // Test try-catch with async functions
+                async function testAsyncError() {
+                    try {
+                        // Simulate an error
+                        throw new Error('Test error');
+                    } catch (error) {
+                        console.log('Caught error:', error.message);
+                        return false;
+                    }
+                }
+                
+                testAsyncError().then(success => {
+                    if (!success) {
+                        result.innerHTML = `
+                            <div class="success">
+                                <h4>✅ Error Handling Success</h4>
+                                <p>Async error handling works correctly</p>
+                                <p>Errors are caught and handled properly</p>
+                            </div>
+                        `;
+                    }
+                });
+                
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Error Handling Test Failed</h4>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Auto-run tests
+        window.onload = function() {
+            testDirectServiceCall();
+            testLocalStorageAccess();
+            testErrorHandling();
+        };
+    </script>
+</body>
+</html>

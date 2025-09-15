@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test App Flow</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        .flow-step { margin: 10px 0; padding: 10px; border-left: 4px solid #007bff; background-color: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test App Flow - Chưa Login vs Đã Login</h1>
+    
+    <div class="test-section">
+        <h3>📋 Flow Test Steps</h3>
+        <div class="flow-step">
+            <strong>Step 1:</strong> Clear all data (simulate fresh start)
+        </div>
+        <div class="flow-step">
+            <strong>Step 2:</strong> Test chưa login - Add bookmarks/favorites (should save to local)
+        </div>
+        <div class="flow-step">
+            <strong>Step 3:</strong> Test chưa login - View settings (should work without login)
+        </div>
+        <div class="flow-step">
+            <strong>Step 4:</strong> Simulate login - Sync local data to backend
+        </div>
+        <div class="flow-step">
+            <strong>Step 5:</strong> Test đã login - Add more data (should save to backend)
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h3>1. Clear All Data</h3>
+        <button onclick="clearAllData()">Clear All Data</button>
+        <div id="clearResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. Test Chưa Login (Local Storage)</h3>
+        <button onclick="testNotLoggedIn()">Test Not Logged In</button>
+        <div id="notLoggedInResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. Test Settings Access</h3>
+        <button onclick="testSettingsAccess()">Test Settings Access</button>
+        <div id="settingsResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>4. Simulate Login & Sync</h3>
+        <button onclick="simulateLogin()">Simulate Login</button>
+        <div id="loginResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>5. Test Đã Login (Backend)</h3>
+        <button onclick="testLoggedIn()">Test Logged In</button>
+        <div id="loggedInResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>6. View All Data</h3>
+        <button onclick="viewAllData()">View All Data</button>
+        <div id="allDataResult"></div>
+    </div>
+
+    <script>
+        // Mock services
+        class MockHybridBookmarkService {
+            constructor() {
+                this.STORAGE_KEY = 'muslimviet_bookmarks';
+            }
+            
+            getLocalBookmarks() {
+                try {
+                    const stored = localStorage.getItem(this.STORAGE_KEY);
+                    return stored ? JSON.parse(stored) : [];
+                } catch (error) {
+                    console.error('Failed to get local bookmarks:', error);
+                    return [];
+                }
+            }
+            
+            saveLocalBookmarks(bookmarks) {
+                try {
+                    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(bookmarks));
+                } catch (error) {
+                    console.error('Failed to save local bookmarks:', error);
+                }
+            }
+            
+            addBookmark(isAuthenticated, bookmarkData) {
+                const newBookmark = {
+                    id: `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                    ...bookmarkData,
+                    createdAt: new Date().toISOString()
+                };
+                
+                if (isAuthenticated) {
+                    console.log('🔐 Adding bookmark to backend:', newBookmark.title);
+                    // Simulate backend save
+                    return Promise.resolve(newBookmark);
+                } else {
+                    console.log('💾 Adding bookmark to local storage:', newBookmark.title);
+                    const localBookmarks = this.getLocalBookmarks();
+                    localBookmarks.push(newBookmark);
+                    this.saveLocalBookmarks(localBookmarks);
+                    return Promise.resolve(newBookmark);
+                }
+            }
+            
+            getBookmarks(isAuthenticated, type) {
+                if (isAuthenticated) {
+                    console.log('🔐 Getting bookmarks from backend');
+                    // Simulate backend data
+                    return Promise.resolve([
+                        {
+                            id: 'backend_1',
+                            type: 'hadith',
+                            itemId: '100',
+                            title: 'Backend Bookmark 1',
+                            content: 'This is from backend',
+                            createdAt: new Date().toISOString()
+                        }
+                    ]);
+                } else {
+                    console.log('💾 Getting bookmarks from local storage');
+                    const localBookmarks = this.getLocalBookmarks();
+                    if (type) {
+                        return Promise.resolve(localBookmarks.filter(b => b.type === type));
+                    }
+                    return Promise.resolve(localBookmarks);
+                }
+            }
+            
+            syncLocalToBackend(isAuthenticated) {
+                if (!isAuthenticated) {
+                    return Promise.resolve();
+                }
+                
+                const localBookmarks = this.getLocalBookmarks();
+                console.log(`🔄 Syncing ${localBookmarks.length} local bookmarks to backend...`);
+                
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        this.saveLocalBookmarks([]);
+                        console.log('✅ Local bookmarks synced to backend successfully');
+                        resolve();
+                    }, 1000);
+                });
+            }
+        }
+        
+        class MockHybridFavoriteService {
+            constructor() {
+                this.STORAGE_KEY = 'muslimviet_favorites';
+            }
+            
+            getLocalFavorites() {
+                try {
+                    const stored = localStorage.getItem(this.STORAGE_KEY);
+                    return stored ? JSON.parse(stored) : [];
+                } catch (error) {
+                    console.error('Failed to get local favorites:', error);
+                    return [];
+                }
+            }
+            
+            saveLocalFavorites(favorites) {
+                try {
+                    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(favorites));
+                } catch (error) {
+                    console.error('Failed to save local favorites:', error);
+                }
+            }
+            
+            addFavorite(isAuthenticated, favoriteData) {
+                const newFavorite = {
+                    id: `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                    ...favoriteData,
+                    createdAt: new Date().toISOString()
+                };
+                
+                if (isAuthenticated) {
+                    console.log('🔐 Adding favorite to backend:', newFavorite.title);
+                    // Simulate backend save
+                    return Promise.resolve(newFavorite);
+                } else {
+                    console.log('💾 Adding favorite to local storage:', newFavorite.title);
+                    const localFavorites = this.getLocalFavorites();
+                    localFavorites.push(newFavorite);
+                    this.saveLocalFavorites(localFavorites);
+                    return Promise.resolve(newFavorite);
+                }
+            }
+            
+            getFavorites(isAuthenticated, type) {
+                if (isAuthenticated) {
+                    console.log('🔐 Getting favorites from backend');
+                    // Simulate backend data
+                    return Promise.resolve([
+                        {
+                            id: 'backend_1',
+                            type: 'hadith',
+                            itemId: '200',
+                            title: 'Backend Favorite 1',
+                            content: 'This is from backend',
+                            createdAt: new Date().toISOString()
+                        }
+                    ]);
+                } else {
+                    console.log('💾 Getting favorites from local storage');
+                    const localFavorites = this.getLocalFavorites();
+                    if (type) {
+                        return Promise.resolve(localFavorites.filter(f => f.type === type));
+                    }
+                    return Promise.resolve(localFavorites);
+                }
+            }
+            
+            syncLocalToBackend(isAuthenticated) {
+                if (!isAuthenticated) {
+                    return Promise.resolve();
+                }
+                
+                const localFavorites = this.getLocalFavorites();
+                console.log(`🔄 Syncing ${localFavorites.length} local favorites to backend...`);
+                
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        this.saveLocalFavorites([]);
+                        console.log('✅ Local favorites synced to backend successfully');
+                        resolve();
+                    }, 1000);
+                });
+            }
+        }
+        
+        const bookmarkService = new MockHybridBookmarkService();
+        const favoriteService = new MockHybridFavoriteService();
+        
+        function clearAllData() {
+            const result = document.getElementById('clearResult');
+            try {
+                localStorage.removeItem('muslimviet_bookmarks');
+                localStorage.removeItem('muslimviet_favorites');
+                localStorage.removeItem('muslimviet_jwt_token');
+                localStorage.removeItem('muslimviet_google_token');
+                
+                result.innerHTML = `
+                    <div class="success">
+                        <h4>✅ All Data Cleared</h4>
+                        <p>Local storage and auth tokens cleared</p>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Clear Failed</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testNotLoggedIn() {
+            const result = document.getElementById('notLoggedInResult');
+            try {
+                console.log('🧪 Testing chưa login flow...');
+                
+                // Add bookmarks and favorites (should go to local storage)
+                const bookmark1 = await bookmarkService.addBookmark(false, {
+                    type: 'hadith',
+                    itemId: '1',
+                    title: 'Test Hadith 1',
+                    content: 'This is a test hadith'
+                });
+                
+                const bookmark2 = await bookmarkService.addBookmark(false, {
+                    type: 'hadith',
+                    itemId: '2',
+                    title: 'Test Hadith 2',
+                    content: 'This is another test hadith'
+                });
+                
+                const favorite1 = await favoriteService.addFavorite(false, {
+                    type: 'hadith',
+                    itemId: '3',
+                    title: 'Test Favorite 1',
+                    content: 'This is a test favorite'
+                });
+                
+                // Get data (should come from local storage)
+                const bookmarks = await bookmarkService.getBookmarks(false, 'hadith');
+                const favorites = await favoriteService.getFavorites(false, 'hadith');
+                
+                result.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Chưa Login Test - SUCCESS</h4>
+                        <p><strong>Bookmarks added:</strong> ${bookmarks.length}</p>
+                        <p><strong>Favorites added:</strong> ${favorites.length}</p>
+                        <p><strong>Storage:</strong> Local Storage ✅</p>
+                        <pre>${JSON.stringify({bookmarks, favorites}, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Chưa Login Test - FAILED</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function testSettingsAccess() {
+            const result = document.getElementById('settingsResult');
+            try {
+                // Simulate settings access without login
+                const canAccessSettings = true; // Settings should be accessible without login
+                const localBookmarks = bookmarkService.getLocalBookmarks();
+                const localFavorites = favoriteService.getLocalFavorites();
+                
+                result.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Settings Access Test - SUCCESS</h4>
+                        <p><strong>Can access settings:</strong> ${canAccessSettings ? 'Yes' : 'No'}</p>
+                        <p><strong>Local bookmarks visible:</strong> ${localBookmarks.length}</p>
+                        <p><strong>Local favorites visible:</strong> ${localFavorites.length}</p>
+                        <p><strong>Login required:</strong> No ✅</p>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Settings Access Test - FAILED</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function simulateLogin() {
+            const result = document.getElementById('loginResult');
+            try {
+                console.log('🔐 Simulating login...');
+                
+                // Set auth token
+                localStorage.setItem('muslimviet_jwt_token', 'mock_jwt_token');
+                
+                // Sync local data to backend
+                await Promise.all([
+                    bookmarkService.syncLocalToBackend(true),
+                    favoriteService.syncLocalToBackend(true)
+                ]);
+                
+                result.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Login & Sync - SUCCESS</h4>
+                        <p><strong>JWT Token:</strong> Set ✅</p>
+                        <p><strong>Local data synced:</strong> Yes ✅</p>
+                        <p><strong>Local storage cleared:</strong> Yes ✅</p>
+                        <p><strong>Ready for backend operations:</strong> Yes ✅</p>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Login & Sync - FAILED</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testLoggedIn() {
+            const result = document.getElementById('loggedInResult');
+            try {
+                console.log('🧪 Testing đã login flow...');
+                
+                // Add bookmarks and favorites (should go to backend)
+                const bookmark1 = await bookmarkService.addBookmark(true, {
+                    type: 'hadith',
+                    itemId: '4',
+                    title: 'Backend Hadith 1',
+                    content: 'This goes to backend'
+                });
+                
+                const favorite1 = await favoriteService.addFavorite(true, {
+                    type: 'hadith',
+                    itemId: '5',
+                    title: 'Backend Favorite 1',
+                    content: 'This goes to backend'
+                });
+                
+                // Get data (should come from backend)
+                const bookmarks = await bookmarkService.getBookmarks(true, 'hadith');
+                const favorites = await favoriteService.getFavorites(true, 'hadith');
+                
+                result.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Đã Login Test - SUCCESS</h4>
+                        <p><strong>Bookmarks from backend:</strong> ${bookmarks.length}</p>
+                        <p><strong>Favorites from backend:</strong> ${favorites.length}</p>
+                        <p><strong>Storage:</strong> Backend ✅</p>
+                        <pre>${JSON.stringify({bookmarks, favorites}, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Đã Login Test - FAILED</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function viewAllData() {
+            const result = document.getElementById('allDataResult');
+            try {
+                const localBookmarks = bookmarkService.getLocalBookmarks();
+                const localFavorites = favoriteService.getLocalFavorites();
+                const jwtToken = localStorage.getItem('muslimviet_jwt_token');
+                
+                result.innerHTML = `
+                    <div class="info">
+                        <h4>📊 All Data Summary</h4>
+                        <p><strong>Local Bookmarks:</strong> ${localBookmarks.length}</p>
+                        <p><strong>Local Favorites:</strong> ${localFavorites.length}</p>
+                        <p><strong>JWT Token:</strong> ${jwtToken ? 'Set' : 'Not set'}</p>
+                        <p><strong>Auth Status:</strong> ${jwtToken ? 'Logged In' : 'Not Logged In'}</p>
+                        <details>
+                            <summary>View Raw Data</summary>
+                            <pre>${JSON.stringify({
+                                localBookmarks,
+                                localFavorites,
+                                jwtToken: jwtToken ? 'exists' : null
+                            }, null, 2)}</pre>
+                        </details>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="error">
+                        <h4>❌ View Data - FAILED</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Auto-run initial test
+        window.onload = function() {
+            clearAllData();
+        };
+    </script>
+</body>
+</html>

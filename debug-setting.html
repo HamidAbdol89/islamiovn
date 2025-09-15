@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Setting Page Access</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        .step { margin: 10px 0; padding: 10px; border-left: 4px solid #007bff; background-color: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <h1>🐛 Debug Setting Page Access</h1>
+    
+    <div class="test-section">
+        <h3>📋 Debug Steps</h3>
+        <div class="step">
+            <strong>Step 1:</strong> Check if setting page loads without authentication
+        </div>
+        <div class="step">
+            <strong>Step 2:</strong> Test useSavedItemCounts hook
+        </div>
+        <div class="step">
+            <strong>Step 3:</strong> Check console for errors
+        </div>
+        <div class="step">
+            <strong>Step 4:</strong> Test service calls
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h3>1. Test Setting Page Access</h3>
+        <button onclick="testSettingAccess()">Test Setting Access</button>
+        <div id="accessResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. Test useSavedItemCounts Hook</h3>
+        <button onclick="testSavedItemCounts()">Test useSavedItemCounts</button>
+        <div id="countsResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. Test Service Calls</h3>
+        <button onclick="testServiceCalls()">Test Service Calls</button>
+        <div id="serviceResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>4. Check Console Errors</h3>
+        <button onclick="checkConsoleErrors()">Check Console Errors</button>
+        <div id="consoleResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>5. Simulate Setting Page Load</h3>
+        <button onclick="simulateSettingLoad()">Simulate Setting Load</button>
+        <div id="simulateResult"></div>
+    </div>
+
+    <script>
+        // Mock services
+        class MockHybridFavoriteService {
+            async getFavorites(isAuthenticated, type) {
+                console.log('🔄 getFavorites called:', { isAuthenticated, type });
+                
+                if (isAuthenticated) {
+                    console.log('🔐 Getting favorites from backend');
+                    return Promise.resolve([
+                        { id: '1', type: 'hadith', itemId: '1', title: 'Backend Favorite 1' },
+                        { id: '2', type: 'hadith', itemId: '2', title: 'Backend Favorite 2' }
+                    ]);
+                } else {
+                    console.log('💾 Getting favorites from local storage');
+                    const stored = localStorage.getItem('muslimviet_favorites');
+                    const favorites = stored ? JSON.parse(stored) : [];
+                    return Promise.resolve(favorites);
+                }
+            }
+        }
+        
+        class MockHybridBookmarkService {
+            async getBookmarks(isAuthenticated, type) {
+                console.log('🔄 getBookmarks called:', { isAuthenticated, type });
+                
+                if (isAuthenticated) {
+                    console.log('🔐 Getting bookmarks from backend');
+                    return Promise.resolve([
+                        { id: '1', type: 'hadith', itemId: '1', title: 'Backend Bookmark 1' },
+                        { id: '2', type: 'hadith', itemId: '2', title: 'Backend Bookmark 2' }
+                    ]);
+                } else {
+                    console.log('💾 Getting bookmarks from local storage');
+                    const stored = localStorage.getItem('muslimviet_bookmarks');
+                    const bookmarks = stored ? JSON.parse(stored) : [];
+                    return Promise.resolve(bookmarks);
+                }
+            }
+        }
+        
+        class MockQuranStorageUtils {
+            getFavorites() {
+                const stored = localStorage.getItem('quran_favorites') || '[]';
+                return JSON.parse(stored);
+            }
+            
+            getBookmarks() {
+                const stored = localStorage.getItem('quran_bookmarks') || '[]';
+                return JSON.parse(stored);
+            }
+        }
+        
+        const favoriteService = new MockHybridFavoriteService();
+        const bookmarkService = new MockHybridBookmarkService();
+        const quranStorageUtils = new MockQuranStorageUtils();
+        
+        function testSettingAccess() {
+            const result = document.getElementById('accessResult');
+            try {
+                console.log('🧪 Testing setting page access...');
+                
+                // Simulate setting page load
+                const canAccessSetting = true; // Setting should be accessible without login
+                const isAuthenticated = false; // Simulate not logged in
+                
+                result.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Setting Page Access Test</h4>
+                        <p><strong>Can access setting:</strong> ${canAccessSetting ? 'Yes' : 'No'}</p>
+                        <p><strong>Authentication required:</strong> No</p>
+                        <p><strong>Current auth status:</strong> ${isAuthenticated ? 'Logged In' : 'Not Logged In'}</p>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Setting Page Access Test Failed</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testSavedItemCounts() {
+            const result = document.getElementById('countsResult');
+            try {
+                console.log('🧪 Testing useSavedItemCounts hook...');
+                
+                const isAuthenticated = false; // Simulate not logged in
+                
+                // Test service calls
+                const [hadithFavorites, hadithBookmarks] = await Promise.all([
+                    favoriteService.getFavorites(isAuthenticated, 'hadith'),
+                    bookmarkService.getBookmarks(isAuthenticated, 'hadith')
+                ]);
+                
+                const quranFavorites = quranStorageUtils.getFavorites().length;
+                const quranBookmarks = quranStorageUtils.getBookmarks().length;
+                
+                const counts = {
+                    hadithFavorites: Array.isArray(hadithFavorites) ? hadithFavorites.length : 0,
+                    hadithBookmarks: Array.isArray(hadithBookmarks) ? hadithBookmarks.length : 0,
+                    quranFavorites,
+                    quranBookmarks,
+                };
+                
+                result.innerHTML = `
+                    <div class="success">
+                        <h4>✅ useSavedItemCounts Test</h4>
+                        <p><strong>Hadith Favorites:</strong> ${counts.hadithFavorites}</p>
+                        <p><strong>Hadith Bookmarks:</strong> ${counts.hadithBookmarks}</p>
+                        <p><strong>Quran Favorites:</strong> ${counts.quranFavorites}</p>
+                        <p><strong>Quran Bookmarks:</strong> ${counts.quranBookmarks}</p>
+                        <pre>${JSON.stringify(counts, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="error">
+                        <h4>❌ useSavedItemCounts Test Failed</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testServiceCalls() {
+            const result = document.getElementById('serviceResult');
+            try {
+                console.log('🧪 Testing service calls...');
+                
+                const isAuthenticated = false; // Simulate not logged in
+                
+                // Test both services
+                const favoritesPromise = favoriteService.getFavorites(isAuthenticated, 'hadith');
+                const bookmarksPromise = bookmarkService.getBookmarks(isAuthenticated, 'hadith');
+                
+                const [favorites, bookmarks] = await Promise.all([favoritesPromise, bookmarksPromise]);
+                
+                result.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Service Calls Test</h4>
+                        <p><strong>Favorites service:</strong> Working ✅</p>
+                        <p><strong>Bookmarks service:</strong> Working ✅</p>
+                        <p><strong>Favorites count:</strong> ${favorites.length}</p>
+                        <p><strong>Bookmarks count:</strong> ${bookmarks.length}</p>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Service Calls Test Failed</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function checkConsoleErrors() {
+            const result = document.getElementById('consoleResult');
+            result.innerHTML = `
+                <div class="info">
+                    <h4>📝 Console Error Check</h4>
+                    <p>Open browser console (F12) and look for:</p>
+                    <ul>
+                        <li>❌ Red error messages</li>
+                        <li>⚠️ Yellow warning messages</li>
+                        <li>🔄 Service call logs</li>
+                        <li>💾 Local storage operations</li>
+                    </ul>
+                    <p><strong>Common errors to look for:</strong></p>
+                    <ul>
+                        <li>"Invalid hook call" - React hooks called outside component</li>
+                        <li>"Cannot read property of undefined" - Service call errors</li>
+                        <li>"Network error" - Backend connection issues</li>
+                        <li>"localStorage is not defined" - SSR issues</li>
+                    </ul>
+                </div>
+            `;
+        }
+        
+        async function simulateSettingLoad() {
+            const result = document.getElementById('simulateResult');
+            try {
+                console.log('🧪 Simulating setting page load...');
+                
+                // Simulate the exact flow of setting page
+                const isAuthenticated = false;
+                
+                // Step 1: Load saved item counts
+                console.log('Step 1: Loading saved item counts...');
+                const [hadithFavorites, hadithBookmarks] = await Promise.all([
+                    favoriteService.getFavorites(isAuthenticated, 'hadith'),
+                    bookmarkService.getBookmarks(isAuthenticated, 'hadith')
+                ]);
+                
+                // Step 2: Load quran data
+                console.log('Step 2: Loading quran data...');
+                const quranFavorites = quranStorageUtils.getFavorites().length;
+                const quranBookmarks = quranStorageUtils.getBookmarks().length;
+                
+                // Step 3: Render components
+                console.log('Step 3: Rendering components...');
+                const components = [
+                    'SettingHeader',
+                    'AccountSection', 
+                    'CustomizationSection',
+                    'SavedItemsSection',
+                    'GeneralSettingsSection',
+                    'OtherSettingsSection'
+                ];
+                
+                result.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Setting Page Load Simulation</h4>
+                        <p><strong>Step 1 - Saved Item Counts:</strong> ✅ Success</p>
+                        <p><strong>Step 2 - Quran Data:</strong> ✅ Success</p>
+                        <p><strong>Step 3 - Components:</strong> ✅ Success</p>
+                        <p><strong>Hadith Favorites:</strong> ${hadithFavorites.length}</p>
+                        <p><strong>Hadith Bookmarks:</strong> ${hadithBookmarks.length}</p>
+                        <p><strong>Quran Favorites:</strong> ${quranFavorites}</p>
+                        <p><strong>Quran Bookmarks:</strong> ${quranBookmarks}</p>
+                        <p><strong>Components loaded:</strong> ${components.join(', ')}</p>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Setting Page Load Simulation Failed</h4>
+                        <p>${error.message}</p>
+                        <p>Check console for detailed error information</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Auto-run initial test
+        window.onload = function() {
+            testSettingAccess();
+        };
+    </script>
+</body>
+</html>

@@ -38,6 +38,8 @@ export interface HadithCardProps {
   hadith: HadithSummary;
   isFavorite: boolean;
   isBookmarked: boolean;
+  isAuthenticated?: boolean;
+  loadingBookmarks?: boolean;
   onClick: (hadith: HadithSummary) => void;
 }
 
@@ -57,6 +59,8 @@ export interface HadithDetailSheetProps {
   isLoading: boolean;
   favorites: number[];
   bookmarks: number[];
+  isAuthenticated?: boolean;
+  loadingBookmarks?: boolean;
   onClose: () => void;
   onToggleFavorite: (hadithId: number) => void;
   onToggleBookmark: (hadithId: number) => void;
