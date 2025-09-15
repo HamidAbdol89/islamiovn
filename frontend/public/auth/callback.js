@@ -1,13 +1,21 @@
 async function handleCallback() {
     console.log('Callback.js: Starting handleCallback');
     console.log('Callback.js: Current URL:', window.location.href);
+    console.log('Callback.js: Search params:', window.location.search);
+    console.log('Callback.js: Hash:', window.location.hash);
     
     try {
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
         const error = urlParams.get('error');
+        const state = urlParams.get('state');
         
-        console.log('Callback.js: URL params:', { code: code ? 'present' : 'missing', error });
+        console.log('Callback.js: URL params:', { 
+            code: code ? 'present' : 'missing', 
+            error, 
+            state,
+            allParams: Object.fromEntries(urlParams.entries())
+        });
 
         if (error) {
             console.log('Callback.js: OAuth error detected:', error);
@@ -32,7 +40,7 @@ async function handleCallback() {
                 client_secret: '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',
                 code: code,
                 grant_type: 'authorization_code',
-                redirect_uri: 'http://localhost:5173/auth/callback',
+                redirect_uri: `${window.location.origin}/auth/callback`,
             }),
         });
 

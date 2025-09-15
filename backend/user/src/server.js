@@ -9,36 +9,26 @@ require('dotenv').config();
 const app = express();
 
 // CORS configuration (must be before helmet and rate limiter to ensure preflight succeeds)
-const corsOptions = {
-  origin: [
-    process.env.FRONTEND_URL || 'http://localhost:5173',
-    'http://localhost:3000',
-    'http://127.0.0.1:5173',
-    'http://127.0.0.1:3000'
-  ],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  optionsSuccessStatus: 200
-};
-app.use(cors(corsOptions));
-// Handle preflight (OPTIONS) requests globally in Express 5 compatible way
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://muslimviet.vercel.app'
+];
+
 app.use((req, res, next) => {
-  if (req.method === 'OPTIONS') {
-    const requestOrigin = req.headers.origin;
-    // Always echo Origin on preflight when present to satisfy browsers
-    if (requestOrigin) {
-      res.header('Access-Control-Allow-Origin', requestOrigin);
-      res.header('Vary', 'Origin');
-    }
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Methods', (corsOptions.methods || []).join(','));
-    res.header('Access-Control-Allow-Headers', (corsOptions.allowedHeaders || []).join(','));
-    res.header('Access-Control-Max-Age', '86400');
-    return res.sendStatus(corsOptions.optionsSuccessStatus || 204);
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
   }
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 });
+
+
+
 
 // Security middleware
 app.use(helmet());

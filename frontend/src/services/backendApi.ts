@@ -1,5 +1,22 @@
 // Backend API service
-const API_BASE_URL = import.meta.env.VITE_API_URL_USER || 'http://localhost:3000/api';
+const ENV_API_BASE: string | undefined = import.meta.env.VITE_API_URL_USER as any;
+const isValidUrl = (url?: string) => !!url && /^https?:\/\/.+/.test(url);
+const withApiSuffix = (url: string) => url.replace(/\/?$/, '').endsWith('/api') ? url : `${url.replace(/\/?$/, '')}/api`;
+const fixLocalhostPortTypo = (url: string) => url
+  // fix localhost3000 -> localhost:3000
+  .replace(/localhost(\d{4,5})/, 'localhost:$1')
+  // also fix https://localhost3000 -> https://localhost:3000
+  .replace(/(https?:\/\/localhost)(\d{4,5})/, '$1:$2');
+
+const DEFAULT_BASE = (typeof window !== 'undefined' && window.location.hostname === 'localhost')
+  ? 'http://localhost:3000/api'
+  : 'https://muslimviet-user.onrender.com/api';
+
+const API_BASE_URL = (() => {
+  if (!isValidUrl(ENV_API_BASE)) return DEFAULT_BASE;
+  const corrected = withApiSuffix(fixLocalhostPortTypo(ENV_API_BASE as string));
+  return corrected;
+})();
 
 class ApiService {
   private baseURL: string;
