@@ -2,6 +2,28 @@ import type { Scholar, ScholarCategory } from './types';
 
 export const EPISODES_PER_PAGE = 10;
 
+// RSS feed URLs mapping for scholars
+export const FEED_URLS: Record<string, string> = {
+  'mufti-menk': 'https://feeds.acast.com/public/shows/669f8f9582b4e4eb3d88ad2e',
+  'nouman-ali-khan': 'https://rss.muslimcentral.com/nouman-ali-khan.rss',
+  'omar-suleiman': 'https://rss.muslimcentral.com/omar-suleiman.rss',
+  'yasir-qadhi': 'https://rss.muslimcentral.com/yasir-qadhi.rss',
+  'bilal-philips': 'https://muslimcentral.com/audio/bilal-philips/feed/',
+  'hamza-yusuf': 'https://muslimcentral.com/audio/hamza-yusuf/feed/',
+  'abdul-nasir-jangda': 'https://muslimcentral.com/audio/abdul-nasir-jangda/feed/',
+  'wahaj-tarin': 'https://muslimcentral.com/audio/wahaj-tarin/feed/',
+  'mohamed-hoblos': 'https://muslimcentral.com/audio/muhammad-hoblos/feed/',
+  'haifaa-younis': 'https://rss.muslimcentral.com/haifaa-younis.rss',
+  'abdulbary-yahya': 'https://rss.muslimcentral.com/abdulbary-yahya.rss',
+  'zahir-mahmood': 'https://rss.muslimcentral.com/zahir-mahmood.rss',
+  'taimiyyah-zubair': 'https://rss.muslimcentral.com/taimiyyah-zubair.rss',
+  'hasan-ali': 'https://rss.muslimcentral.com/hasan-ali.rss',
+  'shady-alsuleiman': 'https://rss.muslimcentral.com/shady-alsuleiman.rss',
+  'moutasem-al-hameedy': 'https://rss.muslimcentral.com/moutasem-al-hameedy.rss',
+  'muhammad-west': 'https://rss.muslimcentral.com/muhammad-west.rss',
+  'muiz-bukhary': 'https://rss.muslimcentral.com/muiz-bukhary.rss',
+};
+
 export const FEATURED_SCHOLARS = [
   'mufti-menk',           // Inspirational, ethical, globally popular
   'nouman-ali-khan',      // Modern Tafsir, easy to understand, extremely famous

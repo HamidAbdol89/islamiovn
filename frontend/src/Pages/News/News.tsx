@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 
 // Constants moved outside component to prevent recreation
-const DEFAULT_IMAGE = "/default-news.jpg";
+const DEFAULT_IMAGE = "/logo.png";
 
 // Memoized NewsCard component
 const NewsCard = memo(({ item, index }: { item: any; index: number }) => {
