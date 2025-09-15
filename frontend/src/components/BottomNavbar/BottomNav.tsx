@@ -2,21 +2,35 @@ import React, { useState, useEffect } from 'react';
 import type { MouseEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HomeIcon, NewspaperIcon, ChatBubbleLeftRightIcon, PlayCircleIcon, Cog6ToothIcon } from "@heroicons/react/24/solid";
+import { useAuth } from '@/context/AuthContext';
+
+interface TabItem {
+  key: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }> | null;
+  avatar?: string | null;
+}
 
 interface BottomNavProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
-    className?: string; // <-- thêm cái này
-
+  className?: string;
 }
 
 const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) => {
-  const tabs = [
+  const { user, isAuthenticated } = useAuth();
+  
+  const tabs: TabItem[] = [
     { key: 'home', label: 'Trang chủ', icon: HomeIcon },
     { key: 'news', label: 'Tin tức', icon: NewspaperIcon },
     { key: 'ai', label: 'AI', icon: ChatBubbleLeftRightIcon },
     { key: 'video', label: 'Video', icon: PlayCircleIcon },
-    { key: 'setting', label: 'Cài đặt', icon: Cog6ToothIcon },
+    { 
+      key: 'setting', 
+      label: isAuthenticated ? 'Hồ sơ' : 'Cài đặt', 
+      icon: isAuthenticated ? null : Cog6ToothIcon,
+      avatar: isAuthenticated ? user?.picture : null
+    },
   ];
   
   const [previousTab, setPreviousTab] = useState(activeTab);
@@ -54,6 +68,8 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) => {
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = tab.key === activeTab;
+            const isSettingTab = tab.key === 'setting';
+            const showAvatar = isSettingTab && isAuthenticated && tab.avatar;
  
             
             return (
@@ -78,7 +94,15 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) => {
                   }}
                   transition={{ duration: 0.3 }}
                 >
-                  <Icon className="w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0 text-current" />
+                  {showAvatar && tab.avatar ? (
+                    <img 
+                      src={tab.avatar} 
+                      alt="User Avatar" 
+                      className="w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0 rounded-full object-cover border border-white/20"
+                    />
+                  ) : (
+                    Icon && <Icon className="w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0 text-current" />
+                  )}
                 </motion.div>
                 
                 <AnimatePresence mode="wait" custom={direction}>
