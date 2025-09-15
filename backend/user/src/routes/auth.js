@@ -4,11 +4,6 @@ const User = require('../models/User');
 const { authenticateGoogleToken, authenticateToken } = require('../middleware/auth');
 const { generateToken, successResponse, errorResponse } = require('../utils/helpers');
 
-// Handle preflight requests for all auth routes
-router.options('*', (req, res) => {
-  res.status(200).end();
-});
-
 // Google OAuth login/register
 router.post('/google', authenticateGoogleToken, async (req, res) => {
   try {
