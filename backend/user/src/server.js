@@ -8,19 +8,8 @@ require('dotenv').config();
 
 const app = express();
 
-// Security middleware
-app.use(helmet());
-
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === 'development' ? 1000 : 100, // Higher limit for development
-  message: 'Too many requests from this IP, please try again later.'
-});
-app.use(limiter);
-
-// CORS configuration
-app.use(cors({
+// CORS configuration (must be before helmet and rate limiter to ensure preflight succeeds)
+const corsOptions = {
   origin: [
     process.env.FRONTEND_URL || 'http://localhost:5173',
     'http://localhost:3000',
@@ -31,7 +20,35 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   optionsSuccessStatus: 200
-}));
+};
+app.use(cors(corsOptions));
+// Handle preflight (OPTIONS) requests globally in Express 5 compatible way
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    const requestOrigin = req.headers.origin;
+    const allowedOrigins = corsOptions.origin || [];
+    if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
+      res.header('Access-Control-Allow-Origin', requestOrigin);
+      res.header('Vary', 'Origin');
+    }
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', (corsOptions.methods || []).join(','));
+    res.header('Access-Control-Allow-Headers', (corsOptions.allowedHeaders || []).join(','));
+    return res.sendStatus(corsOptions.optionsSuccessStatus || 204);
+  }
+  next();
+});
+
+// Security middleware
+app.use(helmet());
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: process.env.NODE_ENV === 'development' ? 1000 : 100, // Higher limit for development
+  message: 'Too many requests from this IP, please try again later.'
+});
+app.use(limiter);
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
