@@ -26,14 +26,15 @@ app.use(cors(corsOptions));
 app.use((req, res, next) => {
   if (req.method === 'OPTIONS') {
     const requestOrigin = req.headers.origin;
-    const allowedOrigins = corsOptions.origin || [];
-    if (requestOrigin && allowedOrigins.includes(requestOrigin)) {
+    // Always echo Origin on preflight when present to satisfy browsers
+    if (requestOrigin) {
       res.header('Access-Control-Allow-Origin', requestOrigin);
       res.header('Vary', 'Origin');
     }
     res.header('Access-Control-Allow-Credentials', 'true');
     res.header('Access-Control-Allow-Methods', (corsOptions.methods || []).join(','));
     res.header('Access-Control-Allow-Headers', (corsOptions.allowedHeaders || []).join(','));
+    res.header('Access-Control-Max-Age', '86400');
     return res.sendStatus(corsOptions.optionsSuccessStatus || 204);
   }
   next();
