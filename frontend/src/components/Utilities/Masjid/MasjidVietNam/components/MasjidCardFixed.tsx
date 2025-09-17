@@ -1,5 +1,5 @@
-// MasjidCard Component with Vietnamese localization, region colors, favorites and share
-import React from 'react';
+// MasjidCard Component with Vietnamese localization, region colors, favorites, share and user avatars
+import React, { useEffect } from 'react';
 import { MapPin, Users, Phone, Calendar, Heart, Share2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,13 +7,19 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { MasjidViet } from '../types';
 import { REGION_BADGE_COLORS } from '../constants';
+import FavoriteUsersAvatars from './FavoriteUsersAvatars';
 
 interface MasjidCardProps {
   masjid: MasjidViet;
   onClick: () => void;
   isFavorite?: boolean;
-  onToggleFavorite?: (masjidId: string) => void;
+  onToggleFavorite?: (masjid: MasjidViet) => void;
   onShare?: (masjid: MasjidViet) => void;
+  // Backend integration props
+  onInitializeMasjid?: (masjidId: string) => void;
+  favoriteUsers?: any[];
+  favoriteCount?: number;
+  isLoadingFavorites?: boolean;
 }
 
 const MasjidCard: React.FC<MasjidCardProps> = React.memo(({ 
@@ -21,17 +27,35 @@ const MasjidCard: React.FC<MasjidCardProps> = React.memo(({
   onClick, 
   isFavorite = false, 
   onToggleFavorite, 
-  onShare 
+  onShare,
+  onInitializeMasjid: _onInitializeMasjid, // Prefix with _ to indicate intentionally unused
+  favoriteUsers = [],
+  favoriteCount = 0,
+  isLoadingFavorites = false
 }) => {
   // Get region badge color with type safety
   const regionBadgeColor = masjid.vung && masjid.vung in REGION_BADGE_COLORS 
     ? REGION_BADGE_COLORS[masjid.vung as keyof typeof REGION_BADGE_COLORS] 
     : REGION_BADGE_COLORS['Tất cả'];
 
+  // Initialize masjid data on mount (public data - no auth required)
+  useEffect(() => {
+    if (_onInitializeMasjid) {
+      // Add small random delay to spread out requests and prevent rate limiting
+      const delay = Math.random() * 1000 + 200; // 200-1200ms delay
+      const timer = setTimeout(() => {
+        console.log('🔄 Initializing public data for masjid:', masjid.id);
+        _onInitializeMasjid(masjid.id);
+      }, delay);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [masjid.id, _onInitializeMasjid]);
+
   // Handle action button clicks
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onToggleFavorite?.(masjid.id);
+    onToggleFavorite?.(masjid);
   };
 
   const handleShareClick = (e: React.MouseEvent) => {
@@ -126,6 +150,20 @@ const MasjidCard: React.FC<MasjidCardProps> = React.memo(({
             </Badge>
           )}
         </div>
+
+        {/* Favorite Users Avatars */}
+        {(favoriteCount > 0 || isLoadingFavorites) && (
+          <div className="mb-3">
+            <FavoriteUsersAvatars
+              users={favoriteUsers}
+              totalCount={favoriteCount}
+              isLoading={isLoadingFavorites}
+              maxDisplay={4}
+              size="sm"
+              showCount={true}
+            />
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div className="flex items-center justify-between pt-2 border-t border-border">

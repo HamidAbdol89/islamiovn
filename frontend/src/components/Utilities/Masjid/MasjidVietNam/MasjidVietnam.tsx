@@ -5,10 +5,10 @@ import type { MasjidViet } from './types';
 import { 
   useMasjidData, 
   useMasjidSearch, 
-  useFavorites, 
   useShare, 
   usePullToRefresh,
-  useSearchAnalytics 
+  useSearchAnalytics,
+  useMasjidFavoritesBackend
 } from './hooks';
 import {
   MasjidHeader,
@@ -36,8 +36,16 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
     clearSearch
   } = useMasjidSearch(filterMasjids);
   
-  // Favorites and Share hooks
-  const { isFavorite, toggleFavorite, favoritesCount } = useFavorites();
+  // Backend favorites and Share hooks
+  const {
+    isFavorited,
+    toggleFavorite,
+    totalUserFavorites,
+    initializeMasjid,
+    getFavoriteUsers,
+    getFavoriteCount,
+    isLoadingMasjid
+  } = useMasjidFavoritesBackend();
   const { shareMasjid } = useShare();
   
   // Analytics hook
@@ -87,20 +95,9 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
   }, [trangThaiTimKiem.tuKhoa, trangThaiTimKiem.vungDuocChon, thongKeTimKiem.total, trackSearch]);
 
   // Handle favorites
-  const handleToggleFavorite = useCallback((masjidId: string) => {
-    const wasFavorite = isFavorite(masjidId);
-    toggleFavorite(masjidId);
-    
-    // Show toast notification
-    toast.success(
-      wasFavorite 
-        ? 'Đã bỏ khỏi danh sách yêu thích' 
-        : 'Đã thêm vào danh sách yêu thích',
-      {
-        duration: 2000,
-      }
-    );
-  }, [isFavorite, toggleFavorite]);
+  const handleToggleFavorite = useCallback((masjid: MasjidViet) => {
+    toggleFavorite(masjid);
+  }, [toggleFavorite]);
 
   // Handle share
   const handleShare = useCallback(async (masjid: MasjidViet) => {
@@ -134,7 +131,7 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background transition-colors duration-300">
-        <MasjidHeader tongSoMasjid={statistics.total} favoritesCount={favoritesCount} />
+        <MasjidHeader tongSoMasjid={statistics.total} favoritesCount={totalUserFavorites} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <MasjidSkeletonGrid count={6} />
         </div>
@@ -157,7 +154,7 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
       />
 
       {/* Header */}
-      <MasjidHeader tongSoMasjid={statistics.total} favoritesCount={favoritesCount} />
+      <MasjidHeader tongSoMasjid={statistics.total} favoritesCount={totalUserFavorites} />
 
       {/* Search & Filters */}
       <MasjidSearch
@@ -183,9 +180,13 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
                 key={masjid.id}
                 masjid={masjid}
                 onClick={() => handleMasjidClick(masjid)}
-                isFavorite={isFavorite(masjid.id)}
+                isFavorite={isFavorited(masjid.id)}
                 onToggleFavorite={handleToggleFavorite}
                 onShare={handleShare}
+                onInitializeMasjid={initializeMasjid}
+                favoriteUsers={getFavoriteUsers(masjid.id)}
+                favoriteCount={getFavoriteCount(masjid.id)}
+                isLoadingFavorites={isLoadingMasjid(masjid.id)}
               />
             ))}
           </div>

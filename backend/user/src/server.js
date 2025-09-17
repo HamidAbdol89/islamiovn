@@ -62,7 +62,7 @@ app.use(helmet());
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === 'development' ? 1000 : 100, // Higher limit for development
+  max: process.env.NODE_ENV === 'development' ? 50000 : 100, // Very high limit for development
   message: 'Too many requests from this IP, please try again later.'
 });
 app.use(limiter);
@@ -92,6 +92,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/bookmarks', require('./routes/bookmarks'));
 app.use('/api/favorites', require('./routes/favorites'));
+app.use('/api/masjid-favorites', require('./routes/masjidFavorites'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
