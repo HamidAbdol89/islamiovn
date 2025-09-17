@@ -227,6 +227,7 @@ const Dua: React.FC = () => {
 />
       <DuaNavigation
         viewHienTai={viewHienTai}
+        soLuongDanhMuc={duLieu?.Vietnamese?.length || 0}
         soLuongYeuThich={soLuongYeuThich}
         onChuyenView={handleChuyenView}
       />

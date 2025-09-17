@@ -166,7 +166,8 @@ const Utilities: React.FC = () => {
       ))}
 
       {/* Light mode: hạ tông card bằng overlay mờ */}
-      <div className="absolute inset-0 bg-black/10 dark:hidden pointer-events-none" />
+{/* Overlay mạnh cho cả light & dark */}
+<div className="absolute inset-0 bg-black/30 pointer-events-none" />
 
       {/* Carousel Indicators */}
       <div className="absolute bottom-3 left-4 flex space-x-1.5">
@@ -180,30 +181,30 @@ const Utilities: React.FC = () => {
         ))}
       </div>
 
-      {/* Content */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 text-foreground">
-      <div className="flex items-center justify-between">
-          <div className="pb-2">
-            <div className="flex items-center mb-1">
-              <MapPin size={14} className="mr-1.5 text-primary" />
-              <h3 className="font-semibold text-sm">Khám phá Masjid</h3>
-            </div>
-            <p className="text-xs text-foreground">
-  Thánh đường Hồi giáo tại VN
-</p>
-
-          </div>
-
-          <Button
-            onClick={handleExploreMasjids}
-            variant="default"
-            size="sm"
-            className="rounded-full flex items-center gap-1"
-          >
-            Xem<ChevronRight size={12} />
-          </Button>
-        </div>
+{/* Content */}
+<div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+  <div className="flex items-center justify-between">
+    <div className="pb-2">
+      <div className="flex items-center mb-1">
+        <MapPin size={14} className="mr-1.5 text-primary" />
+        <h3 className="font-semibold text-sm">Khám phá Masjid</h3>
       </div>
+      <p className="text-xs">
+        Thánh đường Hồi giáo tại VN
+      </p>
+    </div>
+
+    <Button
+      onClick={handleExploreMasjids}
+      variant="default"
+      size="sm"
+      className="rounded-full flex items-center gap-1"
+    >
+      Xem <ChevronRight size={12} />
+    </Button>
+  </div>
+</div>
+
     </div>
   </CardContent>
 </Card>
@@ -212,7 +213,7 @@ const Utilities: React.FC = () => {
 
         {/* AI Assistant Card */}
         <div className="mb-5">
-          <Card className="bg-gradient-to-br from-primary/5 to-primary/10">
+          <Card >
             <CardContent className="p-5">
               <div className="flex items-center justify-between">
                 {/* Left Content */}

@@ -23,10 +23,7 @@ const SourceCard = React.memo<{
       <CardContent className="p-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-              <span className="text-2xl">{sourceInfo.bieuTuong}</span>
-            </div>
-            
+     
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-lg mb-1">{sourceInfo.tenNguon}</h3>
               <p className="text-sm text-muted-foreground mb-2">
@@ -82,6 +79,7 @@ const DuaSourceSelector = React.memo<DuaSourceSelectorProps>(({
       </Card>
 
       {/* Content */}
+      <div className="p-2 space-y-2">
         
 
         {/* Available Sources */}
@@ -95,6 +93,7 @@ const DuaSourceSelector = React.memo<DuaSourceSelectorProps>(({
           ))}
         </div>
       </div>
+    </div>
   );
 });
 

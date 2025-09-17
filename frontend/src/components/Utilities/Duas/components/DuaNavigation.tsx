@@ -1,17 +1,20 @@
 import React, { useCallback, useMemo } from 'react';
 import { BookOpen, Heart } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { DuaView } from '../types';
 import { VIETNAMESE_TEXT } from '../constants';
 
 interface DuaNavigationProps {
   viewHienTai: DuaView;
+  soLuongDanhMuc: number;
   soLuongYeuThich: number;
   onChuyenView: (view: DuaView) => void;
 }
 
 const DuaNavigation = React.memo<DuaNavigationProps>(({
   viewHienTai,
+  soLuongDanhMuc,
   soLuongYeuThich,
   onChuyenView
 }) => {
@@ -40,7 +43,29 @@ const DuaNavigation = React.memo<DuaNavigationProps>(({
           size="sm"
         >
           <BookOpen className="w-4 h-4" />
-          {VIETNAMESE_TEXT.DANH_MUC}
+          <span className="relative pr-5">
+            {VIETNAMESE_TEXT.DANH_MUC}
+            <AnimatePresence>
+              {soLuongDanhMuc > 0 && (
+                <motion.span
+                  initial={{ scale: 0, opacity: 0, rotate: -180 }}
+                  animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                  exit={{ scale: 0, opacity: 0, rotate: 180 }}
+                  transition={{ 
+                    type: "spring", 
+                    stiffness: 400, 
+                    damping: 25,
+                    duration: 0.6
+                  }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="absolute -top-1 right-0 min-w-[18px] h-[18px] flex items-center justify-center text-[10px] font-bold text-white bg-gradient-to-r from-orange-500 to-orange-600 rounded-full shadow-lg"
+                >
+                  {soLuongDanhMuc}
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </span>
         </Button>
 
         <Button
@@ -50,12 +75,29 @@ const DuaNavigation = React.memo<DuaNavigationProps>(({
           size="sm"
         >
           <Heart className="w-4 h-4" />
-          {VIETNAMESE_TEXT.YEU_THICH}
-          {soLuongYeuThich > 0 && (
-            <span className="ml-1 px-2 py-0.5 text-xs bg-primary/20 rounded-full">
-              {soLuongYeuThich}
-            </span>
-          )}
+          <span className="relative pr-5">
+            {VIETNAMESE_TEXT.YEU_THICH}
+            <AnimatePresence>
+              {soLuongYeuThich > 0 && (
+                <motion.span
+                  initial={{ scale: 0, opacity: 0, rotate: -180 }}
+                  animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                  exit={{ scale: 0, opacity: 0, rotate: 180 }}
+                  transition={{ 
+                    type: "spring", 
+                    stiffness: 400, 
+                    damping: 25,
+                    duration: 0.6
+                  }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="absolute -top-1 right-0 min-w-[18px] h-[18px] flex items-center justify-center text-[10px] font-bold text-white bg-gradient-to-r from-red-500 to-pink-500 rounded-full shadow-lg"
+                >
+                  {soLuongYeuThich}
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </span>
         </Button>
       </div>
     </div>
