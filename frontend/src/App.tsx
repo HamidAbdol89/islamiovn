@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import ErrorBoundary from '@/components/App/ErrorBoundary';
-import LoadingSpinner from '@/components/App/LoadingSpinner';
+import LoadingSkeleton from '@/components/App/LoadingSkeleton';
 import AnimatedRoutes from '@/components/App/AnimatedRoutes';
 import { InstallButton } from '@/components/PWA/InstallButton';
 
@@ -42,7 +42,7 @@ const App: React.FC = () => {
     <ErrorBoundary>
       <Router>
         <div className="App">
-          <Suspense fallback={<LoadingSpinner />}>
+          <Suspense fallback={<LoadingSkeleton />}>
             <AnimatedRoutes />
           </Suspense>
 
