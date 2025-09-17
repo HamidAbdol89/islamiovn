@@ -24,6 +24,7 @@ const Setting = React.lazy(() => import('@/Pages/Setting/Setting'));
 const QuranReader = React.lazy(() => import('@/components/Utilities/Quran/QuranReader'));
 const HadithApp = React.lazy(() => import('@/components/Utilities/Hadith/hadith'));
 const AuthCallback = React.lazy(() => import('@/components/Auth/AuthCallback'));
+const MasjidVietnamApp = React.lazy(() => import('@/components/Utilities/Masjid/MasjidVietNam/MasjidVietnam'));
 
 const AnimatedRoutes: React.FC = () => {
   const location = useLocation();
@@ -222,7 +223,18 @@ const AnimatedRoutes: React.FC = () => {
             </MainLayout>
           } 
         />
-
+ 
+          <Route 
+            path={ROUTES.UTILITIES.MASJID_VIET_NAM} 
+            element={
+              <AnimatedPage>
+                <Suspense fallback={<LoadingSpinner />}
+                >
+                  <MasjidVietnamApp />
+                </Suspense>
+              </AnimatedPage>
+            }
+          />
         {/* Auth Callback Route */}
         <Route 
           path="/auth/callback" 

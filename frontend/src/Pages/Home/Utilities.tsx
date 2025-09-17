@@ -127,7 +127,7 @@ const Utilities: React.FC = () => {
   }, [navigate]);
 
   const handleExploreMasjids = useCallback(() => {
-    navigate(ROUTES.UTILITIES.MASJID);
+    navigate(ROUTES.UTILITIES.MASJID_VIET_NAM);
   }, [navigate]);
 
   const handleNavigateToChat = useCallback(() => {

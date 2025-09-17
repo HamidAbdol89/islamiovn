@@ -19,6 +19,7 @@ export const ROUTES = {
     PODCAST: '/utilities/podcast',
     STUDY: '/utilities/study',
     ZAKAT: '/utilities/zakat',
+    MASJID_VIET_NAM: '/utilities/masjid-vietnam',
   }
 };
 
@@ -42,4 +43,5 @@ export const UTILITY_ROUTES = {
   'dua': ROUTES.UTILITIES.DUAS,
   'podcast': ROUTES.UTILITIES.PODCAST,
   'hadith': ROUTES.UTILITIES.HADITH,
+  'masjid-vietnam': ROUTES.UTILITIES.MASJID_VIET_NAM,
 };
