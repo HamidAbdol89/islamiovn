@@ -43,7 +43,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           newTheme = 'light';
           break;
         default:
-          newTheme = 'light';
+          newTheme = 'dark';
       }
       localStorage.setItem('prayer-theme', newTheme);
       return newTheme;
