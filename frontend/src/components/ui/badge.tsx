@@ -15,8 +15,10 @@ const badgeVariants = cva(
         destructive:
           "border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80",
         outline: "text-foreground",
-        orange: // <-- thêm màu cam ở đây
+        orange:
           "border-transparent bg-orange-500 text-white shadow hover:bg-orange-600",
+          verified: 
+          "border-transparent bg-[#006400] text-white shadow hover:bg-[#004d00]",
       },
     },
     defaultVariants: {
