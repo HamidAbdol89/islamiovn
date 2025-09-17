@@ -30,7 +30,7 @@ const GoogleLoginButton = React.memo<GoogleLoginButtonProps>(({
   );
 
   const buttonClassName = useMemo(() =>
-    `w-full bg-white hover:bg-gray-50 text-gray-900 border border-gray-300 transition-colors ${
+    `w-full bg-card hover:bg-accent text-card-foreground border border-border transition-colors ${
       disabled || isLoading ? 'opacity-50 cursor-not-allowed' : ''
     }`,
     [disabled, isLoading]
@@ -76,7 +76,7 @@ const UserProfile = React.memo(() => {
     if (!user?.verified_email) return null;
     
     return (
-      <div className="flex items-center text-green-600 text-sm mt-1">
+      <div className="flex items-center text-primary text-sm mt-1">
         <Shield className="w-4 h-4 mr-1" />
         <span>Đã xác thực</span>
       </div>

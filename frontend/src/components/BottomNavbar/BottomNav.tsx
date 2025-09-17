@@ -63,8 +63,8 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) => {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 ">
-            <div className="bg-[hsl(var(--card)/0.9)] backdrop-blur-lg rounded-t-3xl p-2 shadow-luxury dark:shadow-luxury-dark border-t border-white/15 dark:border-navy-800/30 transition-smooth mx-auto max-w-md">
-        <div className="flex justify-around items-center">
+<div className="bg-card rounded-t-3xl p-2 border-t border-border/50 transition-all duration-300 mx-auto max-w-md">
+<div className="flex justify-around items-center">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = tab.key === activeTab;
@@ -74,77 +74,51 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) => {
             
             return (
               <button
-                key={tab.key}
-                onClick={(e) => { createRipple(e); onTabChange(tab.key); }}
-                className={`
-                  relative overflow-hidden
-                  flex items-center gap-2 sm:gap-3
-                  transition-all duration-500 
-                  rounded-full 
-                  px-3 py-2.5 sm:px-4 sm:py-3
-                  ${isActive 
-                    ? 'bg-primary/10 text-primary flex-2 sm:flex-auto min-w-[56px]' 
-                    : 'bg-transparent text-muted-foreground w-12 sm:w-14 justify-center hover:text-primary'
-                  }
-                `}
-              >    
+              key={tab.key}
+              onClick={(e) => { createRipple(e); onTabChange(tab.key); }}
+              className="relative overflow-hidden flex items-center gap-2 sm:gap-3 transition-all duration-500 rounded-full px-3 py-2.5 sm:px-4 sm:py-3"
+            >
+              {/* Hiệu ứng highlight bao quanh button */}
+              {isActive && (
                 <motion.div
-                  animate={{ 
-                    scale: isActive ? 1.1 : 1,
-                  }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {showAvatar && tab.avatar ? (
-                    <img 
-                      src={tab.avatar} 
-                      alt="User Avatar" 
-                      className="w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0 rounded-full object-cover border border-white/20"
-                    />
-                  ) : (
-                    Icon && <Icon className="w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0 text-current" />
-                  )}
-                </motion.div>
-                
-                <AnimatePresence mode="wait" custom={direction}>
-                  {isActive && (
-                    <motion.span
-                      key={`active-${tab.key}`}
-                      custom={direction}
-                      initial={{ 
-                        opacity: 0, 
-                        x: 20 * direction,
-                        width: 0 
-                      }}
-                      animate={{ 
-                        opacity: 1, 
-                        x: 0,
-                        width: "auto"
-                      }}
-                      exit={{ 
-                        opacity: 0, 
-                        x: -20 * direction,
-                        width: 0 
-                      }}
-                      transition={{
-                        duration: 0.4,
-                        ease: "easeOut"
-                      }}
-                      className="text-xs sm:text-sm font-medium whitespace-nowrap overflow-hidden"
-                    >
-                      {tab.label}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-                
-                {/* Hiệu ứng highlight cho tab active */}
-                {isActive && (
-                  <motion.div 
-                    className="absolute inset-0 bg-primary/10 rounded-full"
-                    layoutId="activeTab"
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  className="absolute inset-0 bg-primary/10 rounded-full"
+                  layoutId="activeTab"
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                />
+              )}
+            
+              <motion.div
+                animate={{ scale: isActive ? 1.1 : 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                {showAvatar && tab.avatar ? (
+                  <img 
+                    src={tab.avatar} 
+                    alt="User Avatar" 
+                    className="w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0 rounded-full object-cover border border-border/30"
                   />
+                ) : (
+                  Icon && <Icon className="w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0 text-current" />
                 )}
-              </button>
+              </motion.div>
+            
+              <AnimatePresence mode="wait" custom={direction}>
+                {isActive && (
+                  <motion.span
+                    key={`active-${tab.key}`}
+                    custom={direction}
+                    initial={{ opacity: 0, x: 20 * direction, width: 0 }}
+                    animate={{ opacity: 1, x: 0, width: "auto" }}
+                    exit={{ opacity: 0, x: -20 * direction, width: 0 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    className="text-xs sm:text-sm font-medium whitespace-nowrap overflow-hidden"
+                  >
+                    {tab.label}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </button>
+            
             );
           })}
         </div>
@@ -154,7 +128,8 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) => {
         .ripple {
           position: absolute;
           border-radius: 50%;
-          background-color: rgba(255, 255, 255, 0.7);
+          background-color: var(--primary);
+          opacity: 0.2;
           transform: scale(0);
           animation: ripple 0.6s linear;
         }

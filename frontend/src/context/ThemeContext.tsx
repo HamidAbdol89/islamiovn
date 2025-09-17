@@ -1,7 +1,7 @@
 // src/context/ThemeContext.tsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'dark' | 'light' | 'islamic';
+type Theme = 'dark' | 'light';
 
 interface ThemeContextType {
   theme: Theme;
@@ -40,9 +40,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           newTheme = 'dark';
           break;
         case 'dark':
-          newTheme = 'islamic';
-          break;
-        case 'islamic':
           newTheme = 'light';
           break;
         default:
@@ -57,14 +54,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const root = document.documentElement;
     
     // Xóa tất cả các class theme cũ
-    root.classList.remove('light', 'dark', 'islamic');
+    root.classList.remove('light', 'dark');
     
     // Thêm class theme mới
-    if (theme === 'islamic') {
-      root.classList.add('islamic');
-    } else {
-      root.classList.add(theme);
-    }
+    root.classList.add(theme);
   }, [theme]);
 
   return (

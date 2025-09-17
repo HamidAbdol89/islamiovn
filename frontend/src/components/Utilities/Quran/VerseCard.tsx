@@ -125,7 +125,7 @@ ${translation ? `📖 ${translation}
       className={`
         relative transition-colors duration-300 group
         ${isCurrentlyPlaying 
-          ? 'bg-[#1a365d] text-white border-blue-600/30 shadow-lg' 
+          ? 'bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 text-emerald-900 dark:text-emerald-100 border-emerald-200 dark:border-emerald-800/50 shadow-lg shadow-emerald-100/50 dark:shadow-emerald-900/20' 
           : 'bg-card text-card-foreground border-border hover:bg-accent/5'
         }
       `}
@@ -138,7 +138,7 @@ ${translation ? `📖 ${translation}
           className={`
             font-medium
             ${isCurrentlyPlaying 
-              ? "bg-blue-500 text-white border-blue-400" 
+              ? "bg-emerald-600 text-white border-emerald-500 shadow-sm" 
               : ""
             }
           `}
@@ -154,7 +154,7 @@ ${translation ? `📖 ${translation}
             disabled={verseState?.loading}
             className={`
               ${isCurrentlyPlaying 
-                ? "bg-blue-500 text-white border-blue-400 hover:bg-blue-600" 
+                ? "bg-emerald-600 text-white border-emerald-500 hover:bg-emerald-700 shadow-md shadow-emerald-200 dark:shadow-emerald-900/30" 
                 : ""
               }
             `}
@@ -176,7 +176,7 @@ ${translation ? `📖 ${translation}
                 className={`
                   leading-loose text-right font-arabic font-medium
                   ${isCurrentlyPlaying 
-                    ? 'text-white' 
+                    ? 'text-emerald-900 dark:text-emerald-100' 
                     : 'text-card-foreground'
                   }
                 `}
@@ -187,7 +187,7 @@ ${translation ? `📖 ${translation}
               className={`
                 leading-loose text-right font-arabic font-medium
                 ${isCurrentlyPlaying 
-                  ? 'text-white' 
+                  ? 'text-emerald-900 dark:text-emerald-100' 
                   : 'text-card-foreground'
                 }
               `}
@@ -210,7 +210,7 @@ ${translation ? `📖 ${translation}
             className={`
               h-8 w-8 p-0 backdrop-blur-sm
               ${isCurrentlyPlaying 
-                ? 'bg-white/10 hover:bg-white/20 text-white' 
+                ? 'bg-emerald-100/50 hover:bg-emerald-100/80 text-emerald-700 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 dark:text-emerald-200' 
                 : 'bg-background/80 hover:bg-background'
               }
             `}
@@ -219,8 +219,8 @@ ${translation ? `📖 ${translation}
             <Heart 
               className={`h-4 w-4 ${
                 isFavorited 
-                  ? 'fill-red-500 text-red-500' 
-                  : isCurrentlyPlaying ? 'text-white' : 'text-muted-foreground'
+                  ? 'fill-destructive text-destructive' 
+                  : isCurrentlyPlaying ? 'text-emerald-700 dark:text-emerald-200' : 'text-muted-foreground'
               }`} 
             />
           </Button>
@@ -232,7 +232,7 @@ ${translation ? `📖 ${translation}
             className={`
               h-8 w-8 p-0 backdrop-blur-sm
               ${isCurrentlyPlaying 
-                ? 'bg-white/10 hover:bg-white/20 text-white' 
+                ? 'bg-emerald-100/50 hover:bg-emerald-100/80 text-emerald-700 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 dark:text-emerald-200' 
                 : 'bg-background/80 hover:bg-background'
               }
             `}
@@ -241,8 +241,8 @@ ${translation ? `📖 ${translation}
             <Bookmark 
               className={`h-4 w-4 ${
                 isBookmarked 
-                  ? 'fill-blue-500 text-blue-500' 
-                  : isCurrentlyPlaying ? 'text-white' : 'text-muted-foreground'
+                  ? 'fill-emerald-600 text-emerald-600' 
+                  : isCurrentlyPlaying ? 'text-emerald-700 dark:text-emerald-200' : 'text-muted-foreground'
               }`} 
             />
           </Button>
@@ -255,13 +255,13 @@ ${translation ? `📖 ${translation}
                 className={`
                   h-8 w-8 p-0 backdrop-blur-sm
                   ${isCurrentlyPlaying 
-                    ? 'bg-white/10 hover:bg-white/20 text-white' 
+                    ? 'bg-emerald-100/50 hover:bg-emerald-100/80 text-emerald-700 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 dark:text-emerald-200' 
                     : 'bg-background/80 hover:bg-background'
                   }
                 `}
                 title="Chia sẻ ayah"
               >
-                <Share2 className={`h-4 w-4 ${isCurrentlyPlaying ? 'text-white' : 'text-muted-foreground'}`} />
+                <Share2 className={`h-4 w-4 ${isCurrentlyPlaying ? 'text-emerald-700 dark:text-emerald-200' : 'text-muted-foreground'}`} />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="center">
@@ -283,11 +283,11 @@ ${translation ? `📖 ${translation}
 
         {/* Translation */}
         {showTranslation && translation && (
-          <div className={`pt-4 border-t ${isCurrentlyPlaying ? 'border-blue-400/20' : 'border-border'}`}>
+          <div className={`pt-4 border-t ${isCurrentlyPlaying ? 'border-emerald-200/50 dark:border-emerald-800/30' : 'border-border'}`}>
             <p className={`
               text-base leading-relaxed
               ${isCurrentlyPlaying 
-                ? 'text-blue-100' 
+                ? 'text-emerald-800 dark:text-emerald-200/90' 
                 : 'text-muted-foreground'
               }
             `}>

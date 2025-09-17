@@ -1,10 +1,9 @@
-import { Moon, Sun, Globe } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
 import type { ThemeOption } from './types';
 
 export const THEME_OPTIONS: readonly ThemeOption[] = [
   { id: 'light', name: 'Sáng', icon: Sun },
   { id: 'dark', name: 'Tối', icon: Moon },
-  { id: 'islamic', name: 'Mặc định', icon: Globe }
 ] as const;
 
 export const SHARE_DATA = {
