@@ -1,5 +1,5 @@
 // MasjidCard Component with Vietnamese localization, region colors, favorites, share and user avatars
-import React, { useEffect } from 'react';
+import React from 'react';
 import { MapPin, Users, Phone, Calendar, Heart, Share2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -38,19 +38,8 @@ const MasjidCard: React.FC<MasjidCardProps> = React.memo(({
     ? REGION_BADGE_COLORS[masjid.vung as keyof typeof REGION_BADGE_COLORS] 
     : REGION_BADGE_COLORS['Tất cả'];
 
-  // Initialize masjid data on mount (public data - no auth required)
-  useEffect(() => {
-    if (_onInitializeMasjid) {
-      // Add small random delay to spread out requests and prevent rate limiting
-      const delay = Math.random() * 1000 + 200; // 200-1200ms delay
-      const timer = setTimeout(() => {
-        console.log('🔄 Initializing public data for masjid:', masjid.id);
-        _onInitializeMasjid(masjid.id);
-      }, delay);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [masjid.id, _onInitializeMasjid]);
+  // PERFORMANCE: Individual card initialization disabled - using batch loading instead
+  // This prevents N individual API calls and uses 1 batch call instead
 
   // Handle action button clicks
   const handleFavoriteClick = (e: React.MouseEvent) => {

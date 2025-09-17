@@ -38,8 +38,6 @@ export const useMasjidFavoritesBackend = () => {
 
   // Use AuthContext for authentication
   const { user, isAuthenticated, login } = useAuth();
-  
-  console.log('🔐 Auth status from context:', { isAuthenticated, user: user?.email });
 
   // Auto-save to localStorage when favoriteStates changes
   useEffect(() => {
@@ -61,7 +59,32 @@ export const useMasjidFavoritesBackend = () => {
     };
   }, [favoriteStates]);
 
-  // Load favorite users for a masjid
+  // PERFORMANCE: Batch load favorite users for multiple masjids
+  const loadBatchMasjidData = useCallback(async (masjidIds: string[]) => {
+    try {
+      const response = await masjidFavoriteApi.getBatchMasjidData(masjidIds, 10);
+      
+      if (response.success && response.data) {
+        setFavoriteStates(prev => {
+          const newState = { ...prev };
+          Object.entries(response.data!).forEach(([masjidId, data]) => {
+            newState[masjidId] = {
+              ...prev[masjidId],
+              favoriteUsers: data.users,
+              totalFavorites: data.totalCount,
+              isLoading: false,
+              lastUpdated: Date.now()
+            };
+          });
+          return newState;
+        });
+      }
+    } catch (error) {
+      console.error('Error loading batch masjid data:', error);
+    }
+  }, []);
+
+  // Load favorite users for a single masjid (fallback)
   const loadMasjidFavoriteUsers = useCallback(async (masjidId: string) => {
     try {
       setFavoriteStates(prev => ({
@@ -75,7 +98,6 @@ export const useMasjidFavoritesBackend = () => {
       const response = await masjidFavoriteApi.getMasjidFavoriteUsers(masjidId, 10);
       
       if (response.success && response.data) {
-        console.log('👥 Loaded', response.data.users.length, 'users for masjid:', masjidId);
         setFavoriteStates(prev => ({
           ...prev,
           [masjidId]: {
@@ -129,12 +151,8 @@ export const useMasjidFavoritesBackend = () => {
 
   // Toggle favorite status
   const toggleFavorite = useCallback(async (masjid: MasjidViet) => {
-    console.log('🔥 Toggle favorite called for:', masjid.ten);
-    console.log('🔐 Is authenticated:', isAuthenticated);
-    
     // Prevent rapid clicking
     if (pendingToggles.current.has(masjid.id)) {
-      console.log('⏳ Toggle already in progress for:', masjid.ten);
       return;
     }
     
@@ -145,7 +163,6 @@ export const useMasjidFavoritesBackend = () => {
         action: {
           label: 'Đăng nhập',
           onClick: () => {
-            console.log('🚀 Triggering Google login...');
             login().catch(error => {
               console.error('Login failed:', error);
               toast.error('Đăng nhập thất bại');
@@ -252,7 +269,6 @@ export const useMasjidFavoritesBackend = () => {
     
     // Skip if recently loaded (within 5 minutes) and has data
     if (now - currentState.lastUpdated < 5 * 60 * 1000 && currentState.lastUpdated > 0) {
-      console.log('📋 Using cached data for:', masjidId);
       return;
     }
 
@@ -300,8 +316,6 @@ export const useMasjidFavoritesBackend = () => {
 
   // Load user favorites on authentication change
   useEffect(() => {
-    console.log('🔄 Auth state changed:', { isAuthenticated, userEmail: user?.email });
-    
     if (isAuthenticated && user) {
       loadUserFavorites();
     } else {
@@ -332,6 +346,7 @@ export const useMasjidFavoritesBackend = () => {
     toggleFavorite,
     initializeMasjid,
     loadUserFavorites,
+    loadBatchMasjidData,
     
     // Getters
     isFavorited,

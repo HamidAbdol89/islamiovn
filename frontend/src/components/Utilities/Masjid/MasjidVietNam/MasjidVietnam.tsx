@@ -44,7 +44,8 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
     initializeMasjid,
     getFavoriteUsers,
     getFavoriteCount,
-    isLoadingMasjid
+    isLoadingMasjid,
+    loadBatchMasjidData
   } = useMasjidFavoritesBackend();
   const { shareMasjid } = useShare();
   
@@ -93,6 +94,14 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
       );
     }
   }, [trangThaiTimKiem.tuKhoa, trangThaiTimKiem.vungDuocChon, thongKeTimKiem.total, trackSearch]);
+
+  // PERFORMANCE: Batch load favorite data when search results change
+  useEffect(() => {
+    if (ketQuaTimKiem.length > 0) {
+      const masjidIds = ketQuaTimKiem.map(masjid => masjid.id);
+      loadBatchMasjidData(masjidIds);
+    }
+  }, [ketQuaTimKiem, loadBatchMasjidData]);
 
   // Handle favorites
   const handleToggleFavorite = useCallback((masjid: MasjidViet) => {

@@ -154,6 +154,68 @@ router.get('/my', authenticateToken, async (req, res) => {
   }
 });
 
+// @route   GET /api/masjid-favorites/batch
+// @desc    Get favorite data for multiple masjids at once (PERFORMANCE OPTIMIZATION)
+// @access  Public (no authentication required)
+router.get('/batch', async (req, res) => {
+  try {
+    const { masjidIds, limit = 10 } = req.query;
+    
+    if (!masjidIds) {
+      return res.status(400).json({
+        success: false,
+        message: 'masjidIds parameter is required'
+      });
+    }
+
+    const ids = Array.isArray(masjidIds) ? masjidIds : masjidIds.split(',');
+    const batchData = {};
+
+    // Get all favorites for these masjids in one query
+    const favorites = await MasjidFavorite.find({
+      masjidId: { $in: ids },
+      isPublic: true
+    })
+    .populate('userId', 'name picture googleId')
+    .sort({ createdAt: -1 })
+    .limit(parseInt(limit) * ids.length);
+
+    // Group by masjidId
+    ids.forEach(masjidId => {
+      const masjidFavorites = favorites.filter(fav => fav.masjidId === masjidId);
+      
+      batchData[masjidId] = {
+        users: masjidFavorites.slice(0, parseInt(limit)).map(favorite => ({
+          user: {
+            id: favorite.userId._id,
+            name: favorite.userId.name,
+            picture: favorite.userId.picture,
+            googleId: favorite.userId.googleId
+          },
+          favoriteInfo: {
+            createdAt: favorite.createdAt,
+            hasVisited: favorite.hasVisited,
+            rating: favorite.rating
+          }
+        })),
+        totalCount: masjidFavorites.length
+      };
+    });
+
+    res.json({
+      success: true,
+      data: batchData
+    });
+
+  } catch (error) {
+    console.error('Error getting batch masjid data:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi server khi lấy dữ liệu batch'
+    });
+  }
+});
+
 // @route   GET /api/masjid-favorites/masjid/:masjidId/users
 // @desc    Get users who favorited a specific masjid (for avatar display)
 // @access  Public (no authentication required)

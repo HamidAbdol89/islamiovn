@@ -69,6 +69,22 @@ const handleApiError = async (response: Response) => {
 };
 
 export const masjidFavoriteApi = {
+  // PERFORMANCE: Get favorite data for multiple masjids at once
+  async getBatchMasjidData(masjidIds: string[], limit = 10): Promise<ApiResponse<{ [masjidId: string]: { users: FavoriteUser[]; totalCount: number } }>> {
+    const params = new URLSearchParams();
+    params.append('masjidIds', masjidIds.join(','));
+    params.append('limit', limit.toString());
+
+    const response = await fetch(`${API_BASE_URL}/masjid-favorites/batch?${params}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    return handleApiError(response);
+  },
+
   // Add masjid to favorites
   async addFavorite(masjid: MasjidViet, additionalData?: Partial<MasjidFavoriteData>): Promise<ApiResponse<any>> {
     const favoriteData: MasjidFavoriteData = {
