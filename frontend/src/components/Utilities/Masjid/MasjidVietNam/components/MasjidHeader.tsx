@@ -8,9 +8,10 @@ import { VIETNAMESE_TEXT } from '../constants';
 
 interface MasjidHeaderProps {
   tongSoMasjid: number;
+  favoritesCount?: number;
 }
 
-const MasjidHeader: React.FC<MasjidHeaderProps> = React.memo(({ tongSoMasjid }) => {
+const MasjidHeader: React.FC<MasjidHeaderProps> = React.memo(({ tongSoMasjid, favoritesCount = 0 }) => {
   const navigate = useNavigate();
 
   const handleGoBack = () => {
@@ -41,9 +42,16 @@ const MasjidHeader: React.FC<MasjidHeaderProps> = React.memo(({ tongSoMasjid }) 
           <p className="text-lg text-muted-foreground">
             {VIETNAMESE_TEXT.subtitle}
           </p>
-          <p className="text-sm text-muted-foreground mt-2">
-            Tổng cộng: <span className="font-semibold text-foreground">{tongSoMasjid}</span> masjid
-          </p>
+          <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground mt-2">
+            <div>
+              Tổng cộng: <span className="font-semibold text-foreground">{tongSoMasjid}</span> masjid
+            </div>
+            {favoritesCount > 0 && (
+              <div>
+                Yêu thích: <span className="font-semibold text-red-500">{favoritesCount}</span> masjid
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Important Notice */}

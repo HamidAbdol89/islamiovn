@@ -1,8 +1,9 @@
-// MasjidCard Component with Vietnamese localization, region colors and shadcn UI
+// MasjidCard Component with Vietnamese localization, region colors, favorites and share
 import React from 'react';
-import { MapPin, Users, Phone, Calendar } from 'lucide-react';
+import { MapPin, Users, Phone, Calendar, Heart, Share2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { MasjidViet } from '../types';
 import { REGION_BADGE_COLORS } from '../constants';
@@ -10,17 +11,37 @@ import { REGION_BADGE_COLORS } from '../constants';
 interface MasjidCardProps {
   masjid: MasjidViet;
   onClick: () => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: (masjidId: string) => void;
+  onShare?: (masjid: MasjidViet) => void;
 }
 
-const MasjidCard: React.FC<MasjidCardProps> = React.memo(({ masjid, onClick }) => {
+const MasjidCard: React.FC<MasjidCardProps> = React.memo(({ 
+  masjid, 
+  onClick, 
+  isFavorite = false, 
+  onToggleFavorite, 
+  onShare 
+}) => {
   // Get region badge color with type safety
   const regionBadgeColor = masjid.vung && masjid.vung in REGION_BADGE_COLORS 
     ? REGION_BADGE_COLORS[masjid.vung as keyof typeof REGION_BADGE_COLORS] 
     : REGION_BADGE_COLORS['Tất cả'];
 
+  // Handle action button clicks
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleFavorite?.(masjid.id);
+  };
+
+  const handleShareClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onShare?.(masjid);
+  };
+
   return (
     <Card 
-      className="overflow-hidden bg-card border-border hover:shadow-luxury transition-smooth cursor-pointer group"
+      className="overflow-hidden bg-card border-border hover:shadow-luxury transition-smooth cursor-pointer group relative"
       onClick={onClick}
     >
       {/* Image */}
@@ -90,7 +111,7 @@ const MasjidCard: React.FC<MasjidCardProps> = React.memo(({ masjid, onClick }) =
         )}
         
         {/* Badges with Region Colors */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 mb-4">
           {masjid.vung && (
             <Badge 
               variant="secondary" 
@@ -104,6 +125,48 @@ const MasjidCard: React.FC<MasjidCardProps> = React.memo(({ masjid, onClick }) =
               {masjid.tienIch.length} tiện ích
             </Badge>
           )}
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center justify-between pt-2 border-t border-border">
+          <div className="flex items-center gap-2">
+            {onToggleFavorite && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleFavoriteClick}
+                className={cn(
+                  "h-8 w-8 p-0 transition-colors",
+                  isFavorite 
+                    ? "text-red-500 hover:text-red-600" 
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Heart 
+                  className={cn("h-4 w-4", isFavorite && "fill-current")} 
+                />
+                <span className="sr-only">
+                  {isFavorite ? 'Bỏ yêu thích' : 'Yêu thích'}
+                </span>
+              </Button>
+            )}
+            
+            {onShare && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleShareClick}
+                className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+              >
+                <Share2 className="h-4 w-4" />
+                <span className="sr-only">Chia sẻ</span>
+              </Button>
+            )}
+          </div>
+          
+          <div className="text-xs text-muted-foreground">
+            Nhấn để xem chi tiết
+          </div>
         </div>
       </CardContent>
     </Card>

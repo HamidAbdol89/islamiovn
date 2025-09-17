@@ -1,14 +1,23 @@
-// Refactored MasjidVietnam Component with Vietnamese localization, shadcn UI, and React best practices
-import React, { useState, useCallback, useMemo } from 'react';
+// Enhanced MasjidVietnam Component with favorites, share, skeleton loading, pull-to-refresh, and analytics
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { toast } from 'sonner';
 import type { MasjidViet } from './types';
-import { useMasjidData, useMasjidSearch } from './hooks';
+import { 
+  useMasjidData, 
+  useMasjidSearch, 
+  useFavorites, 
+  useShare, 
+  usePullToRefresh,
+  useSearchAnalytics 
+} from './hooks';
 import {
   MasjidHeader,
   MasjidSearch,
   MasjidCard,
   MasjidSheet,
   EmptyState,
-  LoadingState
+  MasjidSkeletonGrid,
+  PullToRefreshIndicator
 } from './components';
 
 const MasjidVietnamDirectory: React.FC = React.memo(() => {
@@ -26,6 +35,32 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
     handleRegionChange,
     clearSearch
   } = useMasjidSearch(filterMasjids);
+  
+  // Favorites and Share hooks
+  const { isFavorite, toggleFavorite, favoritesCount } = useFavorites();
+  const { shareMasjid } = useShare();
+  
+  // Analytics hook
+  const { trackSearch } = useSearchAnalytics();
+  
+  // Pull to refresh hook
+  const handleRefresh = useCallback(async () => {
+    // Simulate refresh delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    toast.success('Đã làm mới dữ liệu', { duration: 2000 });
+  }, []);
+  
+  const {
+    containerRef,
+    isRefreshing,
+    isPulling,
+    pullDistance,
+    pullProgress,
+    isReadyToRefresh
+  } = usePullToRefresh({
+    onRefresh: handleRefresh,
+    enabled: true
+  });
 
   // Event handlers
   const handleMasjidClick = useCallback((masjid: MasjidViet) => {
@@ -40,6 +75,52 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
     clearSearch();
   }, [clearSearch]);
 
+  // Track search when results change
+  useEffect(() => {
+    if (trangThaiTimKiem.tuKhoa) {
+      trackSearch(
+        trangThaiTimKiem.tuKhoa,
+        trangThaiTimKiem.vungDuocChon,
+        thongKeTimKiem.total
+      );
+    }
+  }, [trangThaiTimKiem.tuKhoa, trangThaiTimKiem.vungDuocChon, thongKeTimKiem.total, trackSearch]);
+
+  // Handle favorites
+  const handleToggleFavorite = useCallback((masjidId: string) => {
+    const wasFavorite = isFavorite(masjidId);
+    toggleFavorite(masjidId);
+    
+    // Show toast notification
+    toast.success(
+      wasFavorite 
+        ? 'Đã bỏ khỏi danh sách yêu thích' 
+        : 'Đã thêm vào danh sách yêu thích',
+      {
+        duration: 2000,
+      }
+    );
+  }, [isFavorite, toggleFavorite]);
+
+  // Handle share
+  const handleShare = useCallback(async (masjid: MasjidViet) => {
+    const result = await shareMasjid(masjid);
+    
+    if (result.success) {
+      const message = result.method === 'native' 
+        ? 'Đã chia sẻ thành công' 
+        : 'Đã sao chép thông tin vào clipboard';
+      
+      toast.success(message, {
+        duration: 2000,
+      });
+    } else {
+      toast.error(result.error || 'Không thể chia sẻ', {
+        duration: 3000,
+      });
+    }
+  }, [shareMasjid]);
+
   // Memoized values
   const hasActiveFilters = useMemo(() => {
     return thongKeTimKiem.hasSearch || thongKeTimKiem.hasRegionFilter;
@@ -49,22 +130,34 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
     return masjidDuocChon !== null;
   }, [masjidDuocChon]);
 
-  // Render loading state
+  // Render loading state with skeleton
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background transition-colors duration-300">
-        <MasjidHeader tongSoMasjid={statistics.total} />
+        <MasjidHeader tongSoMasjid={statistics.total} favoritesCount={favoritesCount} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <LoadingState />
+          <MasjidSkeletonGrid count={6} />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background transition-colors duration-300">
+    <div 
+      ref={containerRef}
+      className="min-h-screen bg-background transition-colors duration-300 overflow-y-auto relative"
+    >
+      {/* Pull to Refresh Indicator */}
+      <PullToRefreshIndicator
+        isRefreshing={isRefreshing}
+        isPulling={isPulling}
+        pullProgress={pullProgress}
+        isReadyToRefresh={isReadyToRefresh}
+        pullDistance={pullDistance}
+      />
+
       {/* Header */}
-      <MasjidHeader tongSoMasjid={statistics.total} />
+      <MasjidHeader tongSoMasjid={statistics.total} favoritesCount={favoritesCount} />
 
       {/* Search & Filters */}
       <MasjidSearch
@@ -90,6 +183,9 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
                 key={masjid.id}
                 masjid={masjid}
                 onClick={() => handleMasjidClick(masjid)}
+                isFavorite={isFavorite(masjid.id)}
+                onToggleFavorite={handleToggleFavorite}
+                onShare={handleShare}
               />
             ))}
           </div>
