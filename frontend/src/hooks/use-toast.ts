@@ -8,7 +8,6 @@ import type {
   ToastProps,
 } from "@/components/ui/toast"
 
-const TOAST_LIMIT = 3
 const TOAST_REMOVE_DELAY = 5000
 
 type ToasterToast = ToastProps & {
@@ -77,9 +76,17 @@ const addToRemoveQueue = (toastId: string) => {
 export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case "ADD_TOAST":
+      // Clear tất cả timeouts của toast cũ
+      state.toasts.forEach((toast) => {
+        if (toastTimeouts.has(toast.id)) {
+          clearTimeout(toastTimeouts.get(toast.id))
+          toastTimeouts.delete(toast.id)
+        }
+      })
+      
       return {
         ...state,
-        toasts: [action.toast, ...state.toasts].slice(0, TOAST_LIMIT),
+        toasts: [action.toast], // Chỉ giữ toast mới, thay thế hoàn toàn toast cũ
       }
 
     case "UPDATE_TOAST":
@@ -152,6 +159,7 @@ function toast({ ...props }: Toast) {
     })
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
 
+  // Thêm toast mới - reducer sẽ tự động thay thế toast cũ
   dispatch({
     type: "ADD_TOAST",
     toast: {

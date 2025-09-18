@@ -2,6 +2,7 @@
 // This provides a clean API similar to Sonner but using shadcn/ui Toast
 
 import { toastSonnerCompat } from '@/hooks/use-toast';
+import { ToastAction } from '@/components/ui/toast';
 
 // Default duration for toasts (5 seconds)
 const DEFAULT_TOAST_DURATION = 5000;
@@ -93,10 +94,20 @@ export { useToast } from '@/hooks/use-toast';
 
 // Common toast patterns for the app
 export const toastPatterns = {
-  // Authentication toasts
-  loginRequired: () => toast.error('🔐 Vui lòng đăng nhập để sử dụng tính năng này', {
-    description: 'Đăng nhập để trải nghiệm đầy đủ tính năng',
-    duration: 4000
+  loginRequired: () =>
+    toast({
+      title: '🔐 Đăng nhập để sử dụng tính năng này',
+      variant: 'default',
+      duration: 8000,
+      action: (
+        <ToastAction
+          altText="Đăng nhập"
+          onClick={() => window.dispatchEvent(new CustomEvent('triggerGoogleLogin'))}
+          className="bg-green-800 text-white hover:bg-green-700"
+        >
+          Đăng nhập
+        </ToastAction>
+      ),
   }),
   
   loginSuccess: (userName?: string) => toast.success(

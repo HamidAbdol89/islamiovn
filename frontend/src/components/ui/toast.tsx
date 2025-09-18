@@ -23,7 +23,7 @@ const ToastViewport = React.forwardRef<
 ToastViewport.displayName = ToastPrimitives.Viewport.displayName
 
 const toastVariants = cva(
-  "mt-4 px-4 py-3 mx-4 bg-white dark:bg-gray-800 rounded-full shadow-lg flex items-center gap-2.5 min-w-[200px] max-w-[280px] sm:max-w-[320px] border border-gray-200 dark:border-gray-700 backdrop-blur-sm pointer-events-auto transform transition-all duration-500 ease-out data-[state=open]:translate-y-0 data-[state=open]:opacity-100 data-[state=open]:scale-100 data-[state=closed]:-translate-y-full data-[state=closed]:opacity-0 data-[state=closed]:scale-95",
+  "mt-4 px-4 py-3 mx-4 bg-white dark:bg-gray-800 rounded-full shadow-lg flex items-center gap-2.5 min-w-[200px] max-w-[280px] sm:max-w-[320px] border border-gray-200 dark:border-gray-700 backdrop-blur-sm pointer-events-auto transform transition-all duration-500 ease-out data-[state=open]:animate-slideDown data-[state=closed]:animate-slideUp",
   {
     variants: {
       variant: {
@@ -39,6 +39,7 @@ const toastVariants = cva(
     },
   }
 )
+
 
 const Toast = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Root>,

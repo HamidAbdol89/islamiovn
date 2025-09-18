@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
-import { toast } from 'react-hot-toast';
+import { toastPatterns, toast } from '@/lib/toast';
 import type { AuthContextType, GoogleUser } from '@/Pages/Setting/components/types';
 import { AUTH_MESSAGES } from '@/Pages/Setting/components/constants';
 import apiService from '@/services/backendApi';
@@ -149,7 +149,7 @@ export const AuthProvider = React.memo<AuthProviderProps>(({ children }) => {
         console.log('React Query cache cleared');
       }
       
-      toast.success(AUTH_MESSAGES.LOGIN_SUCCESS);
+      toastPatterns.loginSuccess(userData.name);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : AUTH_MESSAGES.LOGIN_ERROR;
       setError(errorMessage);
@@ -169,7 +169,7 @@ export const AuthProvider = React.memo<AuthProviderProps>(({ children }) => {
       // Clear user data
       setUser(null);
       
-      toast.success(AUTH_MESSAGES.LOGOUT_SUCCESS);
+      toastPatterns.logoutSuccess();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : AUTH_MESSAGES.LOGOUT_ERROR;
       setError(errorMessage);
@@ -184,6 +184,21 @@ export const AuthProvider = React.memo<AuthProviderProps>(({ children }) => {
   const exchangeCodeForToken = useCallback(async (code: string): Promise<GoogleUser> => {
     return await backendAuth.exchangeCodeForToken(code);
   }, []);
+
+  // Listen for global login trigger events
+  useEffect(() => {
+    const handleGlobalLogin = () => {
+      if (!isAuthenticated) {
+        login();
+      }
+    };
+
+    window.addEventListener('triggerGoogleLogin', handleGlobalLogin);
+    
+    return () => {
+      window.removeEventListener('triggerGoogleLogin', handleGlobalLogin);
+    };
+  }, [login, isAuthenticated]);
 
   const contextValue = useMemo<AuthContextType>(() => ({
     user,

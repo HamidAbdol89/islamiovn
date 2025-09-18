@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import toast from 'react-hot-toast';
+import { toast } from '@/lib/toast';
 import { useAuth } from '@/context/AuthContext';
 import { AUTH_MESSAGES } from '@/Pages/Setting/components/constants';
 import apiService from '@/services/backendApi';

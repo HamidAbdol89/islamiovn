@@ -55,6 +55,7 @@ const GoogleLoginButton = React.memo<GoogleLoginButtonProps>(({
         variant="outline"
         size="lg"
         className="w-full"
+        data-google-login="true"
       >
         {isLoading ? (
           <motion.div

@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from '@/components/ui/toaster';
 import ErrorBoundary from '@/components/App/ErrorBoundary';
 import LoadingSkeleton from '@/components/App/LoadingSkeleton';
 import AnimatedRoutes from '@/components/App/AnimatedRoutes';
@@ -51,7 +51,7 @@ const App: React.FC = () => {
           <InstallButton />
 
           {/* Toast Notifications */}
-          <Toaster position="top-right" />
+          <Toaster />
         </div>
       </Router>
     </ErrorBoundary>
