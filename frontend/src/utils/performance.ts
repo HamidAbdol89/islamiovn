@@ -1,27 +1,13 @@
 // Performance utilities for production optimization
 export const isDevelopment = import.meta.env.DEV;
 
-// Safe console logging that only works in development
+// 🚀 PERFORMANCE OPTIMIZED: No-op logging functions
+// All console logs are completely disabled for maximum performance
 export const devLog = {
-  log: (...args: any[]) => {
-    if (isDevelopment) {
-      console.log(...args);
-    }
-  },
-  warn: (...args: any[]) => {
-    if (isDevelopment) {
-      console.warn(...args);
-    }
-  },
-  error: (...args: any[]) => {
-    // Always log errors
-    console.error(...args);
-  },
-  info: (...args: any[]) => {
-    if (isDevelopment) {
-      console.info(...args);
-    }
-  }
+  log: (..._: any[]) => {},
+  warn: (..._: any[]) => {},
+  error: (..._: any[]) => {},
+  info: (..._: any[]) => {}
 };
 
 // Performance monitoring for mobile

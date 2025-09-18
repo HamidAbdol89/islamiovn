@@ -5,5 +5,4 @@ export { useFavorites } from './useFavorites';
 export { useShare } from './useShare';
 // export { usePullToRefresh } from './usePullToRefresh'; // Removed - no longer needed
 export { useSearchAnalytics } from './useSearchAnalytics';
-export { useMasjidFavoritesBackend } from './useMasjidFavoritesBackend';
-export { useMobileFriendlyRefresh } from './useMobileFriendlyRefresh';
+export { useOptimisticFavorites } from './useOptimisticFavorites';

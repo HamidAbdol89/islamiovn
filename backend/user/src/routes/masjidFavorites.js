@@ -398,4 +398,56 @@ router.get('/check/:masjidId', authenticateToken, async (req, res) => {
   }
 });
 
+// @route   GET /api/masjid-favorites/batch-check
+// @desc    🚀 BATCH: Check favorite status for multiple masjids at once (PERFORMANCE OPTIMIZATION)
+// @access  Private
+router.get('/batch-check', authenticateToken, async (req, res) => {
+  try {
+    const { masjidIds } = req.query;
+    
+    if (!masjidIds) {
+      return res.status(400).json({
+        success: false,
+        message: 'masjidIds parameter is required'
+      });
+    }
+
+    const ids = Array.isArray(masjidIds) ? masjidIds : masjidIds.split(',');
+    const batchData = {};
+
+    // Get all user's favorites for these masjids in one query
+    const userFavorites = await MasjidFavorite.find({
+      userId: req.user.id,
+      masjidId: { $in: ids }
+    }).select('masjidId _id');
+
+    // Create a map for quick lookup
+    const favoriteMap = new Map();
+    userFavorites.forEach(favorite => {
+      favoriteMap.set(favorite.masjidId, favorite._id);
+    });
+
+    // Build response for all requested masjids
+    ids.forEach(masjidId => {
+      const favoriteId = favoriteMap.get(masjidId);
+      batchData[masjidId] = {
+        isFavorited: !!favoriteId,
+        favoriteId: favoriteId
+      };
+    });
+
+    res.json({
+      success: true,
+      data: batchData
+    });
+
+  } catch (error) {
+    console.error('Error batch checking masjid favorites:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi server khi kiểm tra batch masjid yêu thích'
+    });
+  }
+});
+
 module.exports = router;

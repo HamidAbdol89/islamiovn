@@ -3,7 +3,7 @@ import { memo, useMemo, useCallback, useState, useEffect } from 'react';
 import { Suspense, lazy } from 'react';
 import { getMobileSettings } from '@/utils/mobileOptimizations';
 import { devLog } from '@/utils/performance';
-import { useMasjidFavoritesBackend } from './hooks/useMasjidFavoritesBackend';
+import { useOptimisticFavorites } from './hooks/useOptimisticFavorites';
 import { useSmoothScroll } from '@/hooks/useSmoothScroll';
 
 // Lazy load components for better performance
@@ -50,7 +50,7 @@ const MasjidVietnamOptimized = memo(() => {
   const [selectedRegion, setSelectedRegion] = useState<string>('');
 
   const mobileSettings = getMobileSettings();
-  const { loadBatchMasjidData } = useMasjidFavoritesBackend();
+  const { loadBatchMasjidData } = useOptimisticFavorites();
   
   // Smooth scroll optimization for mobile
   const { scrollContainerRef, shouldRenderItem } = useSmoothScroll({

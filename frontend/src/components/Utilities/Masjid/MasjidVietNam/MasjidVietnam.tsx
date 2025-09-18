@@ -8,7 +8,8 @@ import {
   useShare, 
   // usePullToRefresh, // Removed - no longer needed
   useSearchAnalytics,
-  useMasjidFavoritesBackend
+  // useMasjidFavoritesBackend, // Replaced with optimistic version
+  useOptimisticFavorites
   // useMobileFriendlyRefresh // Removed - no longer needed
 } from './hooks';
 import {
@@ -36,7 +37,7 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
     clearSearch
   } = useMasjidSearch(filterMasjids);
   
-  // Backend favorites and Share hooks
+  // 🚀 Optimistic favorites hook with instant UI updates
   const {
     isFavorited,
     toggleFavorite,
@@ -45,8 +46,9 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
     getFavoriteUsers,
     getFavoriteCount,
     isLoadingMasjid,
+    isPendingSync,
     loadBatchMasjidData
-  } = useMasjidFavoritesBackend();
+  } = useOptimisticFavorites();
   const { shareMasjid } = useShare();
   
   // Analytics hook
@@ -167,6 +169,7 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
                 favoriteUsers={getFavoriteUsers(masjid.id)}
                 favoriteCount={getFavoriteCount(masjid.id)}
                 isLoadingFavorites={isLoadingMasjid(masjid.id)}
+                isPendingSync={isPendingSync(masjid.id)}
               />
             ))}
           </div>

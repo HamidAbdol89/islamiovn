@@ -181,6 +181,19 @@ export const masjidFavoriteApi = {
     return handleApiError(response);
   },
 
+  // 🚀 BATCH: Check favorite status for multiple masjids at once
+  async batchCheckFavorites(masjidIds: string[]): Promise<ApiResponse<{ [masjidId: string]: { isFavorited: boolean; favoriteId?: string } }>> {
+    const params = new URLSearchParams();
+    params.append('masjidIds', masjidIds.join(','));
+
+    const response = await fetch(`${API_BASE_URL}/masjid-favorites/batch-check?${params}`, {
+      method: 'GET',
+      headers: createHeaders()
+    });
+
+    return handleApiError(response);
+  },
+
   // Update favorite (rating, note, visit status)
   async updateFavorite(masjidId: string, updateData: {
     personalNote?: string;

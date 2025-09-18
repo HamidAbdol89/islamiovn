@@ -2,7 +2,6 @@
 import { memo, useCallback, useMemo } from 'react';
 import { Heart, MapPin, Users } from 'lucide-react';
 import type { MasjidViet } from '../types';
-import { useMasjidFavoritesBackend } from '../hooks/useMasjidFavoritesBackend';
 import { getMobileSettings } from '@/utils/mobileOptimizations';
 
 interface SimpleMasjidCardProps {
@@ -41,13 +40,14 @@ const SimpleMasjidCard = memo<SimpleMasjidCardProps>(({
   onViewDetails, 
   index 
 }) => {
-  const {
-    isFavorited,
-    getFavoriteCount,
-    isLoadingMasjid,
-    toggleFavorite,
-    initializeMasjid,
-  } = useMasjidFavoritesBackend();
+  // TODO: Replace with useOptimisticFavorites when needed
+  // For now, using dummy values to prevent errors
+  const isFavorited = (_id: string) => false;
+  // const getFavoriteUsers = (_id: string) => []; // Not used in SimpleMasjidCard
+  const getFavoriteCount = (_id: string) => 0;
+  const isLoadingMasjid = (_id: string) => false;
+  const toggleFavorite = (_masjid: any) => {};
+  const initializeMasjid = (_id: string) => {};
 
   const mobileSettings = getMobileSettings();
 

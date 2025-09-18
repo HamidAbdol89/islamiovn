@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { MasjidViet } from '../types';
 import { REGION_BADGE_COLORS } from '../constants';
-import FavoriteUsersAvatars from './FavoriteUsersAvatars';
+import AnimatedFavoriteAvatars from './AnimatedFavoriteAvatars';
 
 interface MasjidCardProps {
   masjid: MasjidViet;
@@ -20,6 +20,7 @@ interface MasjidCardProps {
   favoriteUsers?: any[];
   favoriteCount?: number;
   isLoadingFavorites?: boolean;
+  isPendingSync?: boolean;
 }
 
 const MasjidCard: React.FC<MasjidCardProps> = React.memo(({ 
@@ -31,7 +32,7 @@ const MasjidCard: React.FC<MasjidCardProps> = React.memo(({
   onInitializeMasjid: _onInitializeMasjid, // Prefix with _ to indicate intentionally unused
   favoriteUsers = [],
   favoriteCount = 0,
-  isLoadingFavorites = false
+  isPendingSync = false
 }) => {
   // Get region badge color with type safety
   const regionBadgeColor = masjid.vung && masjid.vung in REGION_BADGE_COLORS 
@@ -140,19 +141,18 @@ const MasjidCard: React.FC<MasjidCardProps> = React.memo(({
           )}
         </div>
 
-        {/* Favorite Users Avatars */}
-        {(favoriteCount > 0 || isLoadingFavorites) && (
-          <div className="mb-3">
-            <FavoriteUsersAvatars
-              users={favoriteUsers}
-              totalCount={favoriteCount}
-              isLoading={isLoadingFavorites}
-              maxDisplay={4}
-              size="sm"
-              showCount={true}
-            />
-          </div>
-        )}
+        {/* Animated Favorite Avatars with instant updates */}
+        <div className="mb-3">
+          <AnimatedFavoriteAvatars
+            favoriteUsers={favoriteUsers}
+            totalFavorites={favoriteCount}
+            isFavorited={isFavorite}
+            isPending={isPendingSync}
+            maxDisplay={3}
+            size="sm"
+            showCount={true}
+          />
+        </div>
 
         {/* Action Buttons */}
         <div className="flex items-center justify-between pt-2 border-t border-border">
