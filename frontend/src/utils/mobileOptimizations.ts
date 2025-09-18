@@ -1,7 +1,7 @@
 // Mobile-specific optimizations for better performance
 import { devLog } from './performance';
 
-// Detect mobile device capabilities
+// Detect mobile device capabilities - DISABLED optimization for favorites
 export const getMobileCapabilities = () => {
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   const isLowEndDevice = navigator.hardwareConcurrency <= 2;
@@ -12,35 +12,27 @@ export const getMobileCapabilities = () => {
     isMobile,
     isLowEndDevice,
     isSlowConnection,
-    shouldOptimize: isMobile || isLowEndDevice || isSlowConnection
+    shouldOptimize: false
   };
 };
 
-// Mobile-optimized settings
+// Mobile-optimized settings - DISABLED for favorites compatibility
 export const getMobileSettings = () => {
   const capabilities = getMobileCapabilities();
   
   return {
-    // Reduce batch sizes for mobile
-    batchSize: capabilities.shouldOptimize ? 3 : 10,
+    batchSize: 10,
+    cacheSize: 20,
+    debounceDelay: 300,
     
-    // Reduce cache size for mobile
-    cacheSize: capabilities.shouldOptimize ? 5 : 20,
-    
-    // Increase debounce delays for mobile
-    debounceDelay: capabilities.shouldOptimize ? 500 : 300,
-    
-    // Reduce image quality for mobile
+    // Keep image quality optimization (doesn't affect favorites)
     imageQuality: capabilities.shouldOptimize ? 'low' : 'high',
     
-    // Disable animations on low-end devices
+    // Keep animations (doesn't affect favorites)
     enableAnimations: !capabilities.isLowEndDevice,
     
-    // Reduce concurrent requests
-    maxConcurrentRequests: capabilities.shouldOptimize ? 2 : 5,
-    
-    // Include shouldOptimize flag
-    shouldOptimize: capabilities.shouldOptimize
+    maxConcurrentRequests: 5,
+    shouldOptimize: false
   };
 };
 
@@ -105,25 +97,11 @@ export const cleanupMemory = () => {
   }
 };
 
-// Network optimization
+// Network optimization - DISABLED for favorites compatibility
 export const optimizeNetworkRequests = () => {
-  const capabilities = getMobileCapabilities();
-  
-  if (capabilities.isSlowConnection) {
-    // Disable prefetching on slow connections
-    const prefetchLinks = document.querySelectorAll('link[rel="prefetch"]');
-    prefetchLinks.forEach(link => link.remove());
-    
-    // Reduce concurrent requests
-    return {
-      maxConcurrentRequests: 1,
-      requestTimeout: 10000 // 10 seconds
-    };
-  }
-  
   return {
-    maxConcurrentRequests: capabilities.shouldOptimize ? 2 : 5,
-    requestTimeout: 5000 // 5 seconds
+    maxConcurrentRequests: 5,
+    requestTimeout: 5000
   };
 };
 
@@ -147,6 +125,8 @@ export const initMobileOptimizations = () => {
     if ('ontouchstart' in window) {
       document.body.classList.add('touch-device');
     }
+    
+    // Mobile favorites debugging removed for clean code
     
     devLog.log('Mobile optimizations initialized');
   }
@@ -179,4 +159,14 @@ export const monitorMobilePerformance = () => {
     
     observer.observe({ entryTypes: ['measure'] });
   }
+};
+
+export const getMobileFavoritesSettings = () => {
+  return {
+    enableFavorites: true,
+    favoritesBatchSize: 10,
+    favoritesTimeout: 5000,
+    favoritesRetries: 2,
+    debugFavorites: false
+  };
 };

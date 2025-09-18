@@ -1,7 +1,6 @@
 // Optimized version of MasjidVietnam component for better mobile performance
 import { memo, useMemo, useCallback, useState, useEffect } from 'react';
 import { Suspense, lazy } from 'react';
-import { getMobileSettings } from '@/utils/mobileOptimizations';
 import { devLog } from '@/utils/performance';
 import { useOptimisticFavorites } from './hooks/useOptimisticFavorites';
 import { useSmoothScroll } from '@/hooks/useSmoothScroll';
@@ -49,7 +48,7 @@ const MasjidVietnamOptimized = memo(() => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRegion, setSelectedRegion] = useState<string>('');
 
-  const mobileSettings = getMobileSettings();
+  const mobileSettings = { shouldOptimize: false, batchSize: 10 };
   const { loadBatchMasjidData } = useOptimisticFavorites();
   
   // Smooth scroll optimization for mobile

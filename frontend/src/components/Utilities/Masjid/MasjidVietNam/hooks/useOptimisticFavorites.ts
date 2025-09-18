@@ -6,6 +6,7 @@ import { masjidFavoriteApi, type FavoriteUser } from '../services/masjidFavorite
 import { useAuth } from '@/context/AuthContext';
 import { devLog } from '@/utils/performance';
 import { makeRequest, requestManager } from '@/utils/RequestManager';
+// import { getMobileFavoritesSettings } from '@/utils/mobileOptimizations'; // No longer needed
 
 interface OptimisticFavoriteState {
   [masjidId: string]: {
@@ -298,6 +299,8 @@ export const useOptimisticFavorites = () => {
     const unloadedIds = masjidIds.filter(id => !favoriteStates[id]);
     if (unloadedIds.length === 0) return;
 
+    // Mobile settings no longer used - using desktop settings
+
     devLog.log(`📦 Batch loading ${unloadedIds.length} masjids:`, unloadedIds);
 
     // Initialize empty states for all unloaded masjids
@@ -321,7 +324,10 @@ export const useOptimisticFavorites = () => {
       // 🎯 SINGLE BATCH REQUEST instead of multiple individual requests
       const response = await makeRequest(
         `batch-load-${unloadedIds.join('-')}`,
-        () => masjidFavoriteApi.getBatchMasjidData(unloadedIds, 5),
+        () => {
+          const limit = 5; // Standard limit
+          return masjidFavoriteApi.getBatchMasjidData(unloadedIds, limit);
+        },
         'normal'
       );
 

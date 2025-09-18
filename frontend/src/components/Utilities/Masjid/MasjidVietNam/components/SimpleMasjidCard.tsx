@@ -2,7 +2,6 @@
 import { memo, useCallback, useMemo } from 'react';
 import { Heart, MapPin, Users } from 'lucide-react';
 import type { MasjidViet } from '../types';
-import { getMobileSettings } from '@/utils/mobileOptimizations';
 
 interface SimpleMasjidCardProps {
   masjid: MasjidViet;
@@ -49,7 +48,7 @@ const SimpleMasjidCard = memo<SimpleMasjidCardProps>(({
   const toggleFavorite = (_masjid: any) => {};
   const initializeMasjid = (_id: string) => {};
 
-  const mobileSettings = getMobileSettings();
+  const mobileSettings = { shouldOptimize: false };
 
   // Memoized values (minimal)
   const favoriteCount = useMemo(() => getFavoriteCount(masjid.id), [getFavoriteCount, masjid.id]);

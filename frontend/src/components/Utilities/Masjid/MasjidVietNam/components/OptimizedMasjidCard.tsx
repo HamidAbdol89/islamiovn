@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Heart, MapPin, Users, Phone, Clock } from 'lucide-react';
 import type { MasjidViet } from '../types';
-import { getMobileSettings } from '@/utils/mobileOptimizations';
 
 interface OptimizedMasjidCardProps {
   masjid: MasjidViet;
@@ -20,10 +19,7 @@ const FavoriteUsers = memo<{
   totalCount: number; 
   isLoading: boolean;
 }>(({ users, totalCount, isLoading }) => {
-  const mobileSettings = getMobileSettings();
-  
-  // Show fewer avatars on mobile
-  const displayCount = mobileSettings.shouldOptimize ? 3 : 5;
+  const displayCount = 5;
   const displayUsers = users.slice(0, displayCount);
   
   if (isLoading) {
@@ -87,7 +83,7 @@ const OptimizedMasjidCard = memo<OptimizedMasjidCardProps>(({
   const toggleFavorite = (_masjid: any) => {};
   const initializeMasjid = (_id: string) => {};
 
-  const mobileSettings = getMobileSettings();
+  const mobileSettings = { shouldOptimize: false, enableAnimations: true };
 
   // Memoized values
   const favoriteUsers = useMemo(() => getFavoriteUsers(masjid.id), [getFavoriteUsers, masjid.id]);

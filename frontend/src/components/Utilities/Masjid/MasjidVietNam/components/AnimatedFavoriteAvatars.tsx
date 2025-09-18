@@ -73,6 +73,7 @@ const AnimatedFavoriteAvatars: React.FC<AnimatedFavoriteAvatarsProps> = ({
 
   return (
     <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+      
       <div className="flex items-center gap-2">
         {/* 🚀 Avatar Stack with simple up/down motion - Only clickable if there are users */}
         {totalFavorites > 0 ? (
@@ -147,9 +148,9 @@ const AnimatedFavoriteAvatars: React.FC<AnimatedFavoriteAvatarsProps> = ({
       {/* Sheet Content - All Users List */}
       <SheetContent color="secondary" side="bottom" className="h-[70vh]">
         <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
-            <Users className="w-5 h-5" />
-            {masjidName ? `${masjidName} - Người đã yêu thích (${totalFavorites})` : `Người đã yêu thích (${totalFavorites})`}
+          <SheetTitle className="flex items-center gap-2 text-sm">
+            <Users className="w-4 h-4" />
+            {masjidName ? `${masjidName} - Yêu thích ${totalFavorites}` : `Yêu thích ${totalFavorites}`}
           </SheetTitle>
         </SheetHeader>
         

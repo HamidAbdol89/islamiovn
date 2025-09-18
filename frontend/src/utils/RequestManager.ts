@@ -28,11 +28,11 @@ class RequestManager {
     state: 'closed'
   };
 
-  // Configuration
-  private readonly MAX_REQUESTS_PER_MINUTE = 15;
+  // Configuration - DISABLED mobile restrictions for favorites
+  private readonly MAX_REQUESTS_PER_MINUTE = 60; // Increased from 15 to 60
   // private readonly MAX_CONCURRENT_REQUESTS = 3; // Reserved for future use
-  private readonly CIRCUIT_BREAKER_THRESHOLD = 5;
-  private readonly CIRCUIT_BREAKER_TIMEOUT = 30000; // 30 seconds
+  private readonly CIRCUIT_BREAKER_THRESHOLD = 10; // Increased from 5 to 10
+  private readonly CIRCUIT_BREAKER_TIMEOUT = 15000; // Reduced from 30s to 15s
   private readonly MAX_RETRIES = 3;
 
   private activeRequests = new Set<string>();
