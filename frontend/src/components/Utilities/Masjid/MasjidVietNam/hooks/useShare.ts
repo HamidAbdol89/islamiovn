@@ -1,18 +1,33 @@
-// Custom hook for sharing masjid information
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import type { MasjidViet } from '../types';
 
-export const useShare = () => {
-  // Share masjid via Web Share API or fallback
+interface UseShareProps {
+  onMasjidSelect?: (masjidId: string) => void;
+}
+
+export const useShare = (props?: UseShareProps) => {
+  const { onMasjidSelect } = props || {};
+
+  // Tạo URL với masjid ID
+  const createMasjidUrl = useCallback((masjid: MasjidViet) => {
+    const baseUrl = window.location.origin + window.location.pathname;
+    const searchParams = new URLSearchParams(window.location.search);
+    searchParams.set('masjid', masjid.id);
+    return `${baseUrl}?${searchParams.toString()}`;
+  }, []);
+
+  // Main share function
   const shareMasjid = useCallback(async (masjid: MasjidViet) => {
-    const shareData = {
+    const masjidUrl = createMasjidUrl(masjid);
+    
+    const shareData: ShareData = {
       title: `🕌 ${masjid.ten}`,
       text: `Tìm hiểu về masjid ${masjid.ten} tại ${masjid.thanhPho}${masjid.moTa ? ` - ${masjid.moTa.slice(0, 100)}...` : ''}`,
-      url: window.location.href
+      url: masjidUrl,
     };
 
+    // Web Share API (mobile-first)
     try {
-      // Try Web Share API first (mobile browsers)
       if (navigator.share && navigator.canShare?.(shareData)) {
         await navigator.share(shareData);
         return { success: true, method: 'native' };
@@ -21,50 +36,102 @@ export const useShare = () => {
       console.warn('Web Share API failed:', error);
     }
 
-    // Fallback to clipboard
+    // Fallback clipboard + toast
     try {
-      const shareText = `🕌 ${masjid.ten}\n📍 ${masjid.diaChi}, ${masjid.thanhPho}\n${masjid.moTa ? `\n${masjid.moTa}\n` : ''}\n🔗 ${window.location.href}`;
-      
-      await navigator.clipboard.writeText(shareText);
+      const fallbackText = `🕌 ${masjid.ten}\n📍 ${masjid.diaChi}, ${masjid.thanhPho}${masjid.moTa ? `\n${masjid.moTa}` : ''}\n🔗 ${masjidUrl}`;
+      await navigator.clipboard.writeText(fallbackText);
       return { success: true, method: 'clipboard' };
     } catch (error) {
       console.warn('Clipboard API failed:', error);
       return { success: false, error: 'Không thể chia sẻ' };
     }
+  }, [createMasjidUrl]);
+
+  // Generic share window helper
+  const openShareWindow = useCallback((url: string) => {
+    window.open(url, '_blank', 'noopener,noreferrer,width=600,height=400');
   }, []);
 
-  // Share via specific platforms
   const shareToFacebook = useCallback((masjid: MasjidViet) => {
-    const url = encodeURIComponent(window.location.href);
-    const text = encodeURIComponent(`🕌 ${masjid.ten} - ${masjid.thanhPho}`);
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${text}`, '_blank');
-  }, []);
+    const url = encodeURIComponent(createMasjidUrl(masjid));
+    const quote = encodeURIComponent(`🕌 ${masjid.ten} - ${masjid.thanhPho}`);
+    openShareWindow(`https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${quote}`);
+  }, [openShareWindow, createMasjidUrl]);
 
   const shareToTwitter = useCallback((masjid: MasjidViet) => {
-    const url = encodeURIComponent(window.location.href);
+    const url = encodeURIComponent(createMasjidUrl(masjid));
     const text = encodeURIComponent(`🕌 ${masjid.ten} tại ${masjid.thanhPho} #MasjidVietNam`);
-    window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
-  }, []);
+    openShareWindow(`https://twitter.com/intent/tweet?url=${url}&text=${text}`);
+  }, [openShareWindow, createMasjidUrl]);
 
   const shareToWhatsApp = useCallback((masjid: MasjidViet) => {
-    const text = encodeURIComponent(`🕌 *${masjid.ten}*\n📍 ${masjid.diaChi}, ${masjid.thanhPho}\n${masjid.moTa ? `\n${masjid.moTa}\n` : ''}\n🔗 ${window.location.href}`);
-    window.open(`https://wa.me/?text=${text}`, '_blank');
-  }, []);
+    const masjidUrl = createMasjidUrl(masjid);
+    const text = encodeURIComponent(`🕌 *${masjid.ten}*\n📍 ${masjid.diaChi}, ${masjid.thanhPho}${masjid.moTa ? `\n${masjid.moTa}` : ''}\n🔗 ${masjidUrl}`);
+    openShareWindow(`https://wa.me/?text=${text}`);
+  }, [openShareWindow, createMasjidUrl]);
 
   const shareToTelegram = useCallback((masjid: MasjidViet) => {
-    const url = encodeURIComponent(window.location.href);
+    const url = encodeURIComponent(createMasjidUrl(masjid));
     const text = encodeURIComponent(`🕌 ${masjid.ten} - ${masjid.thanhPho}`);
-    window.open(`https://t.me/share/url?url=${url}&text=${text}`, '_blank');
-  }, []);
+    openShareWindow(`https://t.me/share/url?url=${url}&text=${text}`);
+  }, [openShareWindow, createMasjidUrl]);
 
-  // Copy link to clipboard
-  const copyLink = useCallback(async () => {
+  const shareToLinkedIn = useCallback((masjid: MasjidViet) => {
+    const url = encodeURIComponent(createMasjidUrl(masjid));
+    openShareWindow(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`);
+  }, [openShareWindow, createMasjidUrl]);
+
+  const shareViaEmail = useCallback((masjid: MasjidViet) => {
+    const masjidUrl = createMasjidUrl(masjid);
+    const subject = encodeURIComponent(`🕌 ${masjid.ten} tại ${masjid.thanhPho}`);
+    const body = encodeURIComponent(`Tìm hiểu về masjid ${masjid.ten} tại ${masjid.thanhPho}\n${masjidUrl}`);
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  }, [createMasjidUrl]);
+
+  const copyLink = useCallback(async (masjid?: MasjidViet) => {
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      const url = masjid ? createMasjidUrl(masjid) : window.location.href;
+      await navigator.clipboard.writeText(url);
       return { success: true };
     } catch (error) {
       return { success: false, error: 'Không thể sao chép link' };
     }
+  }, [createMasjidUrl]);
+
+  // Listen for URL changes to handle deep linking
+  useEffect(() => {
+    const handleUrlChange = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const masjidId = urlParams.get('masjid');
+      
+      if (masjidId && onMasjidSelect) {
+        onMasjidSelect(masjidId);
+      }
+    };
+
+    // Check on mount
+    handleUrlChange();
+
+    // Listen for popstate (back/forward buttons)
+    window.addEventListener('popstate', handleUrlChange);
+    
+    return () => {
+      window.removeEventListener('popstate', handleUrlChange);
+    };
+  }, [onMasjidSelect]);
+
+  // Update URL without page reload
+  const updateUrlWithMasjid = useCallback((masjidId: string) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('masjid', masjidId);
+    window.history.pushState({}, '', url.toString());
+  }, []);
+
+  // Clear masjid from URL
+  const clearMasjidFromUrl = useCallback(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('masjid');
+    window.history.pushState({}, '', url.toString());
   }, []);
 
   return {
@@ -73,6 +140,11 @@ export const useShare = () => {
     shareToTwitter,
     shareToWhatsApp,
     shareToTelegram,
-    copyLink
+    shareToLinkedIn,
+    shareViaEmail,
+    copyLink,
+    createMasjidUrl,
+    updateUrlWithMasjid,
+    clearMasjidFromUrl,
   };
 };

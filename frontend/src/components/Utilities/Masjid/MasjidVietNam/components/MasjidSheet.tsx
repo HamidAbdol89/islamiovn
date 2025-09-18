@@ -30,10 +30,12 @@ const MasjidSheet: React.FC<MasjidSheetProps> = React.memo(({ masjid, isOpen, on
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent 
-        side="bottom" 
-        className="h-[90vh] sm:h-[85vh] overflow-y-auto"
-      >
+<SheetContent
+  side="bottom"
+  className="h-[90vh] sm:h-[85vh] overflow-y-auto lg:max-w-3xl lg:mx-auto lg:rounded-t-2xl scrollbar-custom"
+>
+
+
         <SheetHeader className="space-y-4 pb-6">
           {/* Region Badge and Title */}
           <div className="flex items-start justify-between gap-3">

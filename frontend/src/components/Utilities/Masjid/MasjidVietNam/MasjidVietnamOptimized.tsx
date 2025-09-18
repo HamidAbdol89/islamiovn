@@ -6,8 +6,7 @@ import { useOptimisticFavorites } from './hooks/useOptimisticFavorites';
 import { useSmoothScroll } from '@/hooks/useSmoothScroll';
 
 // Lazy load components for better performance
-const SimpleMasjidCard = lazy(() => import('./components/SimpleMasjidCard'));
-const MasjidModal = lazy(() => import('./components/MasjidModal'));
+
 const MasjidSearch = lazy(() => import('./components/MasjidSearch'));
 
 // Import types and data
@@ -43,7 +42,6 @@ LoadingCard.displayName = 'LoadingCard';
 const MasjidVietnamOptimized = memo(() => {
   const [masjids, setMasjids] = useState<MasjidViet[]>([]);
   const [filteredMasjids, setFilteredMasjids] = useState<MasjidViet[]>([]);
-  const [selectedMasjid, setSelectedMasjid] = useState<MasjidViet | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRegion, setSelectedRegion] = useState<string>('');
@@ -126,14 +124,6 @@ const MasjidVietnamOptimized = memo(() => {
     setFilteredMasjids(masjids);
   }, [masjids]);
 
-  // Memoized handlers
-  const handleViewDetails = useCallback((masjid: MasjidViet) => {
-    setSelectedMasjid(masjid);
-  }, []);
-
-  const handleCloseModal = useCallback(() => {
-    setSelectedMasjid(null);
-  }, []);
 
   // Memoized display count for mobile optimization
   const displayCount = useMemo(() => {
@@ -219,11 +209,7 @@ const MasjidVietnamOptimized = memo(() => {
               key={masjid.id} 
               fallback={<LoadingCard />}
             >
-              <SimpleMasjidCard
-                masjid={masjid}
-                onViewDetails={handleViewDetails}
-                index={index}
-              />
+            
             </Suspense>
           );
         })}
@@ -250,16 +236,7 @@ const MasjidVietnamOptimized = memo(() => {
         </div>
       )}
 
-      {/* Modal */}
-      {selectedMasjid && (
-        <Suspense fallback={null}>
-          <MasjidModal
-            masjid={selectedMasjid}
-            isOpen={!!selectedMasjid}
-            onClose={handleCloseModal}
-          />
-        </Suspense>
-      )}
+     
     </div>
   );
 });

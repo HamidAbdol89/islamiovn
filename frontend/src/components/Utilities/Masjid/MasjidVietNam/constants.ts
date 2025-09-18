@@ -2,8 +2,8 @@
 
 export const VIETNAMESE_TEXT = {
   // Header
-  title: '🕌 Masjid Việt Nam 🇻🇳',
-  subtitle: 'Danh bạ các masjid trên toàn quốc Việt Nam',
+  title: 'Masjid Việt Nam 🇻🇳',
+  subtitle: 'Danh bạ các Masjid trên toàn quốc',
   
   // Important Notice
   importantNotice: {

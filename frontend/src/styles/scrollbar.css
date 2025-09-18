@@ -1,0 +1,23 @@
+/* src/styles/scrollbar.css */
+@media (min-width: 1024px) { /* chỉ desktop trở lên */
+    .scrollbar-custom {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(37, 142, 14, 0.5) transparent;
+    }
+  
+    .scrollbar-custom::-webkit-scrollbar {
+      width: 8px;
+    }
+  
+    .scrollbar-custom::-webkit-scrollbar-track {
+      background: transparent;
+    }
+  
+    .scrollbar-custom::-webkit-scrollbar-thumb {
+      background-color: rgba(37, 142, 14, 0.5);
+      border-radius: 9999px;
+      border: 2px solid transparent;
+      background-clip: content-box;
+    }
+  }
+  

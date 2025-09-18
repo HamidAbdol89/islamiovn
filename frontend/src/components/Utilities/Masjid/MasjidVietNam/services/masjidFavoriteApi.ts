@@ -1,7 +1,7 @@
 // API service for masjid favorites with backend integration
 import type { MasjidViet } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL_USER || 'http://localhost:3000/api';
+const API_BASE_URL_USER = import.meta.env.VITE_API_URL_USER;
 
 // Types for API responses
 export interface FavoriteUser {
@@ -75,7 +75,7 @@ export const masjidFavoriteApi = {
     params.append('masjidIds', masjidIds.join(','));
     params.append('limit', limit.toString());
 
-    const response = await fetch(`${API_BASE_URL}/masjid-favorites/batch?${params}`, {
+    const response = await fetch(`${API_BASE_URL_USER}/masjid-favorites/batch?${params}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
@@ -100,7 +100,7 @@ export const masjidFavoriteApi = {
       ...additionalData
     };
 
-    const response = await fetch(`${API_BASE_URL}/masjid-favorites`, {
+    const response = await fetch(`${API_BASE_URL_USER}/masjid-favorites`, {
       method: 'POST',
       headers: createHeaders(),
       body: JSON.stringify(favoriteData)
@@ -111,7 +111,7 @@ export const masjidFavoriteApi = {
 
   // Remove masjid from favorites
   async removeFavorite(masjidId: string): Promise<ApiResponse<any>> {
-    const response = await fetch(`${API_BASE_URL}/masjid-favorites/${masjidId}`, {
+    const response = await fetch(`${API_BASE_URL_USER}/masjid-favorites/${masjidId}`, {
       method: 'DELETE',
       headers: createHeaders()
     });
@@ -132,7 +132,7 @@ export const masjidFavoriteApi = {
     if (options?.region) params.append('region', options.region);
     if (options?.hasVisited !== undefined) params.append('hasVisited', options.hasVisited.toString());
 
-    const response = await fetch(`${API_BASE_URL}/masjid-favorites/my?${params}`, {
+    const response = await fetch(`${API_BASE_URL_USER}/masjid-favorites/my?${params}`, {
       method: 'GET',
       headers: createHeaders()
     });
@@ -142,7 +142,7 @@ export const masjidFavoriteApi = {
 
   // Get users who favorited a specific masjid (for avatar display) - PUBLIC ENDPOINT
   async getMasjidFavoriteUsers(masjidId: string, limit = 10): Promise<ApiResponse<{ users: FavoriteUser[]; totalCount: number }>> {
-    const response = await fetch(`${API_BASE_URL}/masjid-favorites/masjid/${masjidId}/users?limit=${limit}`, {
+    const response = await fetch(`${API_BASE_URL_USER}/masjid-favorites/masjid/${masjidId}/users?limit=${limit}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
@@ -160,7 +160,7 @@ export const masjidFavoriteApi = {
     visitedCount: number;
     ratingDistribution: number[];
   }>> {
-    const response = await fetch(`${API_BASE_URL}/masjid-favorites/masjid/${masjidId}/stats`, {
+    const response = await fetch(`${API_BASE_URL_USER}/masjid-favorites/masjid/${masjidId}/stats`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
@@ -173,7 +173,7 @@ export const masjidFavoriteApi = {
 
   // Check if user has favorited a masjid
   async checkIsFavorited(masjidId: string): Promise<ApiResponse<{ isFavorited: boolean; favoriteId?: string }>> {
-    const response = await fetch(`${API_BASE_URL}/masjid-favorites/check/${masjidId}`, {
+    const response = await fetch(`${API_BASE_URL_USER}/masjid-favorites/check/${masjidId}`, {
       method: 'GET',
       headers: createHeaders()
     });
@@ -186,7 +186,7 @@ export const masjidFavoriteApi = {
     const params = new URLSearchParams();
     params.append('masjidIds', masjidIds.join(','));
 
-    const response = await fetch(`${API_BASE_URL}/masjid-favorites/batch-check?${params}`, {
+    const response = await fetch(`${API_BASE_URL_USER}/masjid-favorites/batch-check?${params}`, {
       method: 'GET',
       headers: createHeaders()
     });
@@ -203,7 +203,7 @@ export const masjidFavoriteApi = {
     rating?: number;
     tags?: string[];
   }): Promise<ApiResponse<any>> {
-    const response = await fetch(`${API_BASE_URL}/masjid-favorites/${masjidId}`, {
+    const response = await fetch(`${API_BASE_URL_USER}/masjid-favorites/${masjidId}`, {
       method: 'PUT',
       headers: createHeaders(),
       body: JSON.stringify(updateData)
@@ -221,7 +221,7 @@ export const masjidFavoriteApi = {
     if (options?.limit) params.append('limit', options.limit.toString());
     if (options?.region) params.append('region', options.region);
 
-    const response = await fetch(`${API_BASE_URL}/masjid-favorites/popular?${params}`, {
+    const response = await fetch(`${API_BASE_URL_USER}/masjid-favorites/popular?${params}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'

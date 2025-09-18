@@ -1,6 +1,6 @@
 // MasjidCard Component with Vietnamese localization, region colors, favorites, share and user avatars
 import React from 'react';
-import { MapPin, Users, Phone, Calendar, Heart, Share2 } from 'lucide-react';
+import { MapPin, Users, Phone, Calendar, Heart, Send } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -53,10 +53,16 @@ const MasjidCard: React.FC<MasjidCardProps> = React.memo(({
     onShare?.(masjid);
   };
 
+  const handleCardClick = () => {
+    if (onClick) {
+      onClick();
+    }
+  };
+
   return (
     <Card 
-      className="overflow-hidden bg-card border-border hover:shadow-luxury transition-smooth cursor-pointer group relative"
-      onClick={onClick}
+    className="w-full overflow-hidden bg-card border-border hover:shadow-luxury transition-smooth cursor-pointer group relative"
+    onClick={handleCardClick}
     >
       {/* Image */}
       {masjid.hinhAnh && (
@@ -141,61 +147,72 @@ const MasjidCard: React.FC<MasjidCardProps> = React.memo(({
           )}
         </div>
 
-        {/* Animated Favorite Avatars with instant updates */}
-        <div className="mb-3">
-          <AnimatedFavoriteAvatars
-            favoriteUsers={favoriteUsers}
-            totalFavorites={favoriteCount}
-            isFavorited={isFavorite}
-            isPending={isPendingSync}
-            maxDisplay={10}
-            size="sm"
-            showCount={true}
-            masjidName={masjid.ten}
-          />
-        </div>
+   {/* Animated Favorite Avatars with instant updates */}
+   <div
+  className="mb-3"
+  onClick={(e) => e.stopPropagation()}
+>
+  <AnimatedFavoriteAvatars
+    favoriteUsers={favoriteUsers}
+    totalFavorites={favoriteCount}
+    isFavorited={isFavorite}
+    isPending={isPendingSync}
+    maxDisplay={10}
+    size="sm"
+    showCount={false}
+    masjidName={masjid.ten}
+  />
+</div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center justify-between pt-2 border-t border-border">
-          <div className="flex items-center gap-2">
-            {onToggleFavorite && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleFavoriteClick}
-                className={cn(
-                  "h-8 w-8 p-0 transition-colors",
-                  isFavorite 
-                    ? "text-red-500 hover:text-red-600" 
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <Heart 
-                  className={cn("h-4 w-4", isFavorite && "fill-current")} 
-                />
-                <span className="sr-only">
-                  {isFavorite ? 'Bỏ yêu thích' : 'Yêu thích'}
-                </span>
-              </Button>
-            )}
-            
-            {onShare && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleShareClick}
-                className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-              >
-                <Share2 className="h-4 w-4" />
-                <span className="sr-only">Chia sẻ</span>
-              </Button>
-            )}
-          </div>
-          
-          <div className="text-xs text-muted-foreground">
-            Nhấn để xem chi tiết
-          </div>
-        </div>
+
+{/* Action Buttons */}
+<div className="flex items-center justify-between pt-2 border-t border-border">
+  <div className="flex items-center gap-2">
+    {onToggleFavorite && (
+      <div className="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleFavoriteClick}
+          className={cn(
+            "h-8 w-8 p-0 transition-colors",
+            isFavorite 
+              ? "text-red-500 hover:text-red-600" 
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <Heart 
+            className={cn("h-4 w-4", isFavorite && "fill-current")} 
+          />
+          <span className="sr-only">
+            {isFavorite ? 'Bỏ yêu thích' : 'Yêu thích'}
+          </span>
+        </Button>
+        {/* Show count right next to heart */}
+        {favoriteCount > 0 && (
+          <span className="text-sm text-muted-foreground">{favoriteCount}</span>
+        )}
+      </div>
+    )}
+    
+    {onShare && (
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={handleShareClick}
+        className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+      >
+        <Send className="h-4 w-4" />
+        <span className="sr-only">Chia sẻ</span>
+      </Button>
+    )}
+  </div>
+  
+  <div className="text-xs text-muted-foreground">
+    Nhấn để xem chi tiết
+  </div>
+</div>
+
       </CardContent>
     </Card>
   );

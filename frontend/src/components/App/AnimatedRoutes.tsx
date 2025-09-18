@@ -224,12 +224,14 @@ const AnimatedRoutes: React.FC = () => {
           } 
         />
  
+     
+          
+          {/* Masjid List Route - Exact path */}
           <Route 
-            path={ROUTES.UTILITIES.MASJID_VIET_NAM} 
+            path="/utilities/masjid-vietnam" 
             element={
               <AnimatedPage>
-                <Suspense fallback={<LoadingSpinner />}
-                >
+                <Suspense fallback={<LoadingSpinner />}>
                   <MasjidVietnamApp />
                 </Suspense>
               </AnimatedPage>
