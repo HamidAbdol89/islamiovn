@@ -1,12 +1,7 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import type { MasjidViet } from '../types';
 
-interface UseShareProps {
-  onMasjidSelect?: (masjidId: string) => void;
-}
-
-export const useShare = (props?: UseShareProps) => {
-  const { onMasjidSelect } = props || {};
+export const useShare = () => {
 
   // Tạo URL với masjid ID
   const createMasjidUrl = useCallback((masjid: MasjidViet) => {
@@ -98,41 +93,6 @@ export const useShare = (props?: UseShareProps) => {
     }
   }, [createMasjidUrl]);
 
-  // Listen for URL changes to handle deep linking
-  useEffect(() => {
-    const handleUrlChange = () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const masjidId = urlParams.get('masjid');
-      
-      if (masjidId && onMasjidSelect) {
-        onMasjidSelect(masjidId);
-      }
-    };
-
-    // Check on mount
-    handleUrlChange();
-
-    // Listen for popstate (back/forward buttons)
-    window.addEventListener('popstate', handleUrlChange);
-    
-    return () => {
-      window.removeEventListener('popstate', handleUrlChange);
-    };
-  }, [onMasjidSelect]);
-
-  // Update URL without page reload
-  const updateUrlWithMasjid = useCallback((masjidId: string) => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('masjid', masjidId);
-    window.history.pushState({}, '', url.toString());
-  }, []);
-
-  // Clear masjid from URL
-  const clearMasjidFromUrl = useCallback(() => {
-    const url = new URL(window.location.href);
-    url.searchParams.delete('masjid');
-    window.history.pushState({}, '', url.toString());
-  }, []);
 
   return {
     shareMasjid,
@@ -144,7 +104,5 @@ export const useShare = (props?: UseShareProps) => {
     shareViaEmail,
     copyLink,
     createMasjidUrl,
-    updateUrlWithMasjid,
-    clearMasjidFromUrl,
   };
 };

@@ -1,6 +1,6 @@
 // Enhanced MasjidVietnam Component with deep linking support
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 import type { MasjidViet } from './types';
 import { 
   useMasjidData, 
@@ -25,7 +25,7 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   // Custom hooks
-  const { filterMasjids, statistics, masjidData } = useMasjidData();
+  const { filterMasjids, statistics } = useMasjidData();
   const {
     trangThaiTimKiem,
     ketQuaTimKiem,
@@ -47,37 +47,8 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
     loadBatchMasjidData
   } = useOptimisticFavorites();
 
-  // Helper function to find masjid by ID
-  const findMasjidById = useCallback((masjidId: string) => {
-    return masjidData.find(masjid => masjid.id === masjidId);
-  }, [masjidData]);
-
-  // Handle deep linking when masjid is selected from URL
-  const handleMasjidDeepLink = useCallback((masjidId: string) => {
-    const masjid = findMasjidById(masjidId);
-    if (masjid) {
-      setSelectedMasjid(masjid);
-      setIsSheetOpen(true);
-      
-      // Optional: Show toast notification
-      toast.info(`Mở thông tin ${masjid.ten}`, {
-        duration: 2000,
-      });
-    } else {
-      toast.error('Không tìm thấy masjid', {
-        duration: 3000,
-      });
-    }
-  }, [findMasjidById]);
-
-  // Enhanced useShare with deep linking
-  const { 
-    shareMasjid, 
-    updateUrlWithMasjid, 
-    clearMasjidFromUrl 
-  } = useShare({
-    onMasjidSelect: handleMasjidDeepLink
-  });
+  // Simple share functionality
+  const { shareMasjid } = useShare();
   
   // Analytics hook
   const { trackSearch } = useSearchAnalytics();
@@ -86,22 +57,17 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
   const handleMasjidClick = useCallback((masjid: MasjidViet) => {
     setSelectedMasjid(masjid);
     setIsSheetOpen(true);
-    
-    // Update URL with masjid ID for sharing
-    updateUrlWithMasjid(masjid.id);
-  }, [updateUrlWithMasjid]);
+  }, []);
 
   const handleCloseSheet = useCallback(() => {
     setIsSheetOpen(false);
-    
-    // Clear masjid from URL when closing
-    clearMasjidFromUrl();
   
-    // Delay removing data after animation completes
+    // Delay xoá data sau khi anim close chạy xong
     setTimeout(() => {
       setSelectedMasjid(null);
-    }, 300);
-  }, [clearMasjidFromUrl]);
+    }, 300); // 300ms = duration anim của Radix/Tailwind
+  }, []);
+  
 
   const handleClearSearch = useCallback(() => {
     clearSearch();
@@ -131,21 +97,24 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
     toggleFavorite(masjid);
   }, [toggleFavorite]);
 
-  // Enhanced share handler
+  // Navigation tracking is now handled by NavigationProvider
+
+  // Simple share handler
   const handleShare = useCallback(async (masjid: MasjidViet) => {
     const result = await shareMasjid(masjid);
     
     if (result.success) {
       const message = result.method === 'native' 
-        ? 'Đã chia sẻ thành công' 
-        : 'Đã sao chép link masjid vào clipboard';
+        ? '🔗 Đã chia sẻ thành công' 
+        : '📋 Đã sao chép link vào clipboard';
       
       toast.success(message, {
-        description: 'Người khác có thể nhấn vào link để xem thông tin masjid',
-        duration: 3000,
+        description: 'Bạn có thể chia sẻ link này với bạn bè',
+        duration: 2000,
       });
     } else {
-      toast.error(result.error || 'Không thể chia sẻ', {
+      toast.error('❌ Không thể chia sẻ', {
+        description: result.error || 'Vui lòng thử lại',
         duration: 3000,
       });
     }

@@ -1,6 +1,6 @@
 // MasjidSheet Component with Vietnamese localization and fullscreen Sheet
 import React from 'react';
-import { MapPin, Users, Phone, Calendar, Clock, Globe, ExternalLink } from 'lucide-react';
+import { MapPin, Users, Phone, Calendar, Clock, Globe, ExternalLink, Heart, Share2 } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -18,9 +18,27 @@ interface MasjidSheetProps {
   masjid: MasjidViet | null;
   isOpen: boolean;
   onClose: () => void;
+  favoriteUsers?: Array<{
+    id: string;
+    name: string;
+    avatar?: string;
+  }>;
+  favoriteCount?: number;
+  isFavorite?: boolean;
+  onToggleFavorite?: (masjid: MasjidViet) => void;
+  onShare?: (masjid: MasjidViet) => void;
 }
 
-const MasjidSheet: React.FC<MasjidSheetProps> = React.memo(({ masjid, isOpen, onClose }) => {
+const MasjidSheet: React.FC<MasjidSheetProps> = React.memo(({ 
+  masjid, 
+  isOpen, 
+  onClose, 
+  favoriteUsers = [], 
+  favoriteCount = 0, 
+  isFavorite = false, 
+  onToggleFavorite, 
+  onShare 
+}) => {
   if (!masjid) return null;
 
   // Get region badge color
@@ -184,32 +202,106 @@ const MasjidSheet: React.FC<MasjidSheetProps> = React.memo(({ masjid, isOpen, on
             </>
           )}
 
+          {/* Favorite Users Section */}
+          {favoriteCount > 0 && (
+            <>
+              <Separator />
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                  <Heart className="w-5 h-5 text-red-500" />
+                  Người đã yêu thích ({favoriteCount})
+                </h3>
+                {favoriteUsers.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {favoriteUsers.slice(0, 10).map((user) => (
+                      <div key={user.id} className="flex items-center gap-2 bg-muted/50 rounded-full px-3 py-1.5">
+                        {user.avatar ? (
+                          <img 
+                            src={user.avatar} 
+                            alt={user.name}
+                            className="w-6 h-6 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
+                            <span className="text-xs font-medium text-primary">
+                              {user.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                        <span className="text-sm font-medium text-foreground">{user.name}</span>
+                      </div>
+                    ))}
+                    {favoriteUsers.length > 10 && (
+                      <div className="flex items-center gap-2 bg-muted/50 rounded-full px-3 py-1.5">
+                        <span className="text-sm text-muted-foreground">
+                          +{favoriteUsers.length - 10} người khác
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-sm">
+                    {favoriteCount} người đã yêu thích masjid này
+                  </p>
+                )}
+              </div>
+            </>
+          )}
+
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-4">
-            {masjid.diaChi && (
-              <Button 
-                variant="default" 
-                className="flex-1"
-                onClick={() => {
-                  const query = encodeURIComponent(`${masjid.ten} ${masjid.diaChi} ${masjid.thanhPho}`);
-                  window.open(`https://www.google.com/maps/search/${query}`, '_blank');
-                }}
-              >
-                <MapPin className="w-4 h-4 mr-2" />
-                Xem trên bản đồ
-              </Button>
-            )}
-            
-            {masjid.soDienThoai && (
-              <Button 
-                variant="outline" 
-                className="flex-1"
-                onClick={() => window.open(`tel:${masjid.soDienThoai}`, '_self')}
-              >
-                <Phone className="w-4 h-4 mr-2" />
-                Gọi điện
-              </Button>
-            )}
+          <div className="space-y-3 pt-4">
+            {/* Favorite and Share buttons */}
+            <div className="flex gap-3">
+              {onToggleFavorite && (
+                <Button 
+                  variant={isFavorite ? "default" : "outline"}
+                  className="flex-1"
+                  onClick={() => onToggleFavorite(masjid)}
+                >
+                  <Heart className={cn("w-4 h-4 mr-2", isFavorite && "fill-current")} />
+                  {isFavorite ? 'Đã yêu thích' : 'Yêu thích'}
+                </Button>
+              )}
+              
+              {onShare && (
+                <Button 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={() => onShare(masjid)}
+                >
+                  <Share2 className="w-4 h-4 mr-2" />
+                  Chia sẻ
+                </Button>
+              )}
+            </div>
+
+            {/* Map and Phone buttons */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              {masjid.diaChi && (
+                <Button 
+                  variant="default" 
+                  className="flex-1"
+                  onClick={() => {
+                    const query = encodeURIComponent(`${masjid.ten} ${masjid.diaChi} ${masjid.thanhPho}`);
+                    window.open(`https://www.google.com/maps/search/${query}`, '_blank');
+                  }}
+                >
+                  <MapPin className="w-4 h-4 mr-2" />
+                  Xem trên bản đồ
+                </Button>
+              )}
+              
+              {masjid.soDienThoai && (
+                <Button 
+                  variant="secondary" 
+                  className="flex-1"
+                  onClick={() => window.open(`tel:${masjid.soDienThoai}`, '_self')}
+                >
+                  <Phone className="w-4 h-4 mr-2" />
+                  Gọi điện
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </SheetContent>

@@ -1,6 +1,6 @@
 // Professional Optimistic Favorites Hook with Request Manager
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { toast } from 'sonner';
+import { toast, toastPatterns } from '@/lib/toast';
 import type { MasjidViet } from '../types';
 import { masjidFavoriteApi, type FavoriteUser } from '../services/masjidFavoriteApi';
 import { useAuth } from '@/context/AuthContext';
@@ -160,13 +160,7 @@ export const useOptimisticFavorites = () => {
   // 🚀 OPTIMISTIC TOGGLE FAVORITE with instant UI updates
   const toggleFavorite = useCallback(async (masjid: MasjidViet) => {
     if (!isAuthenticated) {
-      toast.error('Vui lòng đăng nhập để sử dụng tính năng yêu thích', {
-        duration: 4000,
-        action: {
-          label: 'Đăng nhập',
-          onClick: () => login().catch(() => toast.error('Đăng nhập thất bại'))
-        }
-      });
+      toastPatterns.loginRequired();
       return;
     }
 
@@ -249,8 +243,7 @@ export const useOptimisticFavorites = () => {
     toast.success(
       wasLiked ? '💔 Đã bỏ yêu thích' : '❤️ Đã thêm vào yêu thích', 
       { 
-        duration: 1500,
-        position: 'bottom-center'
+        duration: 1500
       }
     );
   }, [isAuthenticated, user, favoriteStates, login, syncToServer]);

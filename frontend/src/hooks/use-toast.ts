@@ -8,8 +8,8 @@ import type {
   ToastProps,
 } from "@/components/ui/toast"
 
-const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+const TOAST_LIMIT = 3
+const TOAST_REMOVE_DELAY = 5000
 
 type ToasterToast = ToastProps & {
   id: string
@@ -191,4 +191,81 @@ function useToast() {
   }
 }
 
-export { useToast, toast }
+// Helper functions to match Sonner API
+const toastHelpers = {
+  success: (title: string, options?: { description?: string; duration?: number }) => {
+    const toastInstance = toast({
+      title,
+      description: options?.description,
+      variant: "default",
+      className: "border-green-200 bg-green-50 text-green-900 dark:border-green-800 dark:bg-green-950 dark:text-green-100",
+    });
+    
+    // Handle custom duration
+    if (options?.duration && options.duration !== TOAST_REMOVE_DELAY) {
+      setTimeout(() => {
+        toastInstance.dismiss();
+      }, options.duration);
+    }
+    
+    return toastInstance;
+  },
+  
+  error: (title: string, options?: { description?: string; duration?: number }) => {
+    const toastInstance = toast({
+      title,
+      description: options?.description,
+      variant: "destructive",
+    });
+    
+    // Handle custom duration
+    if (options?.duration && options.duration !== TOAST_REMOVE_DELAY) {
+      setTimeout(() => {
+        toastInstance.dismiss();
+      }, options.duration);
+    }
+    
+    return toastInstance;
+  },
+  
+  info: (title: string, options?: { description?: string; duration?: number }) => {
+    const toastInstance = toast({
+      title,
+      description: options?.description,
+      variant: "default",
+      className: "border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-100",
+    });
+    
+    // Handle custom duration
+    if (options?.duration && options.duration !== TOAST_REMOVE_DELAY) {
+      setTimeout(() => {
+        toastInstance.dismiss();
+      }, options.duration);
+    }
+    
+    return toastInstance;
+  },
+  
+  warning: (title: string, options?: { description?: string; duration?: number }) => {
+    const toastInstance = toast({
+      title,
+      description: options?.description,
+      variant: "default",
+      className: "border-yellow-200 bg-yellow-50 text-yellow-900 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-100",
+    });
+    
+    // Handle custom duration
+    if (options?.duration && options.duration !== TOAST_REMOVE_DELAY) {
+      setTimeout(() => {
+        toastInstance.dismiss();
+      }, options.duration);
+    }
+    
+    return toastInstance;
+  }
+}
+
+// Create a toast object that matches Sonner's API
+const toastSonnerCompat = Object.assign(toast, toastHelpers)
+
+export { useToast, toast, toastSonnerCompat }

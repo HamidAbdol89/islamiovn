@@ -4,11 +4,12 @@ import App from "./App.tsx";
 import "./index.css";
 import "./styles/mobile-scroll.css";
 import "./styles/scrollbar.css";
+import "./styles/toast.css";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { HelmetProvider } from 'react-helmet-async'; 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from 'sonner'; // 👈 import Toaster
+import { Toaster } from '@/components/ui/toaster'; // 👈 import shadcn Toaster
 
 const queryClient = new QueryClient();
 
@@ -35,8 +36,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <HelmetProvider>
         <AuthProvider>
           <ThemeProvider>
-            {/* 👇 Thêm Toaster ở đây */}
-            <Toaster position="top-right" richColors />
+            {/* 👇 Thêm shadcn Toaster ở đây */}
+            <Toaster />
             <App />
           </ThemeProvider>
         </AuthProvider>

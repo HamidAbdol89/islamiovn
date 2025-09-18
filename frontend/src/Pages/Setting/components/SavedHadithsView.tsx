@@ -20,7 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 import { useSimpleBookmarkService } from '@/services/simpleBookmarkService';
 import { useSimpleFavoriteService } from '@/services/simpleFavoriteService';
 import { hadithApi } from '@/components/Utilities/Hadith/api';
