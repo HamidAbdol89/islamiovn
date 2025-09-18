@@ -1,0 +1,158 @@
+/* Mobile scroll optimizations */
+
+/* Smooth scrolling for mobile devices */
+.mobile-scroll-container {
+  /* iOS momentum scrolling */
+  -webkit-overflow-scrolling: touch;
+  
+  /* Disable smooth scroll behavior on mobile for better performance */
+  scroll-behavior: auto;
+  
+  /* Force hardware acceleration */
+  transform: translateZ(0);
+  will-change: scroll-position;
+  
+  /* Optimize scrolling performance */
+  overflow-y: auto;
+  overflow-x: hidden;
+  
+  /* Prevent bounce on iOS */
+  overscroll-behavior: contain;
+}
+
+/* Disable complex animations on mobile */
+@media (max-width: 768px) {
+  .mobile-optimized * {
+    /* Remove all transitions on mobile for better performance */
+    transition: none !important;
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+  
+  /* Simplify hover effects on touch devices */
+  .mobile-optimized *:hover {
+    transform: none !important;
+    scale: none !important;
+  }
+  
+  /* Optimize card rendering */
+  .mobile-optimized .card {
+    /* Use transform3d for better performance */
+    transform: translate3d(0, 0, 0);
+    
+    /* Reduce box-shadow complexity */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  /* Simplify grid layout for mobile */
+  .mobile-optimized .grid {
+    /* Use flexbox instead of grid for better mobile performance */
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+/* Touch device optimizations */
+.touch-device {
+  /* Disable hover effects entirely */
+  pointer-events: auto;
+}
+
+.touch-device *:hover {
+  /* Remove all hover effects on touch devices */
+  background-color: inherit !important;
+  color: inherit !important;
+  transform: none !important;
+  scale: none !important;
+  box-shadow: inherit !important;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Low-end device optimizations */
+.low-end-device {
+  /* Disable all animations */
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  /* Simplify shadows */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  
+  /* Reduce visual complexity */
+  .gradient {
+    background: var(--primary) !important;
+  }
+  
+  .backdrop-blur {
+    backdrop-filter: none !important;
+  }
+}
+
+/* Scroll performance optimizations */
+.scroll-optimized {
+  /* Use containment for better performance */
+  contain: layout style paint;
+  
+  /* Optimize repaints */
+  will-change: scroll-position;
+  
+  /* Use GPU acceleration */
+  transform: translateZ(0);
+}
+
+/* Virtual scrolling placeholder */
+.virtual-placeholder {
+  /* Minimal styling for placeholder items */
+  background-color: var(--muted);
+  border-radius: 8px;
+  opacity: 0.5;
+  
+  /* Prevent layout shifts */
+  min-height: 180px;
+  width: 100%;
+}
+
+/* Mobile card optimizations */
+@media (max-width: 768px) {
+  .mobile-card {
+    /* Simplify card styling */
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    background: var(--card);
+    
+    /* Remove complex effects */
+    box-shadow: none;
+    transition: none;
+    transform: none;
+  }
+  
+  .mobile-card:active {
+    /* Simple touch feedback */
+    background-color: var(--muted);
+  }
+}
+
+/* Optimize font rendering on mobile */
+@media (max-width: 768px) {
+  .mobile-optimized {
+    /* Optimize text rendering */
+    text-rendering: optimizeSpeed;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}

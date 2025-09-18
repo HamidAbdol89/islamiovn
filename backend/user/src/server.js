@@ -23,7 +23,9 @@ const corsOptions = {
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.log('CORS blocked origin:', origin);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('CORS blocked origin:', origin);
+      }
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -45,16 +47,15 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// CORS debugging middleware
-app.use((req, res, next) => {
-  console.log('CORS Debug:', {
-    method: req.method,
-    origin: req.headers.origin,
-    path: req.path,
-    headers: req.headers
+// CORS debugging middleware (only in development)
+if (process.env.NODE_ENV === 'development') {
+  app.use((req, res, next) => {
+    if (req.path.includes('/api/')) {
+      console.log('API Request:', req.method, req.path);
+    }
+    next();
   });
-  next();
-});
+}
 
 // Security middleware
 app.use(helmet());
@@ -77,7 +78,9 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // Database connection
-console.log('🔍 MongoDB URI:', process.env.MONGODB_URI);
+if (process.env.NODE_ENV === 'development') {
+  console.log('🔍 MongoDB URI:', process.env.MONGODB_URI);
+}
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/muslimviet')
 .then(() => {
   console.log('✅ Connected to MongoDB');

@@ -1,4 +1,4 @@
-// Enhanced MasjidVietnam Component with favorites, share, skeleton loading, pull-to-refresh, and analytics
+// Enhanced MasjidVietnam Component with favorites, share, skeleton loading, and analytics
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
 import type { MasjidViet } from './types';
@@ -6,9 +6,10 @@ import {
   useMasjidData, 
   useMasjidSearch, 
   useShare, 
-  usePullToRefresh,
+  // usePullToRefresh, // Removed - no longer needed
   useSearchAnalytics,
   useMasjidFavoritesBackend
+  // useMobileFriendlyRefresh // Removed - no longer needed
 } from './hooks';
 import {
   MasjidHeader,
@@ -17,7 +18,6 @@ import {
   MasjidSheet,
   EmptyState,
   MasjidSkeletonGrid,
-  PullToRefreshIndicator
 } from './components';
 
 const MasjidVietnamDirectory: React.FC = React.memo(() => {
@@ -52,24 +52,7 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
   // Analytics hook
   const { trackSearch } = useSearchAnalytics();
   
-  // Pull to refresh hook
-  const handleRefresh = useCallback(async () => {
-    // Simulate refresh delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    toast.success('Đã làm mới dữ liệu', { duration: 2000 });
-  }, []);
-  
-  const {
-    containerRef,
-    isRefreshing,
-    isPulling,
-    pullDistance,
-    pullProgress,
-    isReadyToRefresh
-  } = usePullToRefresh({
-    onRefresh: handleRefresh,
-    enabled: true
-  });
+  // Refresh functionality removed - no longer needed for smooth scrolling
 
   // Event handlers
   const handleMasjidClick = useCallback((masjid: MasjidViet) => {
@@ -149,19 +132,7 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
   }
 
   return (
-    <div 
-      ref={containerRef}
-      className="min-h-screen bg-background transition-colors duration-300 overflow-y-auto relative"
-    >
-      {/* Pull to Refresh Indicator */}
-      <PullToRefreshIndicator
-        isRefreshing={isRefreshing}
-        isPulling={isPulling}
-        pullProgress={pullProgress}
-        isReadyToRefresh={isReadyToRefresh}
-        pullDistance={pullDistance}
-      />
-
+    <div className="min-h-screen bg-background transition-colors duration-300 overflow-y-auto relative">
       {/* Header */}
       <MasjidHeader tongSoMasjid={statistics.total} favoritesCount={totalUserFavorites} />
 

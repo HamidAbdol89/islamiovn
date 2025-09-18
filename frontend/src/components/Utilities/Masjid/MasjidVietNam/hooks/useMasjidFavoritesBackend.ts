@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import type { MasjidViet } from '../types';
 import { masjidFavoriteApi, type FavoriteUser } from '../services/masjidFavoriteApi';
 import { useAuth } from '@/context/AuthContext';
+import { devLog, getBatchSize } from '@/utils/performance';
 
 interface MasjidFavoriteState {
   [masjidId: string]: {
@@ -24,11 +25,11 @@ export const useMasjidFavoritesBackend = () => {
       const cached = localStorage.getItem(CACHE_KEY);
       if (cached) {
         const parsed = JSON.parse(cached);
-        console.log('📦 Loaded cached favorite states:', Object.keys(parsed).length, 'masjids');
+        // Cached favorite states loaded
         return parsed;
       }
     } catch (error) {
-      console.warn('Failed to load cached favorite states:', error);
+      devLog.warn('Failed to load cached favorite states:', error);
     }
     return {};
   });
@@ -39,13 +40,17 @@ export const useMasjidFavoritesBackend = () => {
   // Use AuthContext for authentication
   const { user, isAuthenticated, login } = useAuth();
 
-  // Auto-save to localStorage when favoriteStates changes
+  // Auto-save to localStorage when favoriteStates changes (debounced for performance)
   useEffect(() => {
-    try {
-      localStorage.setItem(CACHE_KEY, JSON.stringify(favoriteStates));
-    } catch (error) {
-      console.warn('Failed to save favorite states to cache:', error);
-    }
+    const timeoutId = setTimeout(() => {
+      try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(favoriteStates));
+      } catch (error) {
+        devLog.warn('Failed to save favorite states to cache:', error);
+      }
+    }, 1000); // Debounce saves by 1 second
+
+    return () => clearTimeout(timeoutId);
   }, [favoriteStates]);
 
   // Get favorite state for a specific masjid
@@ -59,10 +64,11 @@ export const useMasjidFavoritesBackend = () => {
     };
   }, [favoriteStates]);
 
-  // PERFORMANCE: Batch load favorite users for multiple masjids
+  // PERFORMANCE: Batch load favorite users for multiple masjids (mobile-optimized)
   const loadBatchMasjidData = useCallback(async (masjidIds: string[]) => {
     try {
-      const response = await masjidFavoriteApi.getBatchMasjidData(masjidIds, 10);
+      const batchSize = getBatchSize();
+      const response = await masjidFavoriteApi.getBatchMasjidData(masjidIds, batchSize);
       
       if (response.success && response.data) {
         setFavoriteStates(prev => {
@@ -80,7 +86,7 @@ export const useMasjidFavoritesBackend = () => {
         });
       }
     } catch (error) {
-      console.error('Error loading batch masjid data:', error);
+      devLog.error('Error loading batch masjid data:', error);
     }
   }, []);
 
@@ -95,7 +101,8 @@ export const useMasjidFavoritesBackend = () => {
         }
       }));
 
-      const response = await masjidFavoriteApi.getMasjidFavoriteUsers(masjidId, 10);
+      const batchSize = getBatchSize();
+      const response = await masjidFavoriteApi.getMasjidFavoriteUsers(masjidId, batchSize);
       
       if (response.success && response.data) {
         setFavoriteStates(prev => ({
@@ -110,7 +117,7 @@ export const useMasjidFavoritesBackend = () => {
         }));
       }
     } catch (error) {
-      console.error('Error loading favorite users:', error);
+      devLog.error('Error loading favorite users:', error);
       setFavoriteStates(prev => ({
         ...prev,
         [masjidId]: {
@@ -140,7 +147,7 @@ export const useMasjidFavoritesBackend = () => {
         return response.data.isFavorited;
       }
     } catch (error) {
-      console.error('Error checking favorite status:', error);
+      devLog.error('Error checking favorite status:', error);
     }
     
     return false;
@@ -164,7 +171,7 @@ export const useMasjidFavoritesBackend = () => {
           label: 'Đăng nhập',
           onClick: () => {
             login().catch(error => {
-              console.error('Login failed:', error);
+              devLog.error('Login failed:', error);
               toast.error('Đăng nhập thất bại');
             });
           }
@@ -216,7 +223,7 @@ export const useMasjidFavoritesBackend = () => {
         }
       }));
 
-      console.error('Error toggling favorite:', error);
+      devLog.error('Error toggling favorite:', error);
       toast.error('Có lỗi xảy ra. Vui lòng thử lại.');
     } finally {
       // Remove from pending set
@@ -247,7 +254,7 @@ export const useMasjidFavoritesBackend = () => {
         });
       }
     } catch (error) {
-      console.error('Error loading user favorites:', error);
+      devLog.error('Error loading user favorites:', error);
       toast.error('Không thể tải danh sách yêu thích');
     } finally {
       setIsLoading(false);
