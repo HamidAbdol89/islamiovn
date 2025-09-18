@@ -148,9 +148,10 @@ const MasjidCard: React.FC<MasjidCardProps> = React.memo(({
             totalFavorites={favoriteCount}
             isFavorited={isFavorite}
             isPending={isPendingSync}
-            maxDisplay={3}
+            maxDisplay={10}
             size="sm"
             showCount={true}
+            masjidName={masjid.ten}
           />
         </div>
 
