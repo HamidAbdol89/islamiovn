@@ -180,7 +180,11 @@ export const useOptimisticFavoritesEnterprise = () => {
     if (!isAuthenticated || realtimeConnection.current) return;
 
     try {
-      const wsUrl = `${import.meta.env.VITE_WS_URL || 'ws://localhost:3001'}/favorites`;
+      // Determine WebSocket URL based on environment
+      const isDevelopment = import.meta.env.DEV;
+      const wsUrl = isDevelopment 
+        ? (import.meta.env.VITE_WS_URL_DEV || 'ws://localhost:3000/favorites')
+        : (import.meta.env.VITE_WS_URL || 'wss://muslimviet-user.onrender.com/favorites');
       realtimeConnection.current = new WebSocket(wsUrl);
       
       realtimeConnection.current.onopen = () => {

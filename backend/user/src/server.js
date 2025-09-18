@@ -4,6 +4,8 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const http = require('http');
+const websocketService = require('./services/websocketService');
 require('dotenv').config();
 
 const app = express();
@@ -11,7 +13,8 @@ const app = express();
 // CORS configuration (must be before helmet and rate limiter to ensure preflight succeeds)
 const allowedOrigins = [
   'http://localhost:5173',
-  'https://muslimviet.vercel.app'
+  'https://muslimviet.vercel.app',
+  'https://muslimviet-user.onrender.com' // For WebSocket connections
 ];
 
 // Configure CORS with proper preflight handling
@@ -126,10 +129,36 @@ app.use((req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
+// Tạo HTTP server để hỗ trợ cả Express và WebSocket
+const server = http.createServer(app);
+
+// Khởi tạo WebSocket service
+websocketService.initialize(server);
+
+server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
+  console.log(`🔌 WebSocket server available at ws://localhost:${PORT}/favorites`);
 });
 
-module.exports = app;
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('🛑 SIGTERM received, shutting down gracefully');
+  websocketService.close();
+  server.close(() => {
+    console.log('✅ Server closed');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('🛑 SIGINT received, shutting down gracefully');
+  websocketService.close();
+  server.close(() => {
+    console.log('✅ Server closed');
+    process.exit(0);
+  });
+});
+
+module.exports = { app, server, websocketService };

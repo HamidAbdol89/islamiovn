@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const MasjidFavorite = require('../models/MasjidFavorite');
 const { authenticateToken, optionalAuth } = require('../middleware/auth');
+const websocketService = require('../services/websocketService');
 
 // @route   POST /api/masjid-favorites
 // @desc    Add a masjid to favorites
@@ -66,6 +67,18 @@ router.post('/', authenticateToken, async (req, res) => {
     // Populate user info for response
     await favorite.populate('userId', 'name picture googleId');
 
+    // Broadcast real-time update to other users
+    websocketService.broadcastFavoriteUpdate(req.user.id, {
+      type: 'favorite_added',
+      masjidId,
+      masjidName,
+      user: {
+        id: req.user.id,
+        name: req.user.name,
+        picture: req.user.picture
+      }
+    });
+
     res.status(201).json({
       success: true,
       message: 'Đã thêm masjid vào danh sách yêu thích',
@@ -99,6 +112,18 @@ router.delete('/:masjidId', authenticateToken, async (req, res) => {
         message: 'Không tìm thấy masjid trong danh sách yêu thích'
       });
     }
+
+    // Broadcast real-time update to other users
+    websocketService.broadcastFavoriteUpdate(req.user.id, {
+      type: 'favorite_removed',
+      masjidId,
+      masjidName: favorite.masjidName,
+      user: {
+        id: req.user.id,
+        name: req.user.name,
+        picture: req.user.picture
+      }
+    });
 
     res.json({
       success: true,
