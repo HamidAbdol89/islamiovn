@@ -7,7 +7,7 @@ import {
   useMasjidSearch, 
   useShare, 
   useSearchAnalytics,
-  useOptimisticFavorites
+  useOptimisticFavoritesEnterprise
 } from './hooks';
 import {
   MasjidHeader,
@@ -17,6 +17,7 @@ import {
   MasjidSkeletonGrid,
   MasjidSheet
 } from './components';
+import EnterpriseStatusPanel from './components/EnterpriseStatusPanel';
 
 const MasjidVietnamDirectory: React.FC = React.memo(() => {
   // State management
@@ -35,6 +36,7 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
     clearSearch
   } = useMasjidSearch(filterMasjids);
   
+  // 🚀 ENTERPRISE FAVORITES HOOK with advanced features
   const {
     isFavorited,
     toggleFavorite,
@@ -44,8 +46,13 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
     getFavoriteCount,
     isLoadingMasjid,
     isPendingSync,
-    loadBatchMasjidData
-  } = useOptimisticFavorites();
+    loadBatchMasjidData,
+    // Enterprise features (available but not used yet)
+    getSyncStatus,
+    getRecentActivity,
+    analyticsTracker,
+    isOnline
+  } = useOptimisticFavoritesEnterprise();
 
   // Simple share functionality
   const { shareMasjid } = useShare();
@@ -154,30 +161,48 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
 
       {/* Main Content */}
       <div className="px-2 sm:px-4 lg:px-6 pb-6">
-        {thongKeTimKiem.isEmpty ? (
-          <EmptyState
-            onClearSearch={handleClearSearch}
-            hasActiveFilters={hasActiveFilters}
-          />
-        ) : (
-          <div className="grid w-full grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {ketQuaTimKiem.map(masjid => (
-              <MasjidCard
-                key={masjid.id}
-                masjid={masjid}
-                onClick={() => handleMasjidClick(masjid)}
-                isFavorite={isFavorited(masjid.id)}
-                onToggleFavorite={handleToggleFavorite}
-                onShare={handleShare}
-                onInitializeMasjid={initializeMasjid}
-                favoriteUsers={getFavoriteUsers(masjid.id)}
-                favoriteCount={getFavoriteCount(masjid.id)}
-                isLoadingFavorites={isLoadingMasjid(masjid.id)}
-                isPendingSync={isPendingSync(masjid.id)}
+        <div className="flex gap-6">
+          {/* Masjid Grid */}
+          <div className="flex-1">
+            {thongKeTimKiem.isEmpty ? (
+              <EmptyState
+                onClearSearch={handleClearSearch}
+                hasActiveFilters={hasActiveFilters}
               />
-            ))}
+            ) : (
+              <div className="grid w-full grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {ketQuaTimKiem.map(masjid => (
+                  <MasjidCard
+                    key={masjid.id}
+                    masjid={masjid}
+                    onClick={() => handleMasjidClick(masjid)}
+                    isFavorite={isFavorited(masjid.id)}
+                    onToggleFavorite={handleToggleFavorite}
+                    onShare={handleShare}
+                    onInitializeMasjid={initializeMasjid}
+                    favoriteUsers={getFavoriteUsers(masjid.id)}
+                    favoriteCount={getFavoriteCount(masjid.id)}
+                    isLoadingFavorites={isLoadingMasjid(masjid.id)}
+                    isPendingSync={isPendingSync(masjid.id)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-        )}
+
+          {/* 🚀 ENTERPRISE STATUS PANEL - Desktop only */}
+          <div className="hidden xl:block w-80">
+            <div className="sticky top-4">
+              <EnterpriseStatusPanel
+                getSyncStatus={getSyncStatus}
+                getRecentActivity={getRecentActivity}
+                analyticsTracker={analyticsTracker}
+                isOnline={isOnline}
+                selectedMasjidId={selectedMasjid?.id}
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Masjid Detail Sheet with Enhanced Sharing */}

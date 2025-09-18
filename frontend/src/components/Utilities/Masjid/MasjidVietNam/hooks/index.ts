@@ -3,4 +3,9 @@ export { useMasjidData } from './useMasjidData';
 export { useMasjidSearch } from './useMasjidSearch';
 export { useShare } from './useShare';
 export { useSearchAnalytics } from './useSearchAnalytics';
-export { useOptimisticFavorites } from './useOptimisticFavorites';
+
+// 🚀 ENTERPRISE HOOKS
+export { useOptimisticFavoritesEnterprise } from './useOptimisticFavoritesEnterprise';
+
+// Alias for backward compatibility
+export { useOptimisticFavoritesEnterprise as useOptimisticFavorites } from './useOptimisticFavoritesEnterprise';

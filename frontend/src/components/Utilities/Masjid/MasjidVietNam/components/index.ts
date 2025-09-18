@@ -7,3 +7,6 @@ export { default as EmptyState } from './EmptyState';
 export { default as LoadingState } from './LoadingState';
 export { default as MasjidCardSkeleton, MasjidSkeletonGrid } from './MasjidCardSkeleton';
 export { default as AnimatedFavoriteAvatars } from './AnimatedFavoriteAvatars';
+
+// 🚀 ENTERPRISE COMPONENTS
+export { default as EnterpriseStatusPanel } from './EnterpriseStatusPanel';
