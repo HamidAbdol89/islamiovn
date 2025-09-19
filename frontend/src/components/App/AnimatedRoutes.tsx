@@ -11,6 +11,7 @@ import NotFound from './NotFound';
 const Utilities = React.lazy(() => import('@/Pages/Home/Utilities'));
 const News = React.lazy(() => import('@/Pages/News/News'));
 
+
 const Prayers = React.lazy(() => import('@/components/Utilities/Prayers/PrayerTimes'));
 const Qiblah = React.lazy(() => import('@/components/Utilities/Qiblah/QiblahFinder'));
 const Calendar = React.lazy(() => import('@/components/Utilities/Calendar/HijriCalendar'));
@@ -25,6 +26,7 @@ const QuranReader = React.lazy(() => import('@/components/Utilities/Quran/QuranR
 const HadithApp = React.lazy(() => import('@/components/Utilities/Hadith/hadith'));
 const AuthCallback = React.lazy(() => import('@/components/Auth/AuthCallback'));
 const MasjidVietnamApp = React.lazy(() => import('@/components/Utilities/Masjid/MasjidVietNam/MasjidVietnam'));
+const AI = React.lazy(() => import('@/Pages/AI/AI'));
 
 const AnimatedRoutes: React.FC = () => {
   const location = useLocation();
@@ -58,20 +60,22 @@ const AnimatedRoutes: React.FC = () => {
             </AnimatedPage>
           </MainLayout>
         } />
-        
-        {/* AI Route với BottomNav */}
-        <Route path={ROUTES.AI} element={
+
+<Route path={ROUTES.CHAT} element={
           <MainLayout>
             <AnimatedPage>
               <Suspense fallback={<LoadingSpinner />}>
                 <div className="p-6 text-center">
-                  <h2 className="text-2xl font-bold mb-4">Trợ Lý AI</h2>
-                  <p className="text-muted-foreground">Tính năng AI sẽ được cập nhật sớm...</p>
+                  <h2 className="text-2xl font-bold mb-4">Chat</h2>
+                  <p className="text-muted-foreground">Trang chat sẽ được cập nhật sớm...</p>
                 </div>
               </Suspense>
             </AnimatedPage>
           </MainLayout>
         } />
+        
+        
+   
         
         {/* Video Route với BottomNav */}
         <Route path={ROUTES.VIDEO} element={
@@ -94,6 +98,18 @@ const AnimatedRoutes: React.FC = () => {
             <AnimatedPage>
               <Suspense fallback={<LoadingSpinner />}>
                 <Prayers />
+              </Suspense>
+            </AnimatedPage>
+          } 
+        />
+
+             {/* AI Route với ultimater */}
+             <Route 
+          path={ROUTES.UTILITIES.AI} 
+          element={
+            <AnimatedPage>
+              <Suspense fallback={<LoadingSpinner />}>
+                <AI />
               </Suspense>
             </AnimatedPage>
           } 

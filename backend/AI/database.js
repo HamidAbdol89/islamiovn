@@ -4,7 +4,15 @@ import mongoose from 'mongoose';
 // MongoDB Connection
 export async function connectDatabase() {
   try {
+    // Debug environment variables
+    console.log('🔍 Checking environment variables...');
+    console.log('NODE_ENV:', process.env.NODE_ENV);
+    console.log('Available env vars:', Object.keys(process.env).filter(key => key.includes('MONGO')));
+    
     const mongoURI = process.env.MONGODB_URI;
+    console.log('MONGODB_URI exists:', !!mongoURI);
+    console.log('MONGODB_URI length:', mongoURI ? mongoURI.length : 0);
+    
     if (!mongoURI) {
       throw new Error('MONGODB_URI is not defined in environment variables');
     }

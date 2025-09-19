@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import '@/AI.css';
+import './styles/AI.css';
 // Import các components đã chia
 import AIHeader from '@/Pages/AI/AIHeader';
 import WelcomeScreen from '@/Pages/AI/WelcomeScreen';
@@ -11,6 +11,7 @@ import type { MessageMetadata } from '@/Pages/AI/types/ai.types';
 // Add type declarations for external modules
 import { toast } from 'react-hot-toast';
 import { saveAs } from 'file-saver';
+import { ThemeProvider } from '@/Pages/AI/context-custom/ThemeContext';
 
 // Import types
 import type { 
@@ -42,7 +43,7 @@ const MiraAI: React.FC = () => {
   const queryClient = useQueryClient();
   const lastETag = useRef<string>('');
   
-  const API_BASE_URL ='https://ashamed-angelia-hamidabdol89-763dd5d7.koyeb.app';
+  const API_BASE_URL = import.meta.env.VITE_API_URL_AI || 'https://mira-ai.fly.dev';
 
   // Auto scroll to bottom when new messages arrive
   const scrollToBottom = useCallback(() => {
@@ -154,7 +155,7 @@ const MiraAI: React.FC = () => {
     setQuestion('');
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/islam`, {
+      const response = await fetch(`${API_BASE_URL}/api/islamic-question`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -162,8 +163,8 @@ const MiraAI: React.FC = () => {
           'If-None-Match': lastETag.current
         },
         body: JSON.stringify({ 
-          userQuestion: userMessage.content,
-          context: {
+          question: userMessage.content,
+          userContext: {
             ...chatContext,
             userPreferences,
             skipCache: false
@@ -175,7 +176,7 @@ const MiraAI: React.FC = () => {
       if (response.status === 304) {
         const cachedData = queryClient.getQueryData(['ai-chat', userMessage.content]);
         if (cachedData) {
-          handleAIResponse(cachedData as ApiResponse);
+          handleAIResponse(cachedData as ApiResponse, finalQuestion);
           return;
         }
       }
@@ -193,7 +194,7 @@ const MiraAI: React.FC = () => {
         throw new Error(errorMessage);
       }
 
-      handleAIResponse(data);
+      handleAIResponse(data, finalQuestion);
       
     } catch (err) {
       handleError(err as ApiResponse['error'], messages[messages.length - 1]);
@@ -203,7 +204,7 @@ const MiraAI: React.FC = () => {
   };
 
   // Handle AI response with all metadata
-  const handleAIResponse = (data: ApiResponse) => {
+  const handleAIResponse = (data: ApiResponse, questionText: string) => {
     // Update user preferences based on AI response
     if (data.intelligence?.relatedTopics) {
       const newTopics = new Set(userPreferences.topics);
@@ -250,13 +251,13 @@ const MiraAI: React.FC = () => {
     const aiMessage: Message = {
       id: generateId(),
       type: 'ai',
-      content: data.reply || 'Xin lỗi, tôi không thể xử lý câu hỏi này.',
+      content: data.response || 'Xin lỗi, tôi không thể xử lý câu hỏi này.',
       timestamp: new Date(),
       metadata
     };
 
     setMessages(prev => [...prev, aiMessage]);
-    queryClient.setQueryData(['ai-chat', data.originalQuestion], data);
+    queryClient.setQueryData(['ai-chat', questionText], data);
     
     // Update current emotion
     if (data.intelligence) {
@@ -403,6 +404,8 @@ const MiraAI: React.FC = () => {
   };
 
   return (
+    <ThemeProvider>
+
     <div className="w-full min-h-screen flex flex-col">
       <div className="fixed top-0 left-0 right-0 z-50">
         <AIHeader
@@ -465,7 +468,10 @@ const MiraAI: React.FC = () => {
           currentEmotion={currentEmotion}
         />
       </div>
+      
     </div>
+    </ThemeProvider>
+
   );
 };
 

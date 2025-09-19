@@ -87,7 +87,7 @@ const Utilities: React.FC = () => {
     const path = location.pathname;
     if (path === ROUTES.HOME) setActiveTab('home');
     else if (path.startsWith(ROUTES.NEWS)) setActiveTab('news');
-    else if (path.startsWith(ROUTES.AI)) setActiveTab('ai');
+    else if (path.startsWith(ROUTES.CHAT)) setActiveTab('chat');
     else if (path.startsWith(ROUTES.VIDEO)) setActiveTab('video');
     else if (path.startsWith(ROUTES.SETTING)) setActiveTab('setting');
   }, [location]);
@@ -130,8 +130,10 @@ const Utilities: React.FC = () => {
     navigate(ROUTES.UTILITIES.MASJID_VIET_NAM);
   }, [navigate]);
 
-  const handleNavigateToChat = useCallback(() => {
-    navigate(ROUTES.CHAT);
+
+
+  const handleExploreAI = useCallback(() => {
+    navigate(ROUTES.UTILITIES.AI);
   }, [navigate]);
 
   const handleTabChange = useCallback((tab: string) => {
@@ -236,7 +238,7 @@ const Utilities: React.FC = () => {
                   <Button
                   variant= "default"
                   size="sm"
-                    onClick={handleNavigateToChat}
+                    onClick={handleExploreAI}
                     className="flex items-center gap-2"
                   >
                     <MessageCircle size={16} />

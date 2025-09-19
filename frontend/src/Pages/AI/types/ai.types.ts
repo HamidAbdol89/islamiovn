@@ -85,17 +85,36 @@ export interface ChatContext {
   culturalContext?: 'vietnamese' | 'islamic' | 'general';
   learningStyle?: 'detailed' | 'simple' | 'balanced';
   complexityLevel?: 'high' | 'medium' | 'low';
+  questionAnalysis?: {
+    length: number;
+    hasQuestionMark: boolean;
+    language: string;
+    timestamp: number;
+  };
+  islamicAnalysis?: any;
+  primaryConcepts?: string[];
+  contextType?: string;
+  recommendedApproach?: string;
 }
 
 export interface ApiResponse {
-  reply: string;
+  success: boolean;
+  response: string;
+  references?: {
+    quran?: string[];
+    hadith?: string[];
+  };
+  context?: {
+    emotionalState?: 'positive' | 'negative' | 'neutral' | 'concerned';
+    urgencyLevel?: 'high' | 'medium' | 'normal' | 'low';
+    complexityLevel?: 'high' | 'medium' | 'low';
+  };
   contexts?: string[];
-  timestamp: string;
-  model: string;
-  provider: string;
-  creator: string;
-  responseTime: number;
-  originalQuestion: string;
+  timestamp?: string;
+  model?: string;
+  provider?: string;
+  responseTime?: number;
+  cached?: boolean;
   fromCache?: boolean;
   cacheInfo?: string;
   usageStats?: {
@@ -117,7 +136,7 @@ export interface ApiResponse {
       contexts?: string[];
     }>;
   };
-  error?: {
+  error?: string | {
     message: string;
     code?: string;
     suggestion?: string;
@@ -144,6 +163,15 @@ export interface ChatExport {
   metadata: {
     userPreferences: UserPreferences;
     chatContext: ChatContext;
+    connectionInfo?: {
+      isConnected: boolean;
+      connectionStatus: string;
+      apiBaseUrl: string;
+    };
+    islamicContext?: {
+      conceptsAnalyzed: boolean;
+      totalConcepts: number;
+    } | null;
   };
 }
 

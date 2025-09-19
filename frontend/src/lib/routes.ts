@@ -2,7 +2,6 @@
 export const ROUTES = {
   HOME: '/',
   NEWS: '/news',
-  AI: '/ai',
   VIDEO: '/video',
   SETTING: '/setting',
   CHAT: '/chat',
@@ -20,13 +19,14 @@ export const ROUTES = {
     STUDY: '/utilities/study',
     ZAKAT: '/utilities/zakat',
     MASJID_VIET_NAM: '/utilities/masjid-vietnam',
+    AI: '/utilities/ai',
   }
 };
 
 export const TAB_ROUTES = {
   'home': ROUTES.HOME,
   'news': ROUTES.NEWS,
-  'ai': ROUTES.AI,
+  'chat': ROUTES.CHAT,
   'video': ROUTES.VIDEO,
   'setting': ROUTES.SETTING,
 };
@@ -44,4 +44,6 @@ export const UTILITY_ROUTES = {
   'podcast': ROUTES.UTILITIES.PODCAST,
   'hadith': ROUTES.UTILITIES.HADITH,
   'masjid-vietnam': ROUTES.UTILITIES.MASJID_VIET_NAM,
+  'ai': ROUTES.UTILITIES.AI,
+  'chat': ROUTES.CHAT,
 };

@@ -1,0 +1,143 @@
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out;
+        }
+        
+        /* Enhanced scrollbar for mobile */
+        .scrollbar-thin::-webkit-scrollbar {
+          width: 3px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+          background: rgba(0,0,0,0.1);
+          border-radius: 2px;
+        }
+        .dark .scrollbar-thin::-webkit-scrollbar-thumb {
+          background: rgba(255,255,255,0.1);
+        }
+        
+        /* Mobile safe areas */
+        .safe-top {
+          padding-top: max(0.5rem, env(safe-area-inset-top));
+        }
+        .safe-bottom {
+          padding-bottom: max(0.625rem, env(safe-area-inset-bottom));
+        }
+        
+        /* Touch improvements */
+        .touch-manipulation {
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Mobile viewport fixes */
+        @supports (-webkit-touch-callout: none) {
+          .min-h-screen {
+            min-height: -webkit-fill-available;
+          }
+          .h-screen {
+            height: -webkit-fill-available;
+          }
+        }
+        
+        /* Mobile-specific optimizations */
+        @media (max-width: 640px) {
+          /* Better touch targets */
+          button, textarea {
+            min-height: 44px;
+          }
+          
+          /* Improve scrolling performance */
+          .overflow-y-auto {
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+          }
+          
+          /* Prevent zoom on input focus */
+          input[type="text"],
+          input[type="email"],
+          input[type="password"],
+          textarea {
+            font-size: 16px;
+          }
+        }
+        
+        /* Extra small screens */
+        @media (max-width: 380px) {
+          .xs\\:block {
+            display: block;
+          }
+        }
+        
+        @media (min-width: 381px) {
+          .xs\\:block {
+            display: block;
+          }
+        }
+        
+        /* Enhanced text formatting */
+        .gradient-text {
+          background: linear-gradient(135deg, #10b981, #3b82f6);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+        
+        /* Quote styling */
+        .quote-border {
+          position: relative;
+        }
+        .quote-border::before {
+          content: '';
+          position: absolute;
+          left: -1rem;
+          top: 0;
+          bottom: 0;
+          width: 4px;
+          background: linear-gradient(to bottom, #10b981, #3b82f6);
+          border-radius: 2px;
+        }
+        
+        /* Enhanced code blocks */
+        code {
+          font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+        }
+        
+        /* Smooth animations for formatted content */
+        .formatted-content > * {
+          animation: slideInUp 0.4s ease-out;
+        }
+        
+        @keyframes slideInUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        /* Better mobile formatting */
+        @media (max-width: 640px) {
+          .formatted-content {
+            font-size: 0.9rem;
+            line-height: 1.6;
+          }
+          
+          .formatted-content h3 {
+            font-size: 1.1rem;
+          }
+          
+          .formatted-content .flex {
+            gap: 0.5rem;
+          }
+        }
+      
