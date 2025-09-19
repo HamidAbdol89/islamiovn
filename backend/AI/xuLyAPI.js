@@ -84,7 +84,8 @@ export async function processAPIRequest({
     });
     
     // Update user stats (async, don't wait)
-    updateUserStats(clientIP, responseData).catch(error => {
+    const { updateUserStatsData } = await import('./dataPopulator.js');
+    updateUserStatsData(clientIP, responseData).catch(error => {
       console.error('Failed to update user stats:', error);
     });
     

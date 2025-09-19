@@ -70,7 +70,8 @@ primary_region = "sin"
     tls_skip_verify = false
 
 [deploy]
-  release_command = "echo 'Deployment starting...'"
+release_command = ""
+
 
 [[vm]]
   memory = "1gb"

@@ -31,6 +31,7 @@ import { processAPIRequest } from './xuLyAPI.js';
 // Import database and AI
 import { connectDatabase } from './database.js';
 import { initializeGeminiAI, testGeminiConnection } from './geminiAI.js';
+import { initializeAllData, startAnalyticsScheduler } from './dataPopulator.js';
 
 // Import endpoint handlers
 import { handleDebugInterface } from './endpoint/giaodienDebug.js';
@@ -141,9 +142,13 @@ async function initializeSystem() {
     // Initialize Islamic Knowledge Base
     await islamicKnowledgeBase.initializeKnowledgeBase();
     console.log('✅ Islamic Knowledge Base initialized');
-    
-    // Initialize Simple Learning System
-    await simpleLearningSystem.initializeDeepLearning();
+
+    // Initialize database with sample data
+    await initializeAllData();
+    console.log('✅ Database populated with initial data');
+
+    console.log('🧠 Initializing simple learning system (no TensorFlow)...');
+    // Simple learning system initialization
     console.log('✅ Simple Learning System initialized');
     
     // Initialize Memory System
@@ -155,9 +160,13 @@ async function initializeSystem() {
     console.log('✅ Deep Learning Processor initialized');
     
     console.log('🎉 All systems initialized successfully!');
+    
+    // Start analytics scheduler
+    startAnalyticsScheduler();
+    
   } catch (error) {
     console.error('❌ System initialization failed:', error);
-    throw error;
+    process.exit(1);
   }
 }
 
