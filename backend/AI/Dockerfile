@@ -5,13 +5,13 @@ FROM node:18-bullseye
 WORKDIR /app
 
 # COPY package.json đúng path
-COPY backend/AI/package*.json ./
+COPY package*.json ./
 
 # Install dependencies production
 RUN npm install --only=production && npm cache clean --force
 
 # Copy toàn bộ source code
-COPY backend/AI/ .
+COPY . .
 
 # Tạo user non-root
 RUN addgroup --system nodejs && adduser --system --ingroup nodejs nodejs
