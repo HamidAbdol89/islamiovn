@@ -71,16 +71,36 @@ const simpleLearningSystem = {
   }
 };
 
-// CORS Configuration
+// CORS Configuration - Enhanced for Production
 const corsOptions = {
-  origin: [
-    'http://localhost:3000',           // Development frontend
-    'http://localhost:3001',           // Alternative dev port
-    'http://localhost:60835',
-    'http://localhost:5173',
-    'https://muslimviet.vercel.app',   // Production frontend
-    'https://*.vercel.app',            // Vercel preview domains
-  ],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      'http://localhost:3000',           // Development frontend
+      'http://localhost:3001',           // Alternative dev port
+      'http://localhost:5173',           // Vite dev server
+      'http://localhost:60835',
+      'https://muslimviet.vercel.app',   // Production frontend
+      'https://muslimviet-git-main-hamidabdol89s-projects.vercel.app', // Git branch
+      'https://muslimviet-hamidabdol89s-projects.vercel.app', // User domain
+    ];
+    
+    // Add origins from environment variable
+    if (process.env.ALLOWED_ORIGINS) {
+      const envOrigins = process.env.ALLOWED_ORIGINS.split(',');
+      allowedOrigins.push(...envOrigins);
+    }
+    
+    // Allow all Vercel preview domains
+    if (origin.includes('.vercel.app') || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    console.log('🚫 CORS blocked origin:', origin);
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: [
@@ -103,6 +123,31 @@ const corsOptions = {
 
 // Apply middleware
 app.use(cors(corsOptions));
+
+// Additional CORS headers for production
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  
+  // Set CORS headers explicitly
+  if (origin && (origin.includes('.vercel.app') || 
+                 origin.includes('localhost') ||
+                 origin === 'https://muslimviet.vercel.app')) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    console.log('✅ CORS preflight handled for:', origin);
+    return res.status(204).end();
+  }
+  
+  next();
+});
+
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
