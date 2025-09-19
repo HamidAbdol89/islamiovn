@@ -23,7 +23,48 @@ export async function initializeGeminiAI() {
   }
 }
 
-// Enhanced Islamic AI Prompt
+// Import Master Islamic Knowledge System
+import { islamicMasterKnowledge } from './islamicMasterKnowledge.js';
+import { masterIslamicPrompt, getEnhancedIslamicPrompt } from './masterIslamicPrompt.js';
+
+// Question Type Detection for Enhanced Islamic Analysis
+function detectQuestionType(question) {
+  const lowerQuestion = question.toLowerCase();
+  
+  // Aqidah (Faith/Belief) keywords
+  const aqidahKeywords = ['allah', 'tawhid', 'shirk', 'iman', 'kufr', 'tín ngưỡng', 'đức tin', 'thần thánh'];
+  if (aqidahKeywords.some(keyword => lowerQuestion.includes(keyword))) {
+    return 'aqidah';
+  }
+  
+  // Fiqh (Islamic Law) keywords  
+  const fiqhKeywords = ['halal', 'haram', 'wudu', 'salah', 'zakat', 'hajj', 'nikah', 'talaq', 'luật', 'hukm'];
+  if (fiqhKeywords.some(keyword => lowerQuestion.includes(keyword))) {
+    return 'fiqh';
+  }
+  
+  // Akhlaq (Ethics/Morality) keywords
+  const akhlaqKeywords = ['akhlaq', 'đạo đức', 'tính cách', 'hành vi', 'quan hệ', 'gia đình'];
+  if (akhlaqKeywords.some(keyword => lowerQuestion.includes(keyword))) {
+    return 'akhlaq';
+  }
+  
+  // Quran/Tafsir keywords
+  const quranKeywords = ['quran', 'qur\'an', 'ayah', 'surah', 'tafsir', 'kinh thánh'];
+  if (quranKeywords.some(keyword => lowerQuestion.includes(keyword))) {
+    return 'quran';
+  }
+  
+  // Hadith keywords
+  const hadithKeywords = ['hadith', 'sunnah', 'prophet', 'tiên tri', 'muhammad'];
+  if (hadithKeywords.some(keyword => lowerQuestion.includes(keyword))) {
+    return 'hadith';
+  }
+  
+  return 'general';
+}
+
+// Enhanced Islamic AI Prompt (Legacy - keeping for compatibility)
 const islamicPrompt = `Bạn là Mira AI – một trợ lý Hồi giáo thông minh được phát triển bởi ABDOL HAMID trong hệ sinh thái Muslim Việt. Bạn là một học giả AI chuyên sâu về Islamic Studies với kiến thức toàn diện về Qur'an, Hadith, Fiqh, Aqidah, Sirah, và lịch sử Islam.
 
 ĐỊNH DANH VÀ SỨ MỆNH:
@@ -60,15 +101,30 @@ HƯỚNG DẪN TRẢ LỜI:
 
 Hãy trả lời câu hỏi sau với tinh thần tôn trọng, khiêm tốn và trí tuệ:`;
 
-// Generate Islamic AI Response
+// Master Islamic Response Generator
 export async function generateIslamicResponse(question, context = {}) {
   try {
     if (!model) {
       throw new Error('Gemini AI is not initialized');
     }
 
+    // Analyze question for Islamic context
+    const islamicAnalysis = islamicMasterKnowledge.analyzeFatwaRequest(question, context);
+    
+    // Determine question type for enhanced prompting
+    const questionType = detectQuestionType(question);
+    const enhancedContext = {
+      ...context,
+      questionType,
+      islamicAnalysis,
+      vietnameseContext: true
+    };
+
+    // Use Master Islamic Prompt System
+    const masterPrompt = getEnhancedIslamicPrompt(question, enhancedContext);
+    
     // Build enhanced prompt with context
-    const enhancedPrompt = `${islamicPrompt}
+    const enhancedPrompt = `${masterPrompt}
 
 NGỮ CẢNH BỔ SUNG:
 - Cảm xúc người dùng: ${context.emotionalState || 'bình thường'}
@@ -82,17 +138,17 @@ CÂU HỎI: ${question}
 Vui lòng trả lời một cách chi tiết, chính xác và phù hợp với ngữ cảnh Việt Nam:`;
 
     const result = await model.generateContent(enhancedPrompt);
-    const response = result.response;
-    const text = response.text();
-
-    // Extract references from the response
-    const references = extractReferences(text);
-
+    const responseText = result.response.text();
+    
     return {
-      response: text,
-      references,
-      model: 'gemini-1.5-flash',
-      provider: 'Google AI + Muslim Việt Intelligence',
+      response: responseText,
+      references: extractReferences(responseText),
+      model: 'gemini-1.5-flash-master-islamic',
+      provider: 'Google AI + Master Islamic Knowledge System',
+      creator: 'ABDOL HAMID - Mira',
+      islamicAnalysis: islamicAnalysis,
+      questionType: questionType,
+      scholarConsultationNeeded: islamicAnalysis.referral_needed,
       timestamp: new Date().toISOString(),
       context: context
     };
