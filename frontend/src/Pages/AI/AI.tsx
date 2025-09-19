@@ -12,6 +12,7 @@ import type { MessageMetadata } from '@/Pages/AI/types/ai.types';
 import { toast } from 'react-hot-toast';
 import { saveAs } from 'file-saver';
 import { ThemeProvider } from '@/Pages/AI/context-custom/ThemeContext';
+import { getApiUrl, ENV, log } from '@/lib/env';
 
 // Import types
 import type { 
@@ -43,7 +44,16 @@ const MiraAI: React.FC = () => {
   const queryClient = useQueryClient();
   const lastETag = useRef<string>('');
   
-  const API_BASE_URL = import.meta.env.VITE_API_URL_AI || 'https://mira-ai.fly.dev';
+  const API_BASE_URL = getApiUrl();
+
+  // Development logging
+  useEffect(() => {
+    if (ENV.isDevelopment) {
+      log('🤖 MiraAI initialized in development mode');
+      log('API URL:', API_BASE_URL);
+      log('Environment:', ENV.mode);
+    }
+  }, [API_BASE_URL]);
 
   // Auto scroll to bottom when new messages arrive
   const scrollToBottom = useCallback(() => {

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import '@/AI.css';
+import './styles/AI.css';
+import { getApiUrl, ENV, log } from '@/lib/env';
 
 // Import enhanced hooks and services
 import useStreamingAI, { type StreamingMessage } from './hooks/useStreamingAI';
@@ -89,7 +90,15 @@ const MiraAIEnhanced: React.FC = () => {
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const islamicEngine = useRef<IslamicContextEngine | undefined>(undefined);
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL_AI || 'https://mira-ai.fly.dev';
+  const API_BASE_URL = getApiUrl();
+
+  // Development logging
+  useEffect(() => {
+    if (ENV.isDevelopment) {
+      log('🚀 MiraAI Enhanced initialized in development mode');
+      log('API URL:', API_BASE_URL);
+    }
+  }, [API_BASE_URL]);
 
   // Initialize Islamic Context Engine
   useEffect(() => {

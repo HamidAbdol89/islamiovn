@@ -99,7 +99,11 @@ const islamicQuestionSchema = new mongoose.Schema({
     detectedTopics: [String]
   },
   references: [{
-    type: String,
+    type: {
+      type: String,
+      enum: ['quran', 'hadith', 'scholarly', 'contemporary']
+    },
+    citation: String,
     source: String
   }],
   userIP: String,

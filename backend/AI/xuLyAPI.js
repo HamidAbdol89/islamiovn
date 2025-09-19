@@ -50,12 +50,30 @@ export async function processAPIRequest({
     // Generate AI response using Gemini AI
     const aiResponse = await generateIslamicResponse(question, enhancedContext);
     
+    // Parse references properly
+    let parsedReferences = [];
+    try {
+      if (aiResponse.references) {
+        if (typeof aiResponse.references === 'string') {
+          // Try to parse as JSON if it's a string
+          parsedReferences = JSON.parse(aiResponse.references);
+        } else if (Array.isArray(aiResponse.references)) {
+          parsedReferences = aiResponse.references;
+        }
+      } else {
+        parsedReferences = relevantReferences || [];
+      }
+    } catch (error) {
+      console.log('Failed to parse references, using fallback:', error.message);
+      parsedReferences = relevantReferences || [];
+    }
+
     // Prepare response data for saving
     const responseData = {
       question,
       response: aiResponse.response,
       context: enhancedContext,
-      references: aiResponse.references || relevantReferences,
+      references: parsedReferences,
       userIP: clientIP,
       responseTime: Date.now() - (context.startTime || Date.now())
     };

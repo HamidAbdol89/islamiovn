@@ -5,7 +5,14 @@
 import express from 'express';
 import cors from 'cors';
 import NodeCache from 'node-cache';
-import 'dotenv/config';
+// Load environment variables based on NODE_ENV
+import dotenv from 'dotenv';
+
+// Load appropriate .env file
+const envFile = process.env.NODE_ENV === 'development' ? '.env.development' : '.env';
+dotenv.config({ path: envFile });
+
+console.log(`🔧 Loading environment from: ${envFile}`);
 
 // Debug environment variables at startup
 console.log('🔍 Environment Debug:');
