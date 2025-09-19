@@ -63,6 +63,16 @@ export class AnalyticsManager {
   };
   private sessionStartTime: number = Date.now();
   private lastSyncTime: number = 0;
+  
+  // Use session start time for analytics
+  public getSessionDuration(): number {
+    return Date.now() - this.sessionStartTime;
+  }
+  
+  // Use last sync time for data synchronization
+  public getTimeSinceLastSync(): number {
+    return Date.now() - this.lastSyncTime;
+  }
   private syncInterval: NodeJS.Timeout | null = null;
 
   private constructor() {
@@ -368,9 +378,9 @@ export class AnalyticsManager {
 
   // Real-time Dashboard Data
   public getDashboardData(): {
-    performance: ReturnType<typeof this.getPerformanceInsights>;
-    usage: ReturnType<typeof this.getUsageInsights>;
-    islamic: ReturnType<typeof this.getIslamicInsights>;
+    performance: ReturnType<AnalyticsManager['getPerformanceInsights']>;
+    usage: ReturnType<AnalyticsManager['getUsageInsights']>;
+    islamic: ReturnType<AnalyticsManager['getIslamicInsights']>;
     systemHealth: SystemHealth;
     realTimeStats: {
       currentUsers: number;
@@ -511,11 +521,16 @@ export class AnalyticsManager {
     }
   }
 
+  private syncAnalytics(): void {
+    this.lastSyncTime = Date.now();
+    console.log('📊 Analytics synced at', new Date(this.lastSyncTime).toISOString());
+  }
+
   private startPeriodicSync(): void {
     // Sync every 5 minutes
     this.syncInterval = setInterval(() => {
       this.saveAnalytics();
-      this.lastSyncTime = Date.now();
+      this.syncAnalytics();
     }, 5 * 60 * 1000);
   }
 

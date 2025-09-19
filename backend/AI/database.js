@@ -9,11 +9,20 @@ export async function connectDatabase() {
     console.log('NODE_ENV:', process.env.NODE_ENV);
     console.log('Available env vars:', Object.keys(process.env).filter(key => key.includes('MONGO')));
     
-    const mongoURI = process.env.MONGODB_URI;
+    let mongoURI = process.env.MONGODB_URI;
     console.log('MONGODB_URI exists:', !!mongoURI);
     console.log('MONGODB_URI length:', mongoURI ? mongoURI.length : 0);
     
+    // Fallback for Fly.io secrets issue
     if (!mongoURI) {
+      console.log('🔄 Trying alternative env var names...');
+      mongoURI = process.env.DATABASE_URL || process.env.MONGO_URL;
+      console.log('Alternative URI found:', !!mongoURI);
+    }
+    
+    if (!mongoURI) {
+      console.log('❌ All environment variable attempts failed');
+      console.log('Available env vars:', Object.keys(process.env).filter(k => k.includes('MONGO') || k.includes('DATABASE')));
       throw new Error('MONGODB_URI is not defined in environment variables');
     }
 

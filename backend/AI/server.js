@@ -7,6 +7,14 @@ import cors from 'cors';
 import NodeCache from 'node-cache';
 import 'dotenv/config';
 
+// Debug environment variables at startup
+console.log('🔍 Environment Debug:');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('PORT:', process.env.PORT);
+console.log('MONGODB_URI exists:', !!process.env.MONGODB_URI);
+console.log('GEMINI_API_KEY exists:', !!process.env.GEMINI_API_KEY);
+console.log('All env keys:', Object.keys(process.env).filter(k => !k.startsWith('npm_')).sort());
+
 // Import modular components
 import { IslamicKnowledgeBase, rateLimitMap, userInteractionStats } from './islamicKnowledgeSystem.js';
 import { checkRateLimit, detectQuestionContext } from './kiemTraVaXuLyCauHoi.js';

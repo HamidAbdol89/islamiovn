@@ -263,6 +263,9 @@ export class IslamicContextEngine {
     const lowerQuestion = question.toLowerCase();
     const words = lowerQuestion.split(/\s+/);
     
+    // Use words for future analysis (currently analyzing by keywords)
+    console.log(`Analyzing ${words.length} words in question`);
+    
     const foundConcepts: IslamicConcept[] = [];
     const conceptRelevance: Map<string, number> = new Map();
 
