@@ -85,6 +85,7 @@ const corsOptions = {
       'https://muslimviet.vercel.app',   // Production frontend
       'https://muslimviet-git-main-hamidabdol89s-projects.vercel.app', // Git branch
       'https://muslimviet-hamidabdol89s-projects.vercel.app', // User domain
+      'https://muslimviet-preview.vercel.app', // Preview domains
     ];
     
     // Add origins from environment variable
@@ -93,8 +94,11 @@ const corsOptions = {
       allowedOrigins.push(...envOrigins);
     }
     
-    // Allow all Vercel preview domains
-    if (origin.includes('.vercel.app') || allowedOrigins.includes(origin)) {
+    // Allow all Vercel preview domains and localhost
+    if (origin.includes('.vercel.app') || 
+        origin.includes('localhost') || 
+        allowedOrigins.includes(origin)) {
+      console.log('✅ CORS allowed origin:', origin);
       return callback(null, true);
     }
     
@@ -117,7 +121,7 @@ const corsOptions = {
     'Access-Control-Allow-Methods'
   ],
   exposedHeaders: ['ETag', 'Cache-Control'],
-  optionsSuccessStatus: 204,
+  optionsSuccessStatus: 200, // Changed from 204 to 200 for better compatibility
   preflightContinue: false
 };
 
@@ -128,21 +132,25 @@ app.use(cors(corsOptions));
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   
-  // Set CORS headers explicitly
+  // Set CORS headers explicitly for all allowed origins
   if (origin && (origin.includes('.vercel.app') || 
                  origin.includes('localhost') ||
                  origin === 'https://muslimviet.vercel.app')) {
     res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    console.log('🌐 CORS headers set for origin:', origin);
   }
   
+  // Set standard CORS headers
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, If-None-Match');
+  res.setHeader('Access-Control-Expose-Headers', 'ETag, Cache-Control');
   
   // Handle preflight requests
   if (req.method === 'OPTIONS') {
     console.log('✅ CORS preflight handled for:', origin);
-    return res.status(204).end();
+    res.setHeader('Access-Control-Max-Age', '86400'); // Cache preflight for 24 hours
+    return res.status(200).end();
   }
   
   next();

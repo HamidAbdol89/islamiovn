@@ -8,12 +8,12 @@ export const ENV = {
   // API URLs with fallbacks
   AI_API_URL: import.meta.env.DEV 
     ? (import.meta.env.VITE_API_URL_AI_DEV || 'http://localhost:8000')
-    : (import.meta.env.VITE_API_URL_AI || 'https://mira-ai.fly.dev'),
+    : (import.meta.env.VITE_API_URL_AI || 'https://backendverse-production.up.railway.app'),
     
   // WebSocket URLs
   WS_URL: import.meta.env.DEV
     ? (import.meta.env.VITE_WS_URL_DEV || 'ws://localhost:8000')
-    : (import.meta.env.VITE_WS_URL || 'wss://mira-ai.fly.dev'),
+    : (import.meta.env.VITE_WS_URL || 'wss://backendverse-production.up.railway.app'),
     
   // Debug settings
   DEBUG_MODE: import.meta.env.VITE_DEBUG_MODE === 'true' || import.meta.env.DEV,
