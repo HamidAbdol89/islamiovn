@@ -1,5 +1,8 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/api/auth/:path*",
+      "destination": "https://islamiovn-production.up.railway.app/api/auth/:path*"
+    }
   ]
 }

@@ -7,7 +7,10 @@ import path from 'path';
 export default defineConfig({
   server: {
     proxy: {
-      '/api': 'http://localhost:8080', 
+      '/api/auth': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
     },
   },
   plugins: [

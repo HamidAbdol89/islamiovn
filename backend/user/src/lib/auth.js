@@ -35,8 +35,6 @@ async function createAuth() {
     trustedOrigins,
     database: mongodbAdapter(db),
 
-    // Cross-domain cookie config
-    // Frontend (islam.io.vn) and backend (railway.app) are different domains
     advanced: {
       crossSubdomainCookies: {
         enabled: false,
@@ -44,9 +42,12 @@ async function createAuth() {
       defaultCookieAttributes: {
         secure: true,
         httpOnly: true,
-        sameSite: 'none', // Required for cross-origin cookies
-        partitioned: true, // CHIPS — helps with cross-site cookie restrictions
+        sameSite: 'none',
+        partitioned: true,
       },
+      // After Google callback hits backend, redirect to frontend /api/auth proxy
+      // This keeps the state cookie on the same domain as the initial request
+      redirectProxyUrl: `${process.env.FRONTEND_URL}/api/auth`,
     },
 
     socialProviders: {
