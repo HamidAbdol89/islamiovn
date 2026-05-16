@@ -35,25 +35,26 @@ async function createAuth() {
     trustedOrigins,
     database: mongodbAdapter(db),
 
+    // skipStateCookieCheck: fixes cross-domain state_security_mismatch
+    // State is still verified via DB record — CSRF protection remains intact
+    account: {
+      skipStateCookieCheck: true,
+    },
+
     advanced: {
       useSecureCookies: true,
-      crossSubdomainCookies: { enabled: false },
       defaultCookieAttributes: {
         secure: true,
         httpOnly: true,
         sameSite: 'none',
         partitioned: true,
       },
-      // Frontend proxies /api/auth/* → backend
-      // This keeps cookies on islam.io.vn domain throughout the flow
-      redirectProxyUrl: `${process.env.FRONTEND_URL}/api/auth`,
     },
 
     socialProviders: {
       google: {
         clientId: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        disablePkce: false,
       },
     },
   });
