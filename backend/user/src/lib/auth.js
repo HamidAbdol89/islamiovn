@@ -52,9 +52,6 @@ function createAuth(mongoose) {
       google: {
         clientId: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        // Google will redirect to: {baseURL}{basePath}/callback/google
-        // = https://islamiovn-api.onrender.com/api/auth/callback/google
-        // → Register this exact URL in Google Cloud Console
       },
     },
   });
