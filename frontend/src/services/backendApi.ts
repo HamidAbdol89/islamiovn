@@ -19,7 +19,7 @@ const normalizeUrl = (url: string) => {
 const DEFAULT_BASE =
   typeof window !== 'undefined' && window.location.hostname === 'localhost'
     ? 'http://localhost:3000/api'
-    : 'https://islamiovn-api.onrender.com/api';
+    : 'https://islamiovn-production.up.railway.app/api';
 
 const API_BASE_URL = isValidUrl(ENV_API_BASE)
   ? normalizeUrl(ENV_API_BASE!)

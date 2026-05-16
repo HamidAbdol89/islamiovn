@@ -10,7 +10,7 @@ const API_BASE = RAW_BASE
   ? RAW_BASE.replace(/\/api\/?$/, '')
   : typeof window !== 'undefined' && window.location.hostname === 'localhost'
     ? 'http://localhost:3000'
-    : 'https://islamiovn-api.onrender.com';
+    : 'https://islamiovn-production.up.railway.app';
 
 const BASE = `${API_BASE}/api/masjid-favorites`;
 
