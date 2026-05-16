@@ -1,8 +1,8 @@
 /**
- * Backend API service — uses Better Auth session (cookie-based).
- * No JWT in localStorage. Auth is handled entirely by Better Auth.
+ * Backend API service — uses Firebase ID token for authentication.
+ * Token is fetched from Firebase Auth on each request.
  */
-import { authClient } from '@/lib/auth-client';
+import { auth } from '@/lib/firebase';
 
 // ─── Base URL ─────────────────────────────────────────────────────────────────
 const ENV_API_BASE = import.meta.env.VITE_API_URL_USER as string | undefined;
@@ -41,10 +41,21 @@ class ApiService {
     const maxRetries = 3;
     const url = `${this.baseURL}${endpoint}`;
 
+    // Get fresh Firebase ID token
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...(options.headers as Record<string, string>),
     };
+
+    try {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        const idToken = await currentUser.getIdToken();
+        headers.Authorization = `Bearer ${idToken}`;
+      }
+    } catch {
+      // No user logged in — continue without token
+    }
 
     const config: RequestInit = {
       ...options,
@@ -57,8 +68,8 @@ class ApiService {
 
     if (!response.ok) {
       if (response.status === 401) {
-        // Session expired — sign out
-        authClient.signOut().catch(() => {});
+        // Token expired — Firebase auto-refreshes, just sign out
+        auth.signOut().catch(() => {});
         throw new Error('Authentication required');
       }
 

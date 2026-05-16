@@ -1,113 +1,127 @@
-import React, { createContext, useContext, useMemo, useCallback, useEffect } from 'react';
-import { authClient } from '@/lib/auth-client';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import {
+  auth,
+  googleProvider,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged,
+  type User as FirebaseUser,
+} from '@/lib/firebase';
 import { toastPatterns, toast } from '@/lib/toast';
 import { AUTH_MESSAGES } from '@/Pages/Setting/components/constants';
 import type { AuthContextType, AppUser } from '@/Pages/Setting/components/types';
 
-// Extend window interface for queryClient
 declare global {
   interface Window {
     queryClient?: any;
   }
 }
 
+/** Convert Firebase user → AppUser */
+const toAppUser = (fbUser: FirebaseUser): AppUser => ({
+  id: fbUser.uid,
+  email: fbUser.email ?? '',
+  name: fbUser.displayName ?? '',
+  picture: fbUser.photoURL ?? undefined,
+  verified_email: fbUser.emailVerified,
+});
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-interface AuthProviderProps {
-  readonly children: React.ReactNode;
-}
+export const AuthProvider = React.memo<{ children: React.ReactNode }>(({ children }) => {
+  const [user, setUser] = useState<AppUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true); // true until Firebase resolves
+  const [error, setError] = useState<string | null>(null);
 
-export const AuthProvider = React.memo<AuthProviderProps>(({ children }) => {
-  // Better Auth reactive session — automatically updates on login/logout
-  const { data: session, isPending: isLoading, error: sessionError } = authClient.useSession();
-
-  const user: AppUser | null = session?.user
-    ? {
-        id: session.user.id,
-        email: session.user.email,
-        name: session.user.name,
-        picture: session.user.image ?? undefined,
-        verified_email: session.user.emailVerified ?? false,
-      }
-    : null;
-
-  const isAuthenticated = user !== null;
-
-  // Invalidate React Query cache when auth state changes
+  // Listen to Firebase auth state — fires on page load, login, logout
   useEffect(() => {
-    if (window.queryClient) {
+    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+      if (fbUser) {
+        setUser(toAppUser(fbUser));
+
+        // Send Firebase ID token to backend to create/update user record
+        try {
+          const idToken = await fbUser.getIdToken();
+          await fetch(
+            `${import.meta.env.VITE_API_URL_USER || 'https://islamiovn-production.up.railway.app/api'}/auth/firebase`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${idToken}`,
+              },
+            }
+          );
+        } catch {
+          // Non-critical — user is still logged in on frontend
+        }
+      } else {
+        setUser(null);
+      }
+      setIsLoading(false);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  // Invalidate React Query cache when auth changes
+  useEffect(() => {
+    if (!isLoading && window.queryClient) {
       window.queryClient.invalidateQueries(['hadith-favorites']);
       window.queryClient.invalidateQueries(['hadith-bookmarks']);
       window.queryClient.invalidateQueries(['hadith-favorites-count']);
       window.queryClient.invalidateQueries(['hadith-bookmarks-count']);
     }
-  }, [isAuthenticated]);
+  }, [user, isLoading]);
 
-  const login = useCallback(async (): Promise<void> => {
+  const login = useCallback(async () => {
     try {
-      // Store current location for redirect back after OAuth
-      localStorage.setItem('islamiovn_auth_redirect', window.location.pathname);
-
-      await authClient.signIn.social({
-        provider: 'google',
-        callbackURL: `${window.location.origin}/auth/callback`,
-      });
-      // Page will redirect — no further code runs here
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : AUTH_MESSAGES.LOGIN_ERROR;
-      toast.error(errorMessage);
+      setError(null);
+      const result = await signInWithPopup(auth, googleProvider);
+      toastPatterns.loginSuccess(result.user.displayName ?? 'bạn');
+    } catch (err: any) {
+      // User closed popup — not a real error
+      if (err?.code === 'auth/popup-closed-by-user') return;
+      const msg = err?.message ?? AUTH_MESSAGES.LOGIN_ERROR;
+      setError(msg);
+      toast.error(msg);
     }
   }, []);
 
-  const logout = useCallback(async (): Promise<void> => {
+  const logout = useCallback(async () => {
     try {
-      await authClient.signOut();
+      await signOut(auth);
       toastPatterns.logoutSuccess();
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : AUTH_MESSAGES.LOGOUT_ERROR;
-      toast.error(errorMessage);
+    } catch (err: any) {
+      const msg = err?.message ?? AUTH_MESSAGES.LOGOUT_ERROR;
+      setError(msg);
+      toast.error(msg);
     }
   }, []);
 
-  // Listen for global login trigger events (used by other components)
+  // Global login trigger (used by other components)
   useEffect(() => {
-    const handleGlobalLogin = () => {
-      if (!isAuthenticated) {
-        login();
-      }
-    };
+    const handle = () => { if (!user) login(); };
+    window.addEventListener('triggerGoogleLogin', handle);
+    return () => window.removeEventListener('triggerGoogleLogin', handle);
+  }, [login, user]);
 
-    window.addEventListener('triggerGoogleLogin', handleGlobalLogin);
-    return () => window.removeEventListener('triggerGoogleLogin', handleGlobalLogin);
-  }, [login, isAuthenticated]);
+  const isAuthenticated = user !== null;
 
   const contextValue = useMemo<AuthContextType>(
-    () => ({
-      user,
-      isLoading,
-      isAuthenticated,
-      login,
-      logout,
-      error: sessionError?.message ?? null,
-    }),
-    [user, isLoading, isAuthenticated, login, logout, sessionError]
+    () => ({ user, isLoading, isAuthenticated, login, logout, error }),
+    [user, isLoading, isAuthenticated, login, logout, error]
   );
 
-  return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 });
 
 AuthProvider.displayName = 'AuthProvider';
 
 export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  return ctx;
 };
 
 export default AuthContext;

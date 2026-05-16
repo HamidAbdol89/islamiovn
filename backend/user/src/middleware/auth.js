@@ -1,47 +1,50 @@
-const { getAuth } = require('../lib/auth');
+const { verifyIdToken } = require('../lib/firebaseAdmin');
 
 /**
- * Require a valid Better Auth session.
- * Attaches req.user (Better Auth user object) and req.session.
+ * Require a valid Firebase ID token.
+ * Attaches req.user = { id, email, name, picture }
  */
 const authenticateToken = async (req, res, next) => {
   try {
-    const auth = getAuth();
-    const session = await auth.api.getSession({ headers: req.headers });
+    const authHeader = req.headers['authorization'];
+    const token = authHeader?.split(' ')[1];
 
-    if (!session?.user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Authentication required',
-      });
+    if (!token) {
+      return res.status(401).json({ success: false, message: 'Authentication required' });
     }
 
-    req.user = session.user;
-    req.session = session.session;
+    const decoded = await verifyIdToken(token);
+
+    req.user = {
+      id: decoded.uid,
+      email: decoded.email ?? '',
+      name: decoded.name ?? '',
+      picture: decoded.picture ?? '',
+    };
+
     next();
   } catch (error) {
-    console.error('Auth middleware error:', error);
-    return res.status(401).json({
-      success: false,
-      message: 'Authentication failed',
-    });
+    return res.status(401).json({ success: false, message: 'Invalid or expired token' });
   }
 };
 
 /**
- * Optional authentication — attaches req.user if session exists, continues either way.
+ * Optional auth — attaches req.user if token present, continues either way.
  */
 const optionalAuth = async (req, res, next) => {
   try {
-    const auth = getAuth();
-    const session = await auth.api.getSession({ headers: req.headers });
-
-    if (session?.user) {
-      req.user = session.user;
-      req.session = session.session;
+    const token = req.headers['authorization']?.split(' ')[1];
+    if (token) {
+      const decoded = await verifyIdToken(token);
+      req.user = {
+        id: decoded.uid,
+        email: decoded.email ?? '',
+        name: decoded.name ?? '',
+        picture: decoded.picture ?? '',
+      };
     }
   } catch {
-    // No session — continue unauthenticated
+    // No valid token — continue unauthenticated
   }
   next();
 };
