@@ -59,8 +59,8 @@ async function bootstrap() {
   const auth = createAuth(mongoose);
 
   // 3. Mount Better Auth handler BEFORE other routes
-  //    Must use /* wildcard so all /api/auth/* requests are caught
-  app.all('/api/auth/*', toNodeHandler(auth.handler));
+  //    Express 5 wildcard syntax: /api/auth/{*splat}
+  app.all('/api/auth/{*splat}', toNodeHandler(auth.handler));
   console.log('✅ Better Auth mounted at /api/auth');
 
   // 4. App routes
