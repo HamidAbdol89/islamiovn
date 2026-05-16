@@ -9,6 +9,7 @@ import {
   useSearchAnalytics,
   useOptimisticFavoritesEnterprise
 } from './hooks';
+import { useAuth } from '@/context/AuthContext';
 import {
   MasjidHeader,
   MasjidSearch,
@@ -17,7 +18,6 @@ import {
   MasjidSkeletonGrid,
   MasjidSheet
 } from './components';
-import EnterpriseStatusPanel from './components/EnterpriseStatusPanel';
 
 const MasjidVietnamDirectory: React.FC = React.memo(() => {
   // State management
@@ -27,6 +27,7 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
 
   // Custom hooks
   const { filterMasjids, statistics } = useMasjidData();
+  const { isLoading: isAuthLoading } = useAuth();
   const {
     trangThaiTimKiem,
     ketQuaTimKiem,
@@ -47,11 +48,6 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
     isLoadingMasjid,
     isPendingSync,
     loadBatchMasjidData,
-    // Enterprise features (available but not used yet)
-    getSyncStatus,
-    getRecentActivity,
-    analyticsTracker,
-    isOnline
   } = useOptimisticFavoritesEnterprise();
 
   // Simple share functionality
@@ -92,12 +88,14 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
   }, [trangThaiTimKiem.tuKhoa, trangThaiTimKiem.vungDuocChon, thongKeTimKiem.total, trackSearch]);
 
   // PERFORMANCE: Batch load favorite data when search results change
+  // Wait for auth to resolve before loading to avoid 401 on batch-check
   useEffect(() => {
+    if (isAuthLoading) return;
     if (ketQuaTimKiem.length > 0) {
       const masjidIds = ketQuaTimKiem.map(masjid => masjid.id);
       loadBatchMasjidData(masjidIds);
     }
-  }, [ketQuaTimKiem, loadBatchMasjidData]);
+  }, [ketQuaTimKiem, loadBatchMasjidData, isAuthLoading]);
 
   // Handle favorites
   const handleToggleFavorite = useCallback((masjid: MasjidViet) => {
@@ -145,7 +143,7 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
   }
 
   return (
-    <div className="w-screen min-h-screen bg-background transition-colors duration-300 overflow-y-auto relative">
+    <div className="w-screen min-h-screen bg-background transition-colors duration-300 relative">
       {/* Header */}
       <MasjidHeader tongSoMasjid={statistics.total} favoritesCount={totalUserFavorites} />
 
@@ -190,18 +188,7 @@ const MasjidVietnamDirectory: React.FC = React.memo(() => {
             )}
           </div>
 
-          {/* 🚀 ENTERPRISE STATUS PANEL - Desktop only */}
-          <div className="hidden xl:block w-80">
-            <div className="sticky top-4">
-              <EnterpriseStatusPanel
-                getSyncStatus={getSyncStatus}
-                getRecentActivity={getRecentActivity}
-                analyticsTracker={analyticsTracker}
-                isOnline={isOnline}
-                selectedMasjidId={selectedMasjid?.id}
-              />
-            </div>
-          </div>
+
         </div>
       </div>
 

@@ -72,7 +72,6 @@ export const useWebSocket = (options: UseWebSocketOptions): UseWebSocketReturn =
         timestamp: Date.now()
       }));
     } else {
-      console.warn('WebSocket not connected. Message not sent:', message);
       toast.error('Kết nối WebSocket không khả dụng', {
         description: 'Đang thử kết nối lại...',
         duration: 3000
@@ -94,7 +93,6 @@ export const useWebSocket = (options: UseWebSocketOptions): UseWebSocketReturn =
       const ws = new WebSocket(url);
       
       ws.onopen = () => {
-        console.log('🔌 WebSocket connected');
         setSocket(ws);
         setIsConnected(true);
         setIsConnecting(false);
@@ -128,7 +126,6 @@ export const useWebSocket = (options: UseWebSocketOptions): UseWebSocketReturn =
       };
 
       ws.onclose = (event) => {
-        console.log('🔌 WebSocket disconnected:', event.code, event.reason);
         setSocket(null);
         setIsConnected(false);
         setIsConnecting(false);
@@ -142,8 +139,6 @@ export const useWebSocket = (options: UseWebSocketOptions): UseWebSocketReturn =
         if (!isManualDisconnectRef.current && reconnectCountRef.current < reconnectAttempts) {
           setConnectionStatus('reconnecting');
           reconnectCountRef.current++;
-          
-          console.log(`🔄 Reconnecting... Attempt ${reconnectCountRef.current}/${reconnectAttempts}`);
           
           reconnectTimeoutRef.current = setTimeout(() => {
             connect();

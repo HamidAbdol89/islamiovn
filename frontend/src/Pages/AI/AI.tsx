@@ -118,11 +118,9 @@ const MiraAI: React.FC = () => {
   // Load favorites from localStorage
   useEffect(() => {
     const savedFavorites = localStorage.getItem('aiFavorites');
-    console.log('Loading favorites from localStorage:', savedFavorites);
     if (savedFavorites) {
       try {
         const parsedFavorites = JSON.parse(savedFavorites);
-        console.log('Parsed favorites:', parsedFavorites);
         setFavorites(parsedFavorites);
       } catch (error) {
         console.error('Error parsing favorites:', error);
@@ -132,7 +130,6 @@ const MiraAI: React.FC = () => {
 
   // Save favorites to localStorage
   useEffect(() => {
-    console.log('Saving favorites to localStorage:', favorites);
     localStorage.setItem('aiFavorites', JSON.stringify(favorites));
   }, [favorites]);
 

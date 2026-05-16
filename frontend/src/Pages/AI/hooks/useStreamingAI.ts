@@ -137,7 +137,6 @@ export const useStreamingAI = (options: UseStreamingAIOptions): UseStreamingAIRe
         break;
 
       case 'error':
-        console.error('WebSocket AI Error:', message.data);
         onError?.(message.data.message || 'Có lỗi xảy ra khi xử lý yêu cầu');
         setIsStreaming(false);
         
@@ -148,7 +147,7 @@ export const useStreamingAI = (options: UseStreamingAIOptions): UseStreamingAIRe
         break;
 
       default:
-        console.log('Unknown WebSocket message type:', message.type);
+        break;
     }
   }, [messages, onMessageComplete, onStreamingUpdate, onError]);
 
@@ -162,10 +161,8 @@ export const useStreamingAI = (options: UseStreamingAIOptions): UseStreamingAIRe
     url: wsUrl,
     onMessage: handleWebSocketMessage,
     onConnect: () => {
-      console.log('🤖 AI WebSocket connected');
     },
     onDisconnect: () => {
-      console.log('🤖 AI WebSocket disconnected');
       setIsStreaming(false);
     },
     onError: (error) => {

@@ -3,7 +3,12 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer';
 import { Users } from 'lucide-react';
 import type { FavoriteUser } from '../services/masjidFavoriteApi';
 
@@ -63,7 +68,7 @@ const AnimatedFavoriteAvatars: React.FC<AnimatedFavoriteAvatarsProps> = ({
   };
 
   return (
-    <Sheet open={isSheetOpen} onOpenChange={(open) => setIsSheetOpen(open)}>
+    <Drawer open={isSheetOpen} onOpenChange={setIsSheetOpen}>
       <div className="flex items-center gap-2">
         {totalFavorites > 0 ? (
           <div
@@ -127,55 +132,56 @@ const AnimatedFavoriteAvatars: React.FC<AnimatedFavoriteAvatarsProps> = ({
         )}
       </div>
 
-      {/* Sheet Content */}
-      <SheetContent side="bottom" className="h-[70vh] overflow-y-auto">
-        <SheetHeader className="pb-4">
-          <SheetTitle className="flex items-center gap-2 text-sm">
-            <Users className="w-3 h-3" />
-            {masjidName 
-              ? `${masjidName} - ${totalFavorites} lượt thích` 
-              : `${totalFavorites} lượt thích`}
-          </SheetTitle>
-        </SheetHeader>
+      {/* Drawer Content */}
+      <DrawerContent className="h-[70vh] flex flex-col">
+        <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-8">
+          <DrawerHeader className="px-0">
+            <DrawerTitle className="flex items-center gap-2 text-sm">
+              <Users className="w-3 h-3" />
+              {masjidName
+                ? `${masjidName} - ${totalFavorites} lượt thích`
+                : `${totalFavorites} lượt thích`}
+            </DrawerTitle>
+          </DrawerHeader>
 
-        <div className="space-y-3">
-          {favoriteUsers.length > 0 ? (
-            favoriteUsers.map((favoriteUser, index) => (
-              <motion.div
-                key={favoriteUser.user.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
-              >
-                <Avatar className="w-12 h-12 border-2 border-background shadow-sm">
-                  <AvatarImage
-                    src={favoriteUser.user.picture}
-                    alt={favoriteUser.user.name}
-                    className="object-cover"
-                  />
-                  <AvatarFallback className="bg-primary/10 text-primary font-medium">
-                    {favoriteUser.user.name?.charAt(0)?.toUpperCase() || '?'}
-                  </AvatarFallback>
-                </Avatar>
-                
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-foreground truncate">
-                    {favoriteUser.user.name}
+          <div className="space-y-3">
+            {favoriteUsers.length > 0 ? (
+              favoriteUsers.map((favoriteUser, index) => (
+                <motion.div
+                  key={favoriteUser.user.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                >
+                  <Avatar className="w-12 h-12 border-2 border-background shadow-sm">
+                    <AvatarImage
+                      src={favoriteUser.user.picture}
+                      alt={favoriteUser.user.name}
+                      className="object-cover"
+                    />
+                    <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                      {favoriteUser.user.name?.charAt(0)?.toUpperCase() || '?'}
+                    </AvatarFallback>
+                  </Avatar>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-foreground truncate">
+                      {favoriteUser.user.name}
+                    </div>
                   </div>
-                 
-                </div>
-              </motion.div>
-            ))
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
-              <p>Chưa có ai yêu thích masjid này</p>
-            </div>
-          )}
+                </motion.div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>Chưa có ai yêu thích masjid này</p>
+              </div>
+            )}
+          </div>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DrawerContent>
+    </Drawer>
   );
 };
 

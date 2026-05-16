@@ -96,7 +96,7 @@ interface AnalyticsTracker {
 
 export const useOptimisticFavoritesEnterprise = () => {
   const [favoriteStates, setFavoriteStates] = useState<OptimisticFavoriteState>({});
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   
   // 🚀 ENTERPRISE REFS & STATE
   const syncQueue = useRef<Map<string, { masjid: MasjidViet; action: 'add' | 'remove'; timestamp: number }>>(new Map());
@@ -176,94 +176,14 @@ export const useOptimisticFavoritesEnterprise = () => {
   }), []);
 
   // 🌐 REAL-TIME CONNECTION MANAGER
+  // Disabled: WebSocket server not yet implemented on backend
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const initializeRealTimeConnection = useCallback(() => {
-    if (!isAuthenticated || realtimeConnection.current) return;
+    // WebSocket feature is not yet available — skip to avoid connection spam
+    devLog.log('ℹ️ Real-time connection skipped (not implemented)');
+  }, []);
 
-    try {
-      // Determine WebSocket URL based on environment
-      const isDevelopment = import.meta.env.DEV;
-      const wsUrl = isDevelopment 
-        ? (import.meta.env.VITE_WS_URL_DEV || 'ws://localhost:3000/favorites')
-        : (import.meta.env.VITE_WS_URL || 'wss://islamiovn-user.onrender.com/favorites');
-      realtimeConnection.current = new WebSocket(wsUrl);
-      
-      realtimeConnection.current.onopen = () => {
-        devLog.log('🔗 Real-time connection established');
-        // Send authentication
-        realtimeConnection.current?.send(JSON.stringify({
-          type: 'auth',
-          token: user?.id
-        }));
-
-        // Setup heartbeat
-        heartbeatInterval.current = setInterval(() => {
-          if (realtimeConnection.current?.readyState === WebSocket.OPEN) {
-            realtimeConnection.current.send(JSON.stringify({ type: 'ping' }));
-          }
-        }, 30000);
-      };
-
-      realtimeConnection.current.onmessage = (event) => {
-        try {
-          const data: RealTimeEvent = JSON.parse(event.data);
-          handleRealTimeEvent(data);
-        } catch (error) {
-          devLog.error('❌ Failed to parse real-time event:', error);
-        }
-      };
-
-      realtimeConnection.current.onclose = () => {
-        devLog.log('🔌 Real-time connection closed');
-        if (heartbeatInterval.current) {
-          clearInterval(heartbeatInterval.current);
-          heartbeatInterval.current = null;
-        }
-        realtimeConnection.current = null;
-        // Reconnect after 5 seconds
-        setTimeout(initializeRealTimeConnection, 5000);
-      };
-
-    } catch (error) {
-      devLog.error('❌ Failed to initialize real-time connection:', error);
-    }
-  }, [isAuthenticated, user]);
-
-  // 📡 HANDLE REAL-TIME EVENTS
-  const handleRealTimeEvent = useCallback((event: RealTimeEvent) => {
-    setFavoriteStates(prev => {
-      const current = prev[event.masjidId];
-      if (!current) return prev;
-
-      const updatedState = {
-        ...current,
-        recentActivity: [event, ...current.recentActivity.slice(0, 9)], // Keep last 10 events
-        liveUserCount: event.type === 'user-activity' ? event.data.userCount : current.liveUserCount
-      };
-
-      // Handle favorite changes from other users
-      if (event.userId !== user?.id) {
-        if (event.type === 'favorite-added') {
-          updatedState.totalFavorites = Math.max(updatedState.totalFavorites + 1, 0);
-          // Add user to favorite users if not already there
-          const userExists = updatedState.favoriteUsers.some(u => u.user.id === event.userId);
-          if (!userExists && event.data.user) {
-            updatedState.favoriteUsers = [event.data.user, ...updatedState.favoriteUsers.slice(0, 4)];
-          }
-        } else if (event.type === 'favorite-removed') {
-          updatedState.totalFavorites = Math.max(updatedState.totalFavorites - 1, 0);
-          // Remove user from favorite users
-          updatedState.favoriteUsers = updatedState.favoriteUsers.filter(u => u.user.id !== event.userId);
-        }
-      }
-
-      return {
-        ...prev,
-        [event.masjidId]: updatedState
-      };
-    });
-  }, [user]);
-
-  // 🔄 OFFLINE DETECTION & SYNC
+  // � OFFLINE DETECTION & SYNC
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
@@ -662,37 +582,7 @@ export const useOptimisticFavoritesEnterprise = () => {
   }, [isAuthenticated, user, favoriteStates, createDefaultState, isOnline, syncToServer]);
 
   // Initialize masjid data
-  const initializeMasjid = useCallback(async (masjidId: string) => {
-    if (!favoriteStates[masjidId]) {
-      setFavoriteStates(prev => ({
-        ...prev,
-        [masjidId]: createDefaultState({
-          isLoading: true
-        })
-      }));
-    }
-
-    // Use BATCH REQUEST even for single masjid to maintain consistency
-    await loadBatchMasjidData([masjidId]);
-
-    // Check if current user has favorited this masjid
-    if (isAuthenticated) {
-      try {
-        const response = await masjidFavoriteApi.checkIsFavorited(masjidId);
-        if (response.success && response.data) {
-          setFavoriteStates(prev => ({
-            ...prev,
-            [masjidId]: createDefaultState({
-              ...prev[masjidId],
-              isFavorited: response.data!.isFavorited
-            })
-          }));
-        }
-      } catch (error) {
-        devLog.error('Error checking favorite status:', error);
-      }
-    }
-  }, [favoriteStates, isAuthenticated, createDefaultState]);
+  // Initialize masjid data — declared AFTER loadBatchMasjidData to avoid hoisting issues
 
   // 🚀 BATCH LOAD MULTIPLE MASJIDS - Enterprise feature
   const loadBatchMasjidData = useCallback(async (masjidIds: string[]) => {
@@ -763,8 +653,8 @@ export const useOptimisticFavoritesEnterprise = () => {
         devLog.log(`✅ TRUE BATCH: Loaded ${unloadedIds.length} masjids in 1 request successfully`);
       }
 
-      // 🚀 BATCH CHECK FAVORITE STATUS (if authenticated)
-      if (isAuthenticated && unloadedIds.length > 0) {
+      // 🚀 BATCH CHECK FAVORITE STATUS (if authenticated and auth resolved)
+      if (isAuthenticated && !isAuthLoading && unloadedIds.length > 0) {
         try {
           devLog.log(`🔍 BATCH: Checking favorite status for ${unloadedIds.length} masjids in 1 request`);
           
@@ -868,7 +758,19 @@ export const useOptimisticFavoritesEnterprise = () => {
         });
       }
     }
-  }, [favoriteStates, createDefaultState, isAuthenticated, analyticsTracker]);
+  }, [favoriteStates, createDefaultState, isAuthenticated, isAuthLoading, analyticsTracker]);
+
+  // Initialize masjid data — after loadBatchMasjidData to avoid hoisting issues
+  const initializeMasjid = useCallback(async (masjidId: string) => {
+    if (!favoriteStates[masjidId]) {
+      setFavoriteStates(prev => ({
+        ...prev,
+        [masjidId]: createDefaultState({ isLoading: true })
+      }));
+    }
+    // loadBatchMasjidData handles batch-check internally — no separate checkIsFavorited needed
+    await loadBatchMasjidData([masjidId]);
+  }, [favoriteStates, createDefaultState, loadBatchMasjidData]);
 
   // Helper functions
   const isFavorited = useCallback((masjidId: string) => {
@@ -952,19 +854,7 @@ export const useOptimisticFavoritesEnterprise = () => {
     return () => clearInterval(retryInterval);
   }, [syncOfflineOperations]);
 
-  // Monitor Request Manager status (development only)
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      const interval = setInterval(() => {
-        const status = requestManager.getStatus();
-        if (status.queueLength > 0 || status.activeRequests > 0) {
-          devLog.log('📊 Request Manager Status:', status);
-        }
-      }, 10000);
 
-      return () => clearInterval(interval);
-    }
-  }, []);
 
   // Cleanup timeouts on unmount
   useEffect(() => {

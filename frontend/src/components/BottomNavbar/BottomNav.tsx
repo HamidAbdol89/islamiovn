@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import type { MouseEvent } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Newspaper, MessageCircle, PlayCircle, Settings } from "lucide-react";
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Home, Newspaper, MessageCircle, PlayCircle, Settings } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { cn } from '@/lib/utils';
 
 interface TabItem {
   key: string;
@@ -19,128 +19,84 @@ interface BottomNavProps {
 
 const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) => {
   const { user, isAuthenticated } = useAuth();
-  
+
   const tabs: TabItem[] = [
     { key: 'home', label: 'Trang chủ', icon: Home },
     { key: 'news', label: 'Tin tức', icon: Newspaper },
     { key: 'ai', label: 'AI', icon: MessageCircle },
     { key: 'video', label: 'Video', icon: PlayCircle },
-    { 
-      key: 'setting', 
-      label: isAuthenticated ? 'Hồ sơ' : 'Cài đặt', 
+    {
+      key: 'setting',
+      label: isAuthenticated ? 'Hồ sơ' : 'Cài đặt',
       icon: isAuthenticated ? null : Settings,
-      avatar: isAuthenticated ? user?.picture : null
+      avatar: isAuthenticated ? user?.picture : null,
     },
   ];
-  
-  const [previousTab, setPreviousTab] = useState(activeTab);
-  const [direction, setDirection] = useState(0);
-  
-  useEffect(() => {
-    const currentIndex = tabs.findIndex(tab => tab.key === activeTab);
-    const prevIndex = tabs.findIndex(tab => tab.key === previousTab);
-    
-    setDirection(currentIndex > prevIndex ? 1 : -1);
-    setPreviousTab(activeTab);
-  }, [activeTab]);
-
-  const createRipple = (e: MouseEvent<HTMLButtonElement>) => {
-    const button = e.currentTarget;
-    const circle = document.createElement("span");
-    const diameter = Math.max(button.clientWidth, button.clientHeight);
-    const radius = diameter / 2;
-
-    circle.style.width = circle.style.height = `${diameter}px`;
-    circle.style.left = `${e.clientX - button.getBoundingClientRect().left - radius}px`;
-    circle.style.top = `${e.clientY - button.getBoundingClientRect().top - radius}px`;
-    circle.classList.add("ripple");
-
-    const ripple = button.getElementsByClassName("ripple")[0];
-    if (ripple) ripple.remove();
-
-    button.appendChild(circle);
-  };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 ">
-<div className="bg-card rounded-t-3xl p-2 border-t border-border/50 transition-all duration-300 mx-auto max-w-md">
-<div className="flex justify-around items-center">
+    <div className="fixed bottom-0 left-0 right-0 z-50">
+      <div className="bg-card/95 backdrop-blur-md border-t border-border/40 mx-auto max-w-md">
+        <div className="flex justify-around items-center px-2 py-1">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = tab.key === activeTab;
-            const isSettingTab = tab.key === 'setting';
-            const showAvatar = isSettingTab && isAuthenticated && tab.avatar;
- 
-            
+            const showAvatar = tab.key === 'setting' && isAuthenticated && tab.avatar;
+
             return (
               <button
-              key={tab.key}
-              onClick={(e) => { createRipple(e); onTabChange(tab.key); }}
-              className="relative overflow-hidden flex items-center gap-2 sm:gap-3 transition-all duration-500 rounded-full px-3 py-2.5 sm:px-4 sm:py-3"
-            >
-              {/* Hiệu ứng highlight bao quanh button */}
-              {isActive && (
-                <motion.div
-                  className="absolute inset-0 bg-primary/10 rounded-full"
-                  layoutId="activeTab"
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                />
-              )}
-            
-              <motion.div
-                animate={{ scale: isActive ? 1.1 : 1 }}
-                transition={{ duration: 0.3 }}
+                key={tab.key}
+                onClick={() => onTabChange(tab.key)}
+                className={cn(
+                  'relative flex flex-col items-center justify-center gap-1 w-14 py-2 rounded-xl transition-colors duration-200',
+                  isActive ? 'text-primary' : 'text-muted-foreground'
+                )}
               >
-                {showAvatar && tab.avatar ? (
-                  <img 
-                    src={tab.avatar} 
-                    alt="User Avatar" 
-                    className="w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0 rounded-full object-cover border border-border/30"
-                  />
-                ) : (
-                  Icon && <Icon className="w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0 text-current" />
-                )}
-              </motion.div>
-            
-              <AnimatePresence mode="wait" custom={direction}>
+                {/* Active background pill */}
                 {isActive && (
-                  <motion.span
-                    key={`active-${tab.key}`}
-                    custom={direction}
-                    initial={{ opacity: 0, x: 20 * direction, width: 0 }}
-                    animate={{ opacity: 1, x: 0, width: "auto" }}
-                    exit={{ opacity: 0, x: -20 * direction, width: 0 }}
-                    transition={{ duration: 0.4, ease: "easeOut" }}
-                    className="text-xs sm:text-sm font-medium whitespace-nowrap overflow-hidden"
-                  >
-                    {tab.label}
-                  </motion.span>
+                  <motion.div
+                    layoutId="nav-pill"
+                    className="absolute inset-0 bg-primary/10 rounded-xl"
+                    transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+                  />
                 )}
-              </AnimatePresence>
-            </button>
-            
+
+                {/* Icon */}
+                <motion.div
+                  animate={{ scale: isActive ? 1.15 : 1 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                  className="relative z-10"
+                >
+                  {showAvatar && tab.avatar ? (
+                    <img
+                      src={tab.avatar}
+                      alt="Avatar"
+                      className={cn(
+                        'w-6 h-6 rounded-full object-cover transition-all duration-200',
+                        isActive ? 'ring-2 ring-primary' : 'ring-1 ring-border'
+                      )}
+                    />
+                  ) : (
+                    Icon && <Icon className="w-6 h-6" />
+                  )}
+                </motion.div>
+
+                {/* Label */}
+                <span
+                  className={cn(
+                    'relative z-10 text-[10px] font-medium leading-none transition-all duration-200',
+                    isActive ? 'opacity-100' : 'opacity-60'
+                  )}
+                >
+                  {tab.label}
+                </span>
+              </button>
             );
           })}
         </div>
+
+        {/* Safe area for iOS home indicator */}
+        <div className="h-safe-area-inset-bottom" />
       </div>
-      
-      <style >{`
-        .ripple {
-          position: absolute;
-          border-radius: 50%;
-          background-color: var(--primary);
-          opacity: 0.2;
-          transform: scale(0);
-          animation: ripple 0.6s linear;
-        }
-        
-        @keyframes ripple {
-          to {
-            transform: scale(4);
-            opacity: 0;
-          }
-        }
-      `}</style>
     </div>
   );
 };

@@ -307,8 +307,6 @@ const IconTab: React.FC<IconTabProps> = ({
   // Memoized click handler with better error handling
   const handleUtilityClick = useCallback((utility: UtilityItem) => {
     if (!utility.isAvailable) {
-      // Could add toast notification here instead of console.log
-      console.log(`Tính năng ${utility.label} đang được phát triển`);
       return;
     }
     

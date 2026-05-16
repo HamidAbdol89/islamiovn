@@ -148,11 +148,11 @@ const Utilities: React.FC = () => {
   const utilityCount = useMemo(() => Object.keys(UTILITY_ROUTES).length, []);
 
   return (
-    <div className="min-h-screen w-full bg-background flex flex-col relative overflow-hidden pb-16">
+    <div className="min-h-screen w-full bg-background flex flex-col relative pb-16">
       {/* Status bar placeholder */}
       <div className="h-6 bg-background w-full"></div>
 
-      <main className="w-full flex-1 p-4 max-w-md mx-auto overflow-y-auto">
+      <main className="w-full flex-1 p-4 max-w-md mx-auto">
         {/* Carousel Card */}
         <div className="mb-5">
         <Card className="relative overflow-hidden">
