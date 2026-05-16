@@ -1,4 +1,8 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/instrument-sans";
+@import "@fontsource-variable/geist-mono";
 
 @plugin "tailwindcss-animate";
 
@@ -87,27 +91,23 @@
   --spacing: 0.25rem;
 }
 
-
   .dark {
     --background: oklch(0.22 0.02 240); /* cool blue gray */
     --foreground: oklch(0.95 0.01 250);
-    
+
     --card: oklch(0.26 0.02 240);
     --card-foreground: oklch(0.96 0.01 250);
-    
-    
-    
-    
+
     --popover: oklch(0.20 0.02 240);
     --popover-foreground: var(--foreground);
-    
+
     --primary: oklch(0.44 0.15 142.50);
     --primary-foreground: oklch(1.00 0 0);
     --secondary: oklch(0.96 0.00 219.19);
     --secondary-foreground: oklch(0.19 0.01 248.50);
     --muted: oklch(0.18 0.01 240);
     --muted-foreground: oklch(0.55 0.01 245);
-    
+
     --accent: oklch(0.30 0.04 141.93);
     --accent-foreground: oklch(0.95 0.02 142.94);
     --destructive: oklch(0.62 0.24 25.77);
@@ -128,18 +128,27 @@
     --sidebar-accent-foreground: oklch(0.95 0.02 154.80);
     --sidebar-border: oklch(0.38 0.02 240.58);
     --sidebar-ring: oklch(0.97 0.01 159.76);
-    
+
     --shadow-2xs: 0 1px 3px 0px oklch(0.00 0 0 / 0.05);
     --shadow-xs: 0 1px 3px 0px oklch(0.00 0 0 / 0.05);
     --shadow-sm: 0 1px 2px oklch(0.18 0.02 240 / 0.35);
     --shadow: 0 2px 4px oklch(0.18 0.02 240 / 0.35);
-    
+
     --shadow-md: 0 1px 3px 0px oklch(0.00 0 0 / 0.10), 0 2px 4px -1px oklch(0.00 0 0 / 0.10);
     --shadow-lg: 0 1px 3px 0px oklch(0.00 0 0 / 0.10), 0 4px 6px -1px oklch(0.00 0 0 / 0.10);
     --shadow-xl: 0 1px 3px 0px oklch(0.00 0 0 / 0.10), 0 8px 10px -1px oklch(0.00 0 0 / 0.10);
     --shadow-2xl: 0 1px 3px 0px oklch(0.00 0 0 / 0.25);
   }
- 
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+
 }
 
 @theme inline {
@@ -175,7 +184,7 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  --font-sans: var(--font-sans);
+  --font-sans: 'Instrument Sans Variable', sans-serif;
   --font-mono: var(--font-mono);
   --font-serif: var(--font-serif);
 
@@ -192,6 +201,10 @@
   --shadow-lg: var(--shadow-lg);
   --shadow-xl: var(--shadow-xl);
   --shadow-2xl: var(--shadow-2xl);
+  --font-heading: 'Geist Mono Variable', monospace;
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 @layer base {
@@ -247,8 +260,6 @@ button .ripple {
   }
 }
 
-
-
 @keyframes slideDown {
   from {
     opacity: 0;
@@ -278,3 +289,5 @@ button .ripple {
 .animate-slideUp {
   animation: slideUp 0.3s ease-in forwards;
 }
+
+/* Theme variables defined above in @layer base — no duplicates needed */
