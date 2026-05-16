@@ -36,17 +36,16 @@ async function createAuth() {
     database: mongodbAdapter(db),
 
     advanced: {
-      crossSubdomainCookies: {
-        enabled: false,
-      },
+      useSecureCookies: true,
+      crossSubdomainCookies: { enabled: false },
       defaultCookieAttributes: {
         secure: true,
         httpOnly: true,
         sameSite: 'none',
         partitioned: true,
       },
-      // After Google callback hits backend, redirect to frontend /api/auth proxy
-      // This keeps the state cookie on the same domain as the initial request
+      // Frontend proxies /api/auth/* → backend
+      // This keeps cookies on islam.io.vn domain throughout the flow
       redirectProxyUrl: `${process.env.FRONTEND_URL}/api/auth`,
     },
 
@@ -54,6 +53,7 @@ async function createAuth() {
       google: {
         clientId: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        disablePkce: false,
       },
     },
   });
