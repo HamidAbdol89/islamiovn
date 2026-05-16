@@ -34,6 +34,21 @@ async function createAuth() {
     secret: process.env.BETTER_AUTH_SECRET,
     trustedOrigins,
     database: mongodbAdapter(db),
+
+    // Cross-domain cookie config
+    // Frontend (islam.io.vn) and backend (railway.app) are different domains
+    advanced: {
+      crossSubdomainCookies: {
+        enabled: false,
+      },
+      defaultCookieAttributes: {
+        secure: true,
+        httpOnly: true,
+        sameSite: 'none', // Required for cross-origin cookies
+        partitioned: true, // CHIPS — helps with cross-site cookie restrictions
+      },
+    },
+
     socialProviders: {
       google: {
         clientId: process.env.GOOGLE_CLIENT_ID,
