@@ -203,9 +203,9 @@ class ApiService {
     return this.request<any>(`/favorites/${id}`, { method: 'DELETE' });
   }
 
-  // ─── Auth state helpers (use authClient.useSession() in components instead) ─
+  // ─── Auth state helpers ───────────────────────────────────────────────────
   isAuthenticated(): boolean {
-    // Synchronous check not reliable with cookie sessions — use useAuth() hook
+    // Use useAuth() hook in React components instead
     return false;
   }
 }
