@@ -450,7 +450,7 @@ export class AnalyticsManager {
   private getUserId(): string | undefined {
     // Get from UserSessionManager if available
     try {
-      const session = localStorage.getItem('muslimviet_user_session');
+      const session = localStorage.getItem('islamiovn_user_session');
       if (session) {
         const parsed = JSON.parse(session);
         return parsed.userId;

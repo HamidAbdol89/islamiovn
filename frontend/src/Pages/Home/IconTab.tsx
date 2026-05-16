@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback, memo } from 'react';
+import { ROUTES } from '@/lib/routes';
 
 import prayerIcon from '@/assets/icon/prayer.png';
 import compassIcon from '@/assets/icon/compass.png';
@@ -192,7 +193,7 @@ const UTILITIES_DATA: UtilityItem[] = [
     id: 'prayers',
     label: 'Cầu Nguyện',
     iconUrl: prayerIcon,
-    route: '/utilities/prayers',
+    route: ROUTES.UTILITIES.PRAYERS,
     isAvailable: true,
     description: 'Giờ cầu nguyện hàng ngày và lịch trình',
     accentColor: 'primary'
@@ -201,7 +202,7 @@ const UTILITIES_DATA: UtilityItem[] = [
     id: 'qiblah',
     label: 'Qiblah',
     iconUrl: compassIcon,
-    route: '/utilities/qiblah',
+    route: ROUTES.UTILITIES.QIBLAH,
     isAvailable: true,
     description: 'Tìm hướng Qiblah để cầu nguyện',
     accentColor: 'purple'
@@ -210,7 +211,7 @@ const UTILITIES_DATA: UtilityItem[] = [
     id: 'calendar',
     label: 'Lịch Hijri',
     iconUrl: scheduleIcon,
-    route: '/utilities/calendar',
+    route: ROUTES.UTILITIES.CALENDAR,
     isAvailable: true,
     description: 'Lịch Hijri và các sự kiện quan trọng',
     accentColor: 'orange'
@@ -219,7 +220,7 @@ const UTILITIES_DATA: UtilityItem[] = [
     id: 'quranreader',
     label: 'Kinh Qur\'an',
     iconUrl: bookIcon,
-    route: '/utilities/quranreader',
+    route: ROUTES.UTILITIES.QURAN_READER,
     isAvailable: true,
     description: 'Đọc và nghe Kinh Qur\'an',
     accentColor: 'cyan'
@@ -228,7 +229,7 @@ const UTILITIES_DATA: UtilityItem[] = [
     id: 'masjid',
     label: 'Masjid',
     iconUrl: buildingIcon,
-    route: '/utilities/masjid',
+    route: ROUTES.UTILITIES.MASJID,
     isAvailable: true,
     description: 'Tìm nhà thờ Hồi giáo gần bạn',
     accentColor: 'rose'
@@ -237,7 +238,7 @@ const UTILITIES_DATA: UtilityItem[] = [
     id: 'tasbih',
     label: 'Tasbih',
     iconUrl: tasbihIcon,
-    route: '/utilities/tasbih',
+    route: ROUTES.UTILITIES.TASBIH,
     isAvailable: true,
     description: 'Đếm tràng hạt Tasbih kỹ thuật số',
     accentColor: 'yellow'
@@ -246,7 +247,7 @@ const UTILITIES_DATA: UtilityItem[] = [
     id: 'dua',
     label: 'Dua',
     iconUrl: doaIcon,
-    route: '/utilities/dua',
+    route: ROUTES.UTILITIES.DUAS,
     isAvailable: true,
     description: 'Bộ sưu tập các lời cầu nguyện',
     accentColor: 'violet'
@@ -255,7 +256,7 @@ const UTILITIES_DATA: UtilityItem[] = [
     id: 'hadith',
     label: 'Hadith',
     iconUrl: hadihIcon,
-    route: '/utilities/hadith',
+    route: ROUTES.UTILITIES.HADITH,
     isAvailable: true,
     description: 'Đọc và tìm hiểu Hadith',
     accentColor: 'blue'
@@ -264,7 +265,7 @@ const UTILITIES_DATA: UtilityItem[] = [
     id: 'nameallah',
     label: '99 Tên Allah',
     iconUrl: nameIcon,
-    route: '/utilities/nameallah',
+    route: ROUTES.UTILITIES.NAMEALLAH,
     isAvailable: true,
     description: '99 tên đẹp nhất của Allah',
     accentColor: 'emerald'
@@ -273,7 +274,7 @@ const UTILITIES_DATA: UtilityItem[] = [
     id: 'podcast',
     label: 'Podcast',
     iconUrl: podcastIcon,
-    route: '/utilities/podcast',
+    route: ROUTES.UTILITIES.PODCAST,
     isAvailable: true,
     description: 'Nghe podcast Hồi giáo',
     accentColor: 'sky'
@@ -282,7 +283,7 @@ const UTILITIES_DATA: UtilityItem[] = [
     id: 'study',
     label: 'Học Tập',
     iconUrl: studyIcon,
-    route: '/utilities/study',
+    route: ROUTES.UTILITIES.STUDY,
     isAvailable: false,
     description: 'Tài liệu học tập Hồi giáo',
     accentColor: 'pink'
@@ -291,7 +292,7 @@ const UTILITIES_DATA: UtilityItem[] = [
     id: 'zakat',
     label: 'Zakat',
     iconUrl: zakatIcon,
-    route: '/utilities/zakat',
+    route: ROUTES.UTILITIES.ZAKAT,
     isAvailable: true,
     description: 'Tính toán Zakat của bạn',
     accentColor: 'lime'

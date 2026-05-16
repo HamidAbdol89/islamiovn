@@ -24,7 +24,7 @@ const backendAuth = {
   signIn: async (): Promise<GoogleUser> => {
     try {
       // Store current location for redirect back
-      localStorage.setItem('muslimviet_auth_redirect', window.location.pathname);
+      localStorage.setItem('islamiovn_auth_redirect', window.location.pathname);
       
       // Create OAuth URL for redirect flow
       const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');

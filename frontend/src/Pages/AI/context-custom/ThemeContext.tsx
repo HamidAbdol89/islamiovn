@@ -400,7 +400,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 // Constants
 const THEME_TRANSITION_DURATION = 250;
-const STORAGE_KEY = "hamidverse-theme";
+const STORAGE_KEY = "islamiovn-theme";
 
 // System theme detection hook
 const useSystemTheme = () => {

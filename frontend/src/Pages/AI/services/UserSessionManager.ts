@@ -44,8 +44,8 @@ export interface ConversationMetadata {
 export class UserSessionManager {
   private static instance: UserSessionManager;
   private currentSession: UserSession | null = null;
-  private sessionStorage = 'muslimviet_user_session';
-  private conversationsStorage = 'muslimviet_conversations';
+  private sessionStorage = 'islamiovn_user_session';
+  private conversationsStorage = 'islamiovn_conversations';
 
   private constructor() {
     this.loadSession();

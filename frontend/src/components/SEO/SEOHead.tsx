@@ -11,14 +11,14 @@ interface SEOHeadProps {
 }
 
 const SEOHead: React.FC<SEOHeadProps> =  ({
-  title = 'Muslim Việt - Ứng dụng Hồi giáo dành cho cộng đồng Muslim Việt Nam',
+  title = 'Islam.io.vn - Ứng dụng Hồi giáo dành cho cộng đồng Muslim Việt Nam',
   description = 'Ứng dụng toàn diện cho cộng đồng Hồi giáo Việt Nam với đầy đủ các công cụ: lịch cầu nguyện, Quran, Qiblah, Hadith, Zakat, Tasbih, Dua và trí tuệ nhân tạo Mira AI.',
-  image = 'https://muslimviet.vercel.app/images/social-share.jpg',
-  url = 'https://muslimviet.vercel.app/',
+  image = 'https://islam.io.vn/images/social-share.jpg',
+  url = 'https://islam.io.vn/',
   type = 'website',
   keywords = []
 }) => {
-  const defaultKeywords = ['muslim việt', 'hồi giáo', 'islam', 'cầu nguyện', 'quran', 'qiblah', 'masjid', 'zakat', 'tasbih', 'dua', 'hadith'];
+  const defaultKeywords = ['islam.io.vn', 'hồi giáo', 'islam', 'cầu nguyện', 'quran', 'qiblah', 'masjid', 'zakat', 'tasbih', 'dua', 'hadith'];
   const allKeywords = [...defaultKeywords, ...keywords].join(', ');
 
   return (
@@ -35,7 +35,7 @@ const SEOHead: React.FC<SEOHeadProps> =  ({
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={image} />
-      <meta property="og:site_name" content="Muslim Việt" />
+      <meta property="og:site_name" content="Islam.io.vn" />
       <meta property="og:locale" content="vi_VN" />
 
       {/* Twitter */}
@@ -46,13 +46,13 @@ const SEOHead: React.FC<SEOHeadProps> =  ({
       <meta name="twitter:image" content={image} />
 
       {/* Additional Meta Tags */}
-      <meta name="author" content="Muslim Việt" />
+      <meta name="author" content="Islam.io.vn" />
       <meta name="robots" content="index, follow" />
       <meta name="language" content="Vietnamese" />
 
       {/* App-specific Meta Tags */}
-      <meta name="application-name" content="Muslim Việt" />
-      <meta name="apple-mobile-web-app-title" content="Muslim Việt" />
+      <meta name="application-name" content="Islam.io.vn" />
+      <meta name="apple-mobile-web-app-title" content="Islam.io.vn" />
       <meta name="apple-mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       <meta name="mobile-web-app-capable" content="yes" />

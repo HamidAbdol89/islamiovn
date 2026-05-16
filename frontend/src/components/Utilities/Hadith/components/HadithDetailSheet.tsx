@@ -52,7 +52,7 @@ ${selectedHadith.hadeeth.replace(/<[^>]*>/g, '')}
 
 📚 ${selectedHadith.attribution}
 
-🔗 Từ ứng dụng Muslim Việt`;
+🔗 Từ islam.io.vn`;
     
     try {
       switch (method) {

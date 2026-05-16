@@ -192,7 +192,7 @@ export const generateZakatPDF = async (data: ZakatPDFData): Promise<void> => {
   yPosition = 280;
   doc.setFontSize(8);
   doc.setTextColor(100, 100, 100);
-  doc.text('Được tạo bởi Muslim Việt - Máy tính Zakat', 105, yPosition, { align: 'center' });
+  doc.text('Được tạo bởi Islam.io.vn - Máy tính Zakat', 105, yPosition, { align: 'center' });
   doc.text(`Tạo lúc: ${new Date().toLocaleString('vi-VN')}`, 105, yPosition + 5, { align: 'center' });
 
   // Save the PDF

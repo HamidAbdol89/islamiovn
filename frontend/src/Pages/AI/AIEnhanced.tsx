@@ -311,7 +311,7 @@ const MiraAIEnhanced: React.FC = () => {
   const handleShare = async (message: StreamingMessage) => {
     try {
       const shareData = {
-        title: 'Muslim Việt AI Chat',
+        title: 'Islam.io.vn AI Chat',
         text: message.content,
         url: window.location.href
       };
@@ -323,7 +323,7 @@ const MiraAIEnhanced: React.FC = () => {
         });
       } else {
         // Fallback to clipboard
-        await navigator.clipboard.writeText(`${message.content}\n\n- Muslim Việt AI`);
+        await navigator.clipboard.writeText(`${message.content}\n\n- Islam.io.vn AI`);
         toast.success('📋 Đã sao chép vào clipboard', {
           duration: 2000
         });
@@ -367,7 +367,7 @@ const MiraAIEnhanced: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `muslim-viet-ai-chat-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `islamiovn-ai-chat-${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

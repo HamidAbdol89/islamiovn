@@ -170,7 +170,7 @@ const PrayerTimesCalculator = memo(() => {
         <SEOHead
           title="Giờ cầu nguyện"
           description="Xem giờ giấc cầu nguyện chính xác theo vị trí của bạn. Bao gồm Fajr, Dhuhr, Asr, Maghrib, Isha với thời gian chính xác."
-          url="https://muslimviet.vercel.app/utilities/prayers"
+          url="https://islam.io.vn/cau-nguyen"
           keywords={['lịch cầu nguyện', 'prayer times', 'salah', 'namaz']}
         />
       </React.Suspense>

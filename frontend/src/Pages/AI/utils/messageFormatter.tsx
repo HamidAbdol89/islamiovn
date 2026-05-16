@@ -1,9 +1,9 @@
 /**
- * @fileoverview Message Formatter Component for HamidVerse AI
+ * @fileoverview Message Formatter Component for Islam.io.vn AI
  * A modern, intelligent message formatting system designed specifically for the Vietnamese Muslim community.
  * Features include Islamic content handling, emotional analysis, and smart formatting.
  * 
- * @author HamidVerse Team
+ * @author Islam.io.vn Team
  * @version 2.0.0
  * @license MIT
  */

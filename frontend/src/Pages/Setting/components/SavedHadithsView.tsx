@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from '@/lib/toast';
+import { ROUTES } from '@/lib/routes';
 import { useSimpleBookmarkService } from '@/services/simpleBookmarkService';
 import { useSimpleFavoriteService } from '@/services/simpleFavoriteService';
 import { hadithApi } from '@/components/Utilities/Hadith/api';
@@ -99,7 +100,7 @@ const SavedHadithsView = memo<SavedHadithsViewProps>(({ onBack }) => {
 
   // Share functionality
   const shareHadith = useCallback(async (hadith: HadithDetail, method: 'copy' | 'whatsapp' | 'telegram') => {
-    const shareText = `📖 ${hadith.title}\n\n${hadith.hadeeth.replace(/<[^>]*>/g, '')}\n\n📚 ${hadith.attribution}\n\n🔗 Từ ứng dụng Muslim Việt`;
+    const shareText = `📖 ${hadith.title}\n\n${hadith.hadeeth.replace(/<[^>]*>/g, '')}\n\n📚 ${hadith.attribution}\n\n🔗 Từ islam.io.vn`;
     
     try {
       switch (method) {
@@ -354,7 +355,7 @@ const SavedHadithsView = memo<SavedHadithsViewProps>(({ onBack }) => {
             <p className="text-muted-foreground mb-4">
               Bạn cần đăng nhập để xem các hadith đã lưu
             </p>
-            <Button onClick={() => window.location.href = '/setting'}>
+            <Button onClick={() => window.location.href = ROUTES.SETTING}>
               Đăng nhập ngay
             </Button>
           </div>

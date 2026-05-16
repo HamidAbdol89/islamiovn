@@ -1,4 +1,4 @@
-// D:\Projects\muslimviet\src\components\Utilities\Quran\QuranPlayer.tsx
+// frontend/src/components/Utilities/Quran/QuranPlayer.tsx
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Play, Pause, SkipBack, SkipForward, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';

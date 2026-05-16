@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 
@@ -11,6 +12,7 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
@@ -57,8 +59,8 @@ export default defineConfig({
         ],
       },
       manifest: {
-        name: "Muslim Việt",
-        short_name: "Muslim Việt",
+        name: "Islam.io.vn",
+        short_name: "Islam.io.vn",
         description: "Ứng dụng toàn diện cho cộng đồng Hồi giáo Việt Nam",
         lang: "vi",
         start_url: "/",
@@ -85,7 +87,7 @@ export default defineConfig({
             name: "Lịch Cầu Nguyện",
             short_name: "Prayers",
             description: "Xem lịch cầu nguyện hôm nay",
-            url: "/prayers",
+            url: "/cau-nguyen",
             icons: [{ src: "icons/prayer-shortcut.png", sizes: "96x96" }]
           },
           {

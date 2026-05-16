@@ -8,7 +8,7 @@ import { registerRoute } from 'workbox-routing';
 import { NetworkFirst, CacheFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 
-const APP_PREFIX = 'muslim-viet';
+const APP_PREFIX = 'islamiovn';
 
 // ⚡ Precache
 precacheAndRoute(self.__WB_MANIFEST || []);

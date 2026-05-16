@@ -56,7 +56,7 @@ ${item.ayahText}
 
 ${item.translation ? `📖 ${item.translation}
 
-` : ''}🔗 Từ ứng dụng Muslim Việt`;
+` : ''}🔗 Từ islam.io.vn`;
     
     try {
       switch (method) {

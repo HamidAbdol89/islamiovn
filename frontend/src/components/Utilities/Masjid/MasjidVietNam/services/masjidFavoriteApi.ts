@@ -42,7 +42,7 @@ export interface ApiResponse<T> {
 
 // Get JWT token from localStorage (same as apiService)
 const getJWTToken = (): string | null => {
-  return localStorage.getItem('muslimviet_jwt_token') || null;
+  return localStorage.getItem('islamiovn_jwt_token') || null;
 };
 
 // Create headers with JWT token

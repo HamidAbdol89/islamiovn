@@ -51,7 +51,7 @@ export class PrayerNotificationService {
       if (action === 'view') {
         // Mở trang lịch cầu nguyện khi người dùng click "Xem lịch cầu nguyện"
         window.focus();
-        window.location.href = '/utilities/prayers';
+        window.location.href = '/cau-nguyen';
       }
       // Với action 'dismiss', không cần làm gì thêm
     }

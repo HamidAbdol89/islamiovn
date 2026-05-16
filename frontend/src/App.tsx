@@ -1,6 +1,5 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { Toaster } from '@/components/ui/toaster';
 import ErrorBoundary from '@/components/App/ErrorBoundary';
 import LoadingSkeleton from '@/components/App/LoadingSkeleton';
 import AnimatedRoutes from '@/components/App/AnimatedRoutes';
@@ -50,9 +49,6 @@ const App: React.FC = () => {
 
           {/* Install Prompt */}
           <InstallButton />
-
-          {/* Toast Notifications */}
-          <Toaster />
         </div>
       </Router>
     </ErrorBoundary>

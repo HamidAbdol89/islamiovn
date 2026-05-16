@@ -9,7 +9,7 @@ import InputArea from '@/Pages/AI/InputArea';
 import AIRobotLoading from '@/Pages/AI/ResponseLoading';
 import type { MessageMetadata } from '@/Pages/AI/types/ai.types';
 // Add type declarations for external modules
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import { saveAs } from 'file-saver';
 import { ThemeProvider } from '@/Pages/AI/context-custom/ThemeContext';
 import { getApiUrl, ENV, log } from '@/lib/env';
@@ -315,15 +315,6 @@ const MiraAI: React.FC = () => {
     setError(errorDetails.message);
     toast.error(errorDetails.message, {
       duration: 5000,
-      position: 'top-center',
-      style: {
-        background: '#FEE2E2',
-        color: '#991B1B',
-        border: '1px solid #FCA5A5',
-        padding: '16px',
-        borderRadius: '8px',
-        maxWidth: '500px'
-      }
     });
 
     // Add error message to chat
@@ -384,7 +375,7 @@ const MiraAI: React.FC = () => {
   const handleShare = async (message: Message) => {
     try {
       const shareData = {
-        title: 'HamidVerse AI Chat',
+        title: 'Islam.io.vn AI Chat',
         text: message.content,
         url: window.location.href
       };
@@ -410,7 +401,7 @@ const MiraAI: React.FC = () => {
     };
 
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-    saveAs(blob, `hamidverse-chat-${new Date().toISOString()}.json`);
+    saveAs(blob, `islamiovn-chat-${new Date().toISOString()}.json`);
   };
 
   return (

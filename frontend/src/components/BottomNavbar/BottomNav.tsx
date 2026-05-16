@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { MouseEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HomeIcon, NewspaperIcon, ChatBubbleLeftRightIcon, PlayCircleIcon, Cog6ToothIcon } from "@heroicons/react/24/solid";
+import { Home, Newspaper, MessageCircle, PlayCircle, Settings } from "lucide-react";
 import { useAuth } from '@/context/AuthContext';
 
 interface TabItem {
@@ -21,14 +21,14 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) => {
   const { user, isAuthenticated } = useAuth();
   
   const tabs: TabItem[] = [
-    { key: 'home', label: 'Trang chủ', icon: HomeIcon },
-    { key: 'news', label: 'Tin tức', icon: NewspaperIcon },
-    { key: 'ai', label: 'AI', icon: ChatBubbleLeftRightIcon },
-    { key: 'video', label: 'Video', icon: PlayCircleIcon },
+    { key: 'home', label: 'Trang chủ', icon: Home },
+    { key: 'news', label: 'Tin tức', icon: Newspaper },
+    { key: 'ai', label: 'AI', icon: MessageCircle },
+    { key: 'video', label: 'Video', icon: PlayCircle },
     { 
       key: 'setting', 
       label: isAuthenticated ? 'Hồ sơ' : 'Cài đặt', 
-      icon: isAuthenticated ? null : Cog6ToothIcon,
+      icon: isAuthenticated ? null : Settings,
       avatar: isAuthenticated ? user?.picture : null
     },
   ];

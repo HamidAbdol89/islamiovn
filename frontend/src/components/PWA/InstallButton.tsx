@@ -75,7 +75,7 @@ export const InstallButton: React.FC = () => {
               <Download className="h-5 w-5 text-primary" />
             </div>
             <div className="flex-1">
-              <AlertTitle className="text-base font-semibold">Cài đặt Muslim Việt</AlertTitle>
+              <AlertTitle className="text-base font-semibold">Cài đặt Islam.io.vn</AlertTitle>
               <AlertDescription className="text-muted-foreground mt-1">
                 Truy cập nhanh và sử dụng offline
               </AlertDescription>

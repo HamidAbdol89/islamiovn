@@ -50,8 +50,8 @@ const AuthCallback: React.FC = () => {
             toast.success(AUTH_MESSAGES.LOGIN_SUCCESS);
             
             // Get redirect path and navigate
-            const redirectPath = localStorage.getItem('muslimviet_auth_redirect') || '/';
-            localStorage.removeItem('muslimviet_auth_redirect');
+            const redirectPath = localStorage.getItem('islamiovn_auth_redirect') || '/';
+            localStorage.removeItem('islamiovn_auth_redirect');
             
             setTimeout(() => {
               navigate(redirectPath, { replace: true });
@@ -65,14 +65,14 @@ const AuthCallback: React.FC = () => {
           }
         }
         // Check for auth success from callback
-        const authSuccess = localStorage.getItem('muslimviet_auth_success');
-        const authError = localStorage.getItem('muslimviet_auth_error');
+        const authSuccess = localStorage.getItem('islamiovn_auth_success');
+        const authError = localStorage.getItem('islamiovn_auth_error');
 
         if (authSuccess) {
-          localStorage.removeItem('muslimviet_auth_success');
+          localStorage.removeItem('islamiovn_auth_success');
           
           // Get Google token from callback.js
-          const googleToken = localStorage.getItem('muslimviet_google_token');
+          const googleToken = localStorage.getItem('islamiovn_google_token');
           console.log('AuthCallback: Processing success with Google token:', googleToken);
           
           if (googleToken) {
@@ -87,9 +87,9 @@ const AuthCallback: React.FC = () => {
               toast.success(AUTH_MESSAGES.LOGIN_SUCCESS);
               
               // Clean up Google token
-              localStorage.removeItem('muslimviet_google_token');
+              localStorage.removeItem('islamiovn_google_token');
               
-              console.log('AuthCallback: JWT token saved:', localStorage.getItem('muslimviet_jwt_token'));
+              console.log('AuthCallback: JWT token saved:', localStorage.getItem('islamiovn_jwt_token'));
             } catch (error) {
               console.error('AuthCallback: Backend auth failed:', error);
               setError('Authentication failed');
@@ -99,7 +99,7 @@ const AuthCallback: React.FC = () => {
             console.log('AuthCallback: No Google token found in localStorage');
           }
         } else if (authError) {
-          localStorage.removeItem('muslimviet_auth_error');
+          localStorage.removeItem('islamiovn_auth_error');
           console.log('AuthCallback: Processing error:', authError);
           setError(authError);
           toast.error(authError);
@@ -108,8 +108,8 @@ const AuthCallback: React.FC = () => {
         }
 
         // Get the redirect path or default to home
-        const redirectPath = localStorage.getItem('muslimviet_auth_redirect') || '/';
-        localStorage.removeItem('muslimviet_auth_redirect');
+        const redirectPath = localStorage.getItem('islamiovn_auth_redirect') || '/';
+        localStorage.removeItem('islamiovn_auth_redirect');
         
         // Redirect after processing
         setTimeout(() => {

@@ -7,8 +7,8 @@ export const THEME_OPTIONS: readonly ThemeOption[] = [
 ] as const;
 
 export const SHARE_DATA = {
-  title: 'Muslim Việt - Ứng dụng Hồi giáo',
-  text: 'Khám phá ứng dụng Muslim Việt với đầy đủ tính năng: Lịch Hijri, Hadith, Tin tức Hồi giáo và nhiều hơn nữa!',
+  title: 'Islam.io.vn - Ứng dụng Hồi giáo',
+  text: 'Khám phá Islam.io.vn với đầy đủ tính năng: Lịch Hijri, Hadith, Tin tức Hồi giáo và nhiều hơn nữa!',
 } as const;
 
 export const MESSAGES = {

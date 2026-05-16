@@ -244,7 +244,7 @@ const AnimatedRoutes: React.FC = () => {
           
           {/* Masjid List Route - Exact path */}
           <Route 
-            path="/utilities/masjid-vietnam" 
+            path={ROUTES.UTILITIES.MASJID_VIET_NAM}
             element={
               <AnimatedPage>
                 <Suspense fallback={<LoadingSpinner />}>

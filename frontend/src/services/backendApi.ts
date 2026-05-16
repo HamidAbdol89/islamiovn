@@ -10,7 +10,7 @@ const fixLocalhostPortTypo = (url: string) => url
 
 const DEFAULT_BASE = (typeof window !== 'undefined' && window.location.hostname === 'localhost')
   ? 'http://localhost:3000/api'
-  : 'https://muslimviet-user.onrender.com/api';
+  : 'https://islamiovn-user.onrender.com/api';
 
 const API_BASE_URL = (() => {
   if (!isValidUrl(ENV_API_BASE)) return DEFAULT_BASE;
@@ -28,19 +28,19 @@ class ApiService {
   }
 
   private loadToken() {
-    this.token = localStorage.getItem('muslimviet_jwt_token');
+    this.token = localStorage.getItem('islamiovn_jwt_token');
   }
 
   private setToken(token: string) {
     console.log('BackendAPI: Setting JWT token:', token ? 'exists' : 'missing');
     this.token = token;
-    localStorage.setItem('muslimviet_jwt_token', token);
+    localStorage.setItem('islamiovn_jwt_token', token);
     console.log('BackendAPI: JWT token saved to localStorage');
   }
 
   private clearToken() {
     this.token = null;
-    localStorage.removeItem('muslimviet_jwt_token');
+    localStorage.removeItem('islamiovn_jwt_token');
   }
 
   private async request<T>(

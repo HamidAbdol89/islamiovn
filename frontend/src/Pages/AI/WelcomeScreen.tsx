@@ -208,7 +208,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             transition={{ delay: prefersReducedMotion ? 0 : 1, duration: 0.8 }}
             style={{ willChange: 'opacity' }}
           >
-            Trợ lý AI cho cộng đồng Muslim Việt Nam
+            Trợ lý AI cho cộng đồng Hồi giáo Việt Nam
           </motion.p>
         </motion.div>
 
