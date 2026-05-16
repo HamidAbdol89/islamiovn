@@ -6,7 +6,7 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const http = require('http');
 const { toNodeHandler } = require('better-auth/node');
-const { createAuth } = require('./lib/auth');
+const { createAuth, closeAuth } = require('./lib/auth');
 const websocketService = require('./services/websocketService');
 require('dotenv').config();
 
@@ -51,12 +51,12 @@ app.get('/api/health', (req, res) => {
 
 // ─── Bootstrap: connect DB → init auth → start server ────────────────────────
 async function bootstrap() {
-  // 1. Connect MongoDB
+  // 1. Connect MongoDB (mongoose for app models)
   await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/muslimviet');
-  console.log('✅ Connected to MongoDB');
+  console.log('✅ Connected to MongoDB (mongoose)');
 
-  // 2. Init Better Auth (needs DB connection)
-  const auth = createAuth(mongoose);
+  // 2. Init Better Auth with its own MongoClient (avoids bson version conflict)
+  const auth = await createAuth();
 
   // 3. Mount Better Auth handler BEFORE other routes
   //    Express 5 wildcard syntax: /api/auth/{*splat}
@@ -97,6 +97,7 @@ async function bootstrap() {
   const shutdown = (signal) => {
     console.log(`🛑 ${signal} — shutting down`);
     websocketService.close();
+    closeAuth().catch(() => {});
     server.close(() => process.exit(0));
   };
   process.on('SIGTERM', () => shutdown('SIGTERM'));

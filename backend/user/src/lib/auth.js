@@ -1,53 +1,39 @@
 const { betterAuth } = require('better-auth');
 const { mongodbAdapter } = require('better-auth/adapters/mongodb');
+const { MongoClient } = require('mongodb'); // top-level mongodb driver (bson 6.x)
 
 let authInstance = null;
+let mongoClient = null;
 
 /**
- * Initialize Better Auth with MongoDB.
- * Must be called after mongoose connects so we can reuse its connection.
- *
- * Better Auth terminology:
- *   baseURL   = URL of THIS backend server (Auth Server)
- *   basePath  = path where auth routes are mounted (default: /api/auth)
- *   trustedOrigins = frontend URLs allowed to make cross-origin requests
- *
- * @param {import('mongoose')} mongoose - connected mongoose instance
+ * Initialize Better Auth with its OWN MongoDB client.
+ * Do NOT reuse mongoose connection — they use different bson versions.
  */
-function createAuth(mongoose) {
-  const client = mongoose.connection.getClient();
-  const db = client.db();
+async function createAuth() {
+  // Create a separate MongoClient for Better Auth
+  // This avoids bson version conflict with mongoose's bundled mongodb
+  mongoClient = new MongoClient(process.env.MONGODB_URI);
+  await mongoClient.connect();
 
-  // Build trusted origins from env — supports comma-separated list
+  const db = mongoClient.db();
+
   const extraOrigins = process.env.TRUSTED_ORIGINS
     ? process.env.TRUSTED_ORIGINS.split(',').map((o) => o.trim())
     : [];
 
   const trustedOrigins = [
-    process.env.FRONTEND_URL,   // https://islam.io.vn
-    'http://localhost:5173',    // local dev
-    'http://localhost:4173',    // vite preview
+    process.env.FRONTEND_URL,
+    'http://localhost:5173',
+    'http://localhost:4173',
     ...extraOrigins,
   ].filter(Boolean);
 
   authInstance = betterAuth({
-    // ── Server identity ──────────────────────────────────────────────────────
-    // URL of this backend (Auth Server) — e.g. https://islamiovn-api.onrender.com
     baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
-
-    // Path where Better Auth handler is mounted in Express
-    // Must match the app.all() path in server.js
     basePath: '/api/auth',
-
-    // ── Security ──────────────────────────────────────────────────────────────
     secret: process.env.BETTER_AUTH_SECRET,
     trustedOrigins,
-
-    // ── Database ──────────────────────────────────────────────────────────────
     database: mongodbAdapter(db),
-    // Better Auth auto-creates collections: user, session, account, verification
-
-    // ── Social providers ──────────────────────────────────────────────────────
     socialProviders: {
       google: {
         clientId: process.env.GOOGLE_CLIENT_ID,
@@ -66,4 +52,8 @@ function getAuth() {
   return authInstance;
 }
 
-module.exports = { createAuth, getAuth };
+async function closeAuth() {
+  if (mongoClient) await mongoClient.close();
+}
+
+module.exports = { createAuth, getAuth, closeAuth };
