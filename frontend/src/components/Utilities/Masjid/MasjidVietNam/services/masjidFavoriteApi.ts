@@ -20,6 +20,7 @@ export interface FavoriteUser {
     id: string;
     name: string;
     picture: string;
+    googleId?: string;
   };
   favoriteInfo: {
     createdAt: string;
