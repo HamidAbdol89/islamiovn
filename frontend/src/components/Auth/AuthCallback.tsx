@@ -1,44 +1,69 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { toast, toastPatterns } from '@/lib/toast';
-import { useAuth } from '@/context/AuthContext';
+import { authClient } from '@/lib/auth-client';
 import { AUTH_MESSAGES } from '@/Pages/Setting/components/constants';
 
 /**
- * Better Auth handles the OAuth callback automatically via its own route handler.
- * This component is shown while the session is being established, then redirects.
+ * Better Auth OAuth callback handler.
+ * After Google redirects back here, Better Auth has already set the session cookie.
+ * We just need to verify the session is active then redirect.
  */
 const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
-  const { user, isLoading, error } = useAuth();
-  const hasRedirected = useRef(false);
+  const hasProcessed = useRef(false);
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [userName, setUserName] = useState<string>('');
 
   useEffect(() => {
-    if (hasRedirected.current) return;
+    if (hasProcessed.current) return;
+    hasProcessed.current = true;
 
-    // Wait until Better Auth finishes loading the session
-    if (isLoading) return;
+    const processCallback = async () => {
+      // Check URL for error param from Better Auth
+      const params = new URLSearchParams(window.location.search);
+      const error = params.get('error');
 
-    hasRedirected.current = true;
+      if (error) {
+        setStatus('error');
+        toast.error(`Đăng nhập thất bại: ${error}`);
+        setTimeout(() => navigate('/', { replace: true }), 2000);
+        return;
+      }
 
-    if (error) {
-      toast.error(error);
-      setTimeout(() => navigate('/', { replace: true }), 1500);
-      return;
-    }
+      // Poll for session — Better Auth may need a moment to finalize
+      let session = null;
+      for (let i = 0; i < 5; i++) {
+        try {
+          const result = await authClient.getSession();
+          if (result?.data?.user) {
+            session = result.data;
+            break;
+          }
+        } catch {
+          // ignore, retry
+        }
+        await new Promise((r) => setTimeout(r, 600));
+      }
 
-    if (user) {
-      toastPatterns.loginSuccess(user.name);
-    } else {
-      toast.error(AUTH_MESSAGES.LOGIN_ERROR);
-    }
+      if (session?.user) {
+        setUserName(session.user.name || '');
+        setStatus('success');
+        toastPatterns.loginSuccess(session.user.name || 'bạn');
 
-    const redirectPath = localStorage.getItem('islamiovn_auth_redirect') || '/';
-    localStorage.removeItem('islamiovn_auth_redirect');
+        const redirectPath = localStorage.getItem('islamiovn_auth_redirect') || '/';
+        localStorage.removeItem('islamiovn_auth_redirect');
+        setTimeout(() => navigate(redirectPath, { replace: true }), 1000);
+      } else {
+        setStatus('error');
+        toast.error(AUTH_MESSAGES.LOGIN_ERROR);
+        setTimeout(() => navigate('/', { replace: true }), 2000);
+      }
+    };
 
-    setTimeout(() => navigate(redirectPath, { replace: true }), 1200);
-  }, [isLoading, user, error, navigate]);
+    processCallback();
+  }, [navigate]);
 
   return (
     <motion.div
@@ -48,12 +73,18 @@ const AuthCallback: React.FC = () => {
       className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-indigo-100 dark:from-slate-900 dark:to-indigo-900 p-4"
     >
       <div className="text-center max-w-md mx-auto">
-        <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        {status !== 'error' && (
+          <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        )}
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-4">
-          Đang xử lý đăng nhập...
+          {status === 'success'
+            ? `Chào mừng ${userName}!`
+            : status === 'error'
+            ? 'Đăng nhập thất bại'
+            : 'Đang xử lý đăng nhập...'}
         </h1>
         <p className="text-slate-600 dark:text-slate-400">
-          {user ? `Chào mừng ${user.name}!` : 'Vui lòng đợi trong giây lát'}
+          {status === 'loading' ? 'Vui lòng đợi trong giây lát' : ''}
         </p>
       </div>
     </motion.div>
