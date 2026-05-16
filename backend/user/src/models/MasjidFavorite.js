@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 
 const masjidFavoriteSchema = new mongoose.Schema({
   userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    type: String,   // Better Auth user ID (string, not ObjectId)
+    required: true,
+    index: true,
   },
   masjidId: {
     type: String,
@@ -99,7 +99,6 @@ masjidFavoriteSchema.statics.getUsersWhoFavorited = function(masjidId, options =
   })
     .sort({ createdAt: -1 })
     .limit(limit)
-    .populate('userId', 'name picture googleId')
     .select('userId createdAt hasVisited rating');
 };
 

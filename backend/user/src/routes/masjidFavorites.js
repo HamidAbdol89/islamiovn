@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const MasjidFavorite = require('../models/MasjidFavorite');
-const { authenticateToken, optionalAuth } = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/auth');
 const websocketService = require('../services/websocketService');
 
 // @route   POST /api/masjid-favorites

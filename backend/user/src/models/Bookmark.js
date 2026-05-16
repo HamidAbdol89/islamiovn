@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 
 const bookmarkSchema = new mongoose.Schema({
   userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    type: String,   // Better Auth user ID (string, not ObjectId)
+    required: true,
+    index: true,
   },
   type: {
     type: String,
@@ -81,7 +81,7 @@ bookmarkSchema.methods.incrementView = function() {
 };
 
 
-// Static method to get user bookmarks by type
+// Remove populate reference since userId is now a plain string
 bookmarkSchema.statics.getUserBookmarks = function(userId, type, options = {}) {
   const query = { userId };
   if (type) query.type = type;
@@ -93,8 +93,7 @@ bookmarkSchema.statics.getUserBookmarks = function(userId, type, options = {}) {
   return this.find(query)
     .sort(sort)
     .skip(skip)
-    .limit(limit)
-    .populate('userId', 'name email picture');
+    .limit(limit);
 };
 
 // Static method to get popular bookmarks
@@ -104,8 +103,7 @@ bookmarkSchema.statics.getPopularBookmarks = function(type, limit = 10) {
     isPublic: true 
   })
     .sort({ viewCount: -1 })
-    .limit(limit)
-    .populate('userId', 'name picture');
+    .limit(limit);
 };
 
 module.exports = mongoose.model('Bookmark', bookmarkSchema);

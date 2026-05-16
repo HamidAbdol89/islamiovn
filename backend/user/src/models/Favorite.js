@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 
 const favoriteSchema = new mongoose.Schema({
   userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    type: String,   // Better Auth user ID (string, not ObjectId)
+    required: true,
+    index: true,
   },
   type: {
     type: String,
@@ -92,8 +92,7 @@ favoriteSchema.statics.getUserFavorites = function(userId, type, options = {}) {
   return this.find(query)
     .sort(sort)
     .skip(skip)
-    .limit(limit)
-    .populate('userId', 'name email picture');
+    .limit(limit);
 };
 
 // Static method to get popular favorites
@@ -103,8 +102,7 @@ favoriteSchema.statics.getPopularFavorites = function(type, limit = 10) {
     isPublic: true 
   })
     .sort({ viewCount: -1 })
-    .limit(limit)
-    .populate('userId', 'name picture');
+    .limit(limit);
 };
 
 module.exports = mongoose.model('Favorite', favoriteSchema);

@@ -1,150 +1,49 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const { getAuth } = require('../lib/auth');
 
-// Middleware to verify JWT token
+/**
+ * Require a valid Better Auth session.
+ * Attaches req.user (Better Auth user object) and req.session.
+ */
 const authenticateToken = async (req, res, next) => {
   try {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    const auth = getAuth();
+    const session = await auth.api.getSession({ headers: req.headers });
 
-    if (!token) {
+    if (!session?.user) {
       return res.status(401).json({
         success: false,
-        message: 'Access token required'
+        message: 'Authentication required',
       });
     }
 
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
-    // Get user from database
-    const user = await User.findById(decoded.userId).select('-__v');
-    
-    if (!user || !user.isActive) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid token or user not found'
-      });
-    }
-
-    // Add user to request object
-    req.user = user;
+    req.user = session.user;
+    req.session = session.session;
     next();
   } catch (error) {
     console.error('Auth middleware error:', error);
-    
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid token'
-      });
-    }
-    
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({
-        success: false,
-        message: 'Token expired'
-      });
-    }
-
-    return res.status(500).json({
-      success: false,
-      message: 'Authentication error'
-    });
-  }
-};
-
-// Middleware to verify Google OAuth token
-const authenticateGoogleToken = async (req, res, next) => {
-  try {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    console.log('Auth middleware: Received token:', token ? 'exists' : 'missing');
-
-    if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: 'Google access token required'
-      });
-    }
-
-    console.log('Auth middleware: Verifying token with Google...');
-    // Verify token with Google
-    const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    console.log('Auth middleware: Google response status:', response.status);
-
-    if (!response.ok) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid Google token'
-      });
-    }
-
-    const googleUser = await response.json();
-    console.log('Auth middleware: Google user:', googleUser.email);
-    
-    // Find or create user
-    let user = await User.findOne({ googleId: googleUser.id });
-    
-    if (!user) {
-      console.log('Auth middleware: Creating new user');
-      // Create new user
-      user = new User({
-        googleId: googleUser.id,
-        email: googleUser.email,
-        name: googleUser.name,
-        picture: googleUser.picture,
-        verified_email: googleUser.verified_email
-      });
-      await user.save();
-    } else {
-      console.log('Auth middleware: Found existing user');
-      // Update last login
-      await user.updateLastLogin();
-    }
-
-    req.user = user;
-    req.googleToken = token;
-    next();
-  } catch (error) {
-    console.error('Google auth middleware error:', error);
     return res.status(401).json({
       success: false,
-      message: 'Google authentication failed'
+      message: 'Authentication failed',
     });
   }
 };
 
-// Optional authentication (doesn't fail if no token)
+/**
+ * Optional authentication — attaches req.user if session exists, continues either way.
+ */
 const optionalAuth = async (req, res, next) => {
   try {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+    const auth = getAuth();
+    const session = await auth.api.getSession({ headers: req.headers });
 
-    if (token) {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const user = await User.findById(decoded.userId).select('-__v');
-      
-      if (user && user.isActive) {
-        req.user = user;
-      }
+    if (session?.user) {
+      req.user = session.user;
+      req.session = session.session;
     }
-    
-    next();
-  } catch (error) {
-    // Continue without authentication
-    next();
+  } catch {
+    // No session — continue unauthenticated
   }
+  next();
 };
 
-module.exports = {
-  authenticateToken,
-  authenticateGoogleToken,
-  optionalAuth
-};
+module.exports = { authenticateToken, optionalAuth };

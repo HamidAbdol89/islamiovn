@@ -1,15 +1,25 @@
-// API service for masjid favorites with backend integration
+/**
+ * Masjid Favorites API — uses Better Auth session cookie (credentials: 'include').
+ * No JWT in localStorage.
+ */
 import type { MasjidViet } from '../types';
 
-const API_BASE_URL_USER = import.meta.env.VITE_API_URL_USER;
+const RAW_BASE = import.meta.env.VITE_API_URL_USER as string | undefined;
+// Strip trailing /api if present so we can append paths cleanly
+const API_BASE = RAW_BASE
+  ? RAW_BASE.replace(/\/api\/?$/, '')
+  : typeof window !== 'undefined' && window.location.hostname === 'localhost'
+    ? 'http://localhost:3000'
+    : 'https://islamiovn-api.onrender.com';
 
-// Types for API responses
+const BASE = `${API_BASE}/api/masjid-favorites`;
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 export interface FavoriteUser {
   user: {
     id: string;
     name: string;
     picture: string;
-    googleId: string;
   };
   favoriteInfo: {
     createdAt: string;
@@ -19,7 +29,6 @@ export interface FavoriteUser {
 }
 
 export interface MasjidFavoriteData {
-  userId: string;
   masjidId: string;
   masjidName: string;
   masjidCity: string;
@@ -40,26 +49,7 @@ export interface ApiResponse<T> {
   data?: T;
 }
 
-// Get JWT token from localStorage (same as apiService)
-const getJWTToken = (): string | null => {
-  return localStorage.getItem('islamiovn_jwt_token') || null;
-};
-
-// Create headers with JWT token
-const createHeaders = (): HeadersInit => {
-  const token = getJWTToken();
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-  };
-  
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-  
-  return headers;
-};
-
-// Handle API errors
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 const handleApiError = async (response: Response) => {
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
@@ -68,27 +58,31 @@ const handleApiError = async (response: Response) => {
   return response.json();
 };
 
+/** Authenticated fetch — sends Better Auth session cookie automatically */
+const authFetch = (url: string, options: RequestInit = {}) =>
+  fetch(url, { ...options, credentials: 'include' });
+
+/** Public fetch — no credentials needed */
+const publicFetch = (url: string, options: RequestInit = {}) =>
+  fetch(url, { ...options, credentials: 'omit' });
+
+const JSON_HEADERS = { 'Content-Type': 'application/json' };
+
+// ─── API ──────────────────────────────────────────────────────────────────────
 export const masjidFavoriteApi = {
-  // PERFORMANCE: Get favorite data for multiple masjids at once
-  async getBatchMasjidData(masjidIds: string[], limit = 10): Promise<ApiResponse<{ [masjidId: string]: { users: FavoriteUser[]; totalCount: number } }>> {
-    const params = new URLSearchParams();
-    params.append('masjidIds', masjidIds.join(','));
-    params.append('limit', limit.toString());
-
-    const response = await fetch(`${API_BASE_URL_USER}/masjid-favorites/batch?${params}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-
+  /** Get favorite data for multiple masjids at once (public) */
+  async getBatchMasjidData(
+    masjidIds: string[],
+    limit = 10
+  ): Promise<ApiResponse<{ [masjidId: string]: { users: FavoriteUser[]; totalCount: number } }>> {
+    const params = new URLSearchParams({ masjidIds: masjidIds.join(','), limit: String(limit) });
+    const response = await publicFetch(`${BASE}/batch?${params}`, { headers: JSON_HEADERS });
     return handleApiError(response);
   },
 
-  // Add masjid to favorites
-  async addFavorite(masjid: MasjidViet, additionalData?: Partial<MasjidFavoriteData>): Promise<ApiResponse<any>> {
-    const favoriteData: MasjidFavoriteData = {
-      userId: '', // Will be set by backend from token
+  /** Add masjid to favorites */
+  async addFavorite(masjid: MasjidViet, extra?: Partial<MasjidFavoriteData>): Promise<ApiResponse<any>> {
+    const body: MasjidFavoriteData = {
       masjidId: masjid.id,
       masjidName: masjid.ten || '',
       masjidCity: masjid.thanhPho || '',
@@ -97,29 +91,23 @@ export const masjidFavoriteApi = {
       masjidImage: masjid.hinhAnh,
       isPublic: true,
       hasVisited: false,
-      ...additionalData
+      ...extra,
     };
-
-    const response = await fetch(`${API_BASE_URL_USER}/masjid-favorites`, {
+    const response = await authFetch(BASE, {
       method: 'POST',
-      headers: createHeaders(),
-      body: JSON.stringify(favoriteData)
+      headers: JSON_HEADERS,
+      body: JSON.stringify(body),
     });
-
     return handleApiError(response);
   },
 
-  // Remove masjid from favorites
+  /** Remove masjid from favorites */
   async removeFavorite(masjidId: string): Promise<ApiResponse<any>> {
-    const response = await fetch(`${API_BASE_URL_USER}/masjid-favorites/${masjidId}`, {
-      method: 'DELETE',
-      headers: createHeaders()
-    });
-
+    const response = await authFetch(`${BASE}/${masjidId}`, { method: 'DELETE', headers: JSON_HEADERS });
     return handleApiError(response);
   },
 
-  // Get user's favorite masjids
+  /** Get current user's favorite masjids */
   async getUserFavorites(options?: {
     page?: number;
     limit?: number;
@@ -127,107 +115,78 @@ export const masjidFavoriteApi = {
     hasVisited?: boolean;
   }): Promise<ApiResponse<{ favorites: any[]; pagination: any }>> {
     const params = new URLSearchParams();
-    if (options?.page) params.append('page', options.page.toString());
-    if (options?.limit) params.append('limit', options.limit.toString());
+    if (options?.page) params.append('page', String(options.page));
+    if (options?.limit) params.append('limit', String(options.limit));
     if (options?.region) params.append('region', options.region);
-    if (options?.hasVisited !== undefined) params.append('hasVisited', options.hasVisited.toString());
-
-    const response = await fetch(`${API_BASE_URL_USER}/masjid-favorites/my?${params}`, {
-      method: 'GET',
-      headers: createHeaders()
-    });
-
+    if (options?.hasVisited !== undefined) params.append('hasVisited', String(options.hasVisited));
+    const response = await authFetch(`${BASE}/my?${params}`, { headers: JSON_HEADERS });
     return handleApiError(response);
   },
 
-  // Get users who favorited a specific masjid (for avatar display) - PUBLIC ENDPOINT
-  async getMasjidFavoriteUsers(masjidId: string, limit = 10): Promise<ApiResponse<{ users: FavoriteUser[]; totalCount: number }>> {
-    const response = await fetch(`${API_BASE_URL_USER}/masjid-favorites/masjid/${masjidId}/users?limit=${limit}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-        // No Authorization header - this is a public endpoint
-      }
-    });
-
+  /** Get users who favorited a specific masjid — public */
+  async getMasjidFavoriteUsers(
+    masjidId: string,
+    limit = 10
+  ): Promise<ApiResponse<{ users: FavoriteUser[]; totalCount: number }>> {
+    const response = await publicFetch(
+      `${BASE}/masjid/${masjidId}/users?limit=${limit}`,
+      { headers: JSON_HEADERS }
+    );
     return handleApiError(response);
   },
 
-  // Get masjid statistics - PUBLIC ENDPOINT
+  /** Get masjid statistics — public */
   async getMasjidStats(masjidId: string): Promise<ApiResponse<{
     totalFavorites: number;
     averageRating: number;
     visitedCount: number;
     ratingDistribution: number[];
   }>> {
-    const response = await fetch(`${API_BASE_URL_USER}/masjid-favorites/masjid/${masjidId}/stats`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-        // No Authorization header - this is a public endpoint
-      }
-    });
-
+    const response = await publicFetch(`${BASE}/masjid/${masjidId}/stats`, { headers: JSON_HEADERS });
     return handleApiError(response);
   },
 
-  // Check if user has favorited a masjid
+  /** Check if current user has favorited a masjid */
   async checkIsFavorited(masjidId: string): Promise<ApiResponse<{ isFavorited: boolean; favoriteId?: string }>> {
-    const response = await fetch(`${API_BASE_URL_USER}/masjid-favorites/check/${masjidId}`, {
-      method: 'GET',
-      headers: createHeaders()
-    });
-
+    const response = await authFetch(`${BASE}/check/${masjidId}`, { headers: JSON_HEADERS });
     return handleApiError(response);
   },
 
-  // 🚀 BATCH: Check favorite status for multiple masjids at once
-  async batchCheckFavorites(masjidIds: string[]): Promise<ApiResponse<{ [masjidId: string]: { isFavorited: boolean; favoriteId?: string } }>> {
-    const params = new URLSearchParams();
-    params.append('masjidIds', masjidIds.join(','));
-
-    const response = await fetch(`${API_BASE_URL_USER}/masjid-favorites/batch-check?${params}`, {
-      method: 'GET',
-      headers: createHeaders()
-    });
-
+  /** Batch check favorite status for multiple masjids */
+  async batchCheckFavorites(
+    masjidIds: string[]
+  ): Promise<ApiResponse<{ [masjidId: string]: { isFavorited: boolean; favoriteId?: string } }>> {
+    const params = new URLSearchParams({ masjidIds: masjidIds.join(',') });
+    const response = await authFetch(`${BASE}/batch-check?${params}`, { headers: JSON_HEADERS });
     return handleApiError(response);
   },
 
-  // Update favorite (rating, note, visit status)
-  async updateFavorite(masjidId: string, updateData: {
-    personalNote?: string;
-    isPublic?: boolean;
-    hasVisited?: boolean;
-    visitDate?: string;
-    rating?: number;
-    tags?: string[];
-  }): Promise<ApiResponse<any>> {
-    const response = await fetch(`${API_BASE_URL_USER}/masjid-favorites/${masjidId}`, {
+  /** Update favorite details */
+  async updateFavorite(
+    masjidId: string,
+    updateData: {
+      personalNote?: string;
+      isPublic?: boolean;
+      hasVisited?: boolean;
+      visitDate?: string;
+      rating?: number;
+      tags?: string[];
+    }
+  ): Promise<ApiResponse<any>> {
+    const response = await authFetch(`${BASE}/${masjidId}`, {
       method: 'PUT',
-      headers: createHeaders(),
-      body: JSON.stringify(updateData)
+      headers: JSON_HEADERS,
+      body: JSON.stringify(updateData),
     });
-
     return handleApiError(response);
   },
 
-  // Get popular masjids
-  async getPopularMasjids(options?: {
-    limit?: number;
-    region?: string;
-  }): Promise<ApiResponse<any[]>> {
+  /** Get popular masjids — public */
+  async getPopularMasjids(options?: { limit?: number; region?: string }): Promise<ApiResponse<any[]>> {
     const params = new URLSearchParams();
-    if (options?.limit) params.append('limit', options.limit.toString());
+    if (options?.limit) params.append('limit', String(options.limit));
     if (options?.region) params.append('region', options.region);
-
-    const response = await fetch(`${API_BASE_URL_USER}/masjid-favorites/popular?${params}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-
+    const response = await publicFetch(`${BASE}/popular?${params}`, { headers: JSON_HEADERS });
     return handleApiError(response);
-  }
+  },
 };

@@ -78,14 +78,11 @@ const corsOptions = {
     if (!origin) return callback(null, true);
     
     const allowedOrigins = [
-      'http://localhost:3000',           // Development frontend
-      'http://localhost:3001',           // Alternative dev port
-      'http://localhost:5173',           // Vite dev server
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://localhost:5173',
       'http://localhost:60835',
-      'https://muslimviet.vercel.app',   // Production frontend
-      'https://muslimviet-git-main-hamidabdol89s-projects.vercel.app', // Git branch
-      'https://muslimviet-hamidabdol89s-projects.vercel.app', // User domain
-      'https://muslimviet-preview.vercel.app', // Preview domains
+      'https://islam.io.vn',
     ];
     
     // Add origins from environment variable
@@ -95,9 +92,7 @@ const corsOptions = {
     }
     
     // Allow all Vercel preview domains and localhost
-    if (origin.includes('.vercel.app') || 
-        origin.includes('localhost') || 
-        allowedOrigins.includes(origin)) {
+    if (origin.includes('localhost') || allowedOrigins.includes(origin)) {
       console.log('✅ CORS allowed origin:', origin);
       return callback(null, true);
     }
@@ -133,9 +128,7 @@ app.use((req, res, next) => {
   const origin = req.headers.origin;
   
   // Set CORS headers explicitly for all allowed origins
-  if (origin && (origin.includes('.vercel.app') || 
-                 origin.includes('localhost') ||
-                 origin === 'https://muslimviet.vercel.app')) {
+  if (origin && (origin.includes('localhost') || origin === 'https://islam.io.vn')) {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     console.log('🌐 CORS headers set for origin:', origin);

@@ -1,34 +1,9 @@
-const jwt = require('jsonwebtoken');
-
-// Generate JWT token
-const generateToken = (userId) => {
-  return jwt.sign(
-    { userId },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRE || '7d' }
-  );
-};
-
-// Verify JWT token
-const verifyToken = (token) => {
-  return jwt.verify(token, process.env.JWT_SECRET);
-};
-
-// Generate refresh token
-const generateRefreshToken = (userId) => {
-  return jwt.sign(
-    { userId, type: 'refresh' },
-    process.env.JWT_SECRET,
-    { expiresIn: '30d' }
-  );
-};
-
 // Success response helper
 const successResponse = (res, data, message = 'Success', statusCode = 200) => {
   return res.status(statusCode).json({
     success: true,
     message,
-    data
+    data,
   });
 };
 
@@ -37,7 +12,7 @@ const errorResponse = (res, message = 'Error', statusCode = 400, error = null) =
   return res.status(statusCode).json({
     success: false,
     message,
-    ...(error && process.env.NODE_ENV === 'development' && { error })
+    ...(error && process.env.NODE_ENV === 'development' && { error }),
   });
 };
 
@@ -46,7 +21,7 @@ const validationErrorResponse = (res, errors) => {
   return res.status(400).json({
     success: false,
     message: 'Validation failed',
-    errors
+    errors,
   });
 };
 
@@ -59,7 +34,7 @@ const paginate = (page = 1, limit = 20) => {
 // Format pagination response
 const formatPaginationResponse = (data, page, limit, total) => {
   const totalPages = Math.ceil(total / limit);
-  
+
   return {
     data,
     pagination: {
@@ -68,8 +43,8 @@ const formatPaginationResponse = (data, page, limit, total) => {
       totalItems: total,
       itemsPerPage: limit,
       hasNextPage: page < totalPages,
-      hasPrevPage: page > 1
-    }
+      hasPrevPage: page > 1,
+    },
   };
 };
 
@@ -102,9 +77,6 @@ const isValidObjectId = (id) => {
 };
 
 module.exports = {
-  generateToken,
-  verifyToken,
-  generateRefreshToken,
   successResponse,
   errorResponse,
   validationErrorResponse,
@@ -113,5 +85,5 @@ module.exports = {
   sanitizeUser,
   generateRandomString,
   isValidEmail,
-  isValidObjectId
+  isValidObjectId,
 };

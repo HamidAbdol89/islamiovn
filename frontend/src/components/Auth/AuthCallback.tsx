@@ -1,139 +1,54 @@
 import React, { useEffect, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { toast } from '@/lib/toast';
+import { toast, toastPatterns } from '@/lib/toast';
 import { useAuth } from '@/context/AuthContext';
 import { AUTH_MESSAGES } from '@/Pages/Setting/components/constants';
-import apiService from '@/services/backendApi';
-// Removed hybrid services - no longer needed
 
+/**
+ * Better Auth handles the OAuth callback automatically via its own route handler.
+ * This component is shown while the session is being established, then redirects.
+ */
 const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const { user, setUser, setError, exchangeCodeForToken } = useAuth();
-  const hasProcessed = useRef(false);
+  const { user, isLoading, error } = useAuth();
+  const hasRedirected = useRef(false);
 
   useEffect(() => {
-    // Prevent multiple executions
-    if (hasProcessed.current) return;
-    hasProcessed.current = true;
-    const processCallback = async () => {
-      try {
-        // Check if we have OAuth code in URL params
-        const code = searchParams.get('code');
-        const error = searchParams.get('error');
-        
-        console.log('AuthCallback: URL params:', { code: code ? 'present' : 'missing', error });
+    if (hasRedirected.current) return;
 
-        if (error) {
-          console.log('AuthCallback: OAuth error from URL:', error);
-          setError(`OAuth Error: ${error}`);
-          toast.error(`OAuth Error: ${error}`);
-          
-          // Redirect to home after error
-          setTimeout(() => {
-            navigate('/', { replace: true });
-          }, 2000);
-          return;
-        }
+    // Wait until Better Auth finishes loading the session
+    if (isLoading) return;
 
-        if (code) {
-          console.log('AuthCallback: Processing OAuth code directly');
-          
-          try {
-            // Exchange code for token using backend API
-            const userData = await exchangeCodeForToken(code);
-            console.log('AuthCallback: Got user data:', userData);
-            
-            // Set user data (backend API already handles storage)
-            setUser(userData);
-            toast.success(AUTH_MESSAGES.LOGIN_SUCCESS);
-            
-            // Get redirect path and navigate
-            const redirectPath = localStorage.getItem('islamiovn_auth_redirect') || '/';
-            localStorage.removeItem('islamiovn_auth_redirect');
-            
-            setTimeout(() => {
-              navigate(redirectPath, { replace: true });
-            }, 1500);
-            return;
-            
-          } catch (exchangeError) {
-            console.error('AuthCallback: Token exchange failed:', exchangeError);
-            setError('Token exchange failed');
-            toast.error('Đăng nhập thất bại');
-          }
-        }
-        // Check for auth success from callback
-        const authSuccess = localStorage.getItem('islamiovn_auth_success');
-        const authError = localStorage.getItem('islamiovn_auth_error');
+    hasRedirected.current = true;
 
-        if (authSuccess) {
-          localStorage.removeItem('islamiovn_auth_success');
-          
-          // Get Google token from callback.js
-          const googleToken = localStorage.getItem('islamiovn_google_token');
-          console.log('AuthCallback: Processing success with Google token:', googleToken);
-          
-          if (googleToken) {
-            try {
-              console.log('AuthCallback: Calling backend API with Google token...');
-              // Use backend API to authenticate with Google token
-              const response = await apiService.googleAuth(googleToken);
-              console.log('AuthCallback: Backend auth successful:', response);
-              
-              setUser(response.user);
-              
-              toast.success(AUTH_MESSAGES.LOGIN_SUCCESS);
-              
-              // Clean up Google token
-              localStorage.removeItem('islamiovn_google_token');
-              
-              console.log('AuthCallback: JWT token saved:', localStorage.getItem('islamiovn_jwt_token'));
-            } catch (error) {
-              console.error('AuthCallback: Backend auth failed:', error);
-              setError('Authentication failed');
-              toast.error('Đăng nhập thất bại');
-            }
-          } else {
-            console.log('AuthCallback: No Google token found in localStorage');
-          }
-        } else if (authError) {
-          localStorage.removeItem('islamiovn_auth_error');
-          console.log('AuthCallback: Processing error:', authError);
-          setError(authError);
-          toast.error(authError);
-        } else {
-          console.log('AuthCallback: No auth success or error flags found');
-        }
+    if (error) {
+      toast.error(error);
+      setTimeout(() => navigate('/', { replace: true }), 1500);
+      return;
+    }
 
-        // Get the redirect path or default to home
-        const redirectPath = localStorage.getItem('islamiovn_auth_redirect') || '/';
-        localStorage.removeItem('islamiovn_auth_redirect');
-        
-        // Redirect after processing
-        setTimeout(() => {
-          navigate(redirectPath, { replace: true });
-        }, 1500);
+    if (user) {
+      toastPatterns.loginSuccess(user.name);
+    } else {
+      toast.error(AUTH_MESSAGES.LOGIN_ERROR);
+    }
 
-      } catch (error) {
-        console.error('Callback processing error:', error);
-        navigate('/', { replace: true });
-      }
-    };
+    const redirectPath = localStorage.getItem('islamiovn_auth_redirect') || '/';
+    localStorage.removeItem('islamiovn_auth_redirect');
 
-    processCallback();
-  }, []); // Empty dependency array - only run once
+    setTimeout(() => navigate(redirectPath, { replace: true }), 1200);
+  }, [isLoading, user, error, navigate]);
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-indigo-100 dark:from-slate-900 dark:to-indigo-900 p-4"
     >
       <div className="text-center max-w-md mx-auto">
-        <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-4">
           Đang xử lý đăng nhập...
         </h1>

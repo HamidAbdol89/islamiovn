@@ -1,9 +1,8 @@
-import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useMemo, useCallback, useEffect } from 'react';
+import { authClient } from '@/lib/auth-client';
 import { toastPatterns, toast } from '@/lib/toast';
-import type { AuthContextType, GoogleUser } from '@/Pages/Setting/components/types';
 import { AUTH_MESSAGES } from '@/Pages/Setting/components/constants';
-import apiService from '@/services/backendApi';
-// Removed hybrid services - no longer needed
+import type { AuthContextType, AppUser } from '@/Pages/Setting/components/types';
 
 // Extend window interface for queryClient
 declare global {
@@ -12,89 +11,6 @@ declare global {
   }
 }
 
-// Google OAuth Configuration
-const GOOGLE_CONFIG = {
-  clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-  redirectUri: import.meta.env.VITE_GOOGLE_REDIRECT_URI,
-  scope: 'openid profile email https://www.googleapis.com/auth/userinfo.profile',
-} as const;
-
-// Backend API Authentication
-const backendAuth = {
-  signIn: async (): Promise<GoogleUser> => {
-    try {
-      // Store current location for redirect back
-      localStorage.setItem('islamiovn_auth_redirect', window.location.pathname);
-      
-      // Create OAuth URL for redirect flow
-      const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
-      authUrl.searchParams.set('client_id', GOOGLE_CONFIG.clientId);
-      authUrl.searchParams.set('redirect_uri', GOOGLE_CONFIG.redirectUri);
-      authUrl.searchParams.set('response_type', 'code');
-      authUrl.searchParams.set('scope', GOOGLE_CONFIG.scope);
-      authUrl.searchParams.set('access_type', 'offline');
-      authUrl.searchParams.set('prompt', 'consent');
-      authUrl.searchParams.set('state', 'oauth_redirect');
-
-      // Redirect to Google OAuth
-      window.location.href = authUrl.toString();
-      
-      // This promise will never resolve as we're redirecting
-      return new Promise(() => {});
-    } catch (error) {
-      console.error('Google Auth Error:', error);
-      throw error;
-    }
-  },
-
-  signOut: async (): Promise<void> => {
-    try {
-      await apiService.logout();
-    } catch (error) {
-      console.error('Sign out error:', error);
-    }
-  },
-
-  getCurrentUser: (): GoogleUser | null => {
-    // This will be handled by the backend API
-    return null;
-  },
-
-  exchangeCodeForToken: async (code: string): Promise<GoogleUser> => {
-    try {
-      // Get Google access token first
-      const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          client_id: GOOGLE_CONFIG.clientId,
-          client_secret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET,
-          code,
-          grant_type: 'authorization_code',
-          redirect_uri: GOOGLE_CONFIG.redirectUri,
-        }),
-      });
-
-      if (!tokenResponse.ok) {
-        throw new Error('Token exchange failed');
-      }
-
-      const tokenData = await tokenResponse.json();
-      const googleAccessToken = tokenData.access_token;
-
-      // Use backend API to authenticate with Google token
-      const response = await apiService.googleAuth(googleAccessToken);
-      
-      return response.user;
-    } catch (error) {
-      console.error('Token exchange error:', error);
-      throw error;
-    }
-  },
-};
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
@@ -102,90 +18,58 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = React.memo<AuthProviderProps>(({ children }) => {
-  const [user, setUser] = useState<GoogleUser | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // Better Auth reactive session — automatically updates on login/logout
+  const { data: session, isPending: isLoading, error: sessionError } = authClient.useSession();
 
-  // Initialize user from backend API
-  useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        console.log('AuthContext: Initializing auth...');
-        console.log('AuthContext: JWT token exists:', !!apiService.getToken());
-        
-        if (apiService.isAuthenticated()) {
-          console.log('AuthContext: User is authenticated, getting current user');
-          const userData = await apiService.getCurrentUser();
-          console.log('AuthContext: Got user data:', userData);
-          setUser(userData.user);
-        } else {
-          console.log('AuthContext: User not authenticated');
-        }
-      } catch (error) {
-        console.log('AuthContext: Failed to get current user, clearing auth:', error);
-        apiService.logout();
+  const user: AppUser | null = session?.user
+    ? {
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.name,
+        picture: session.user.image ?? undefined,
+        verified_email: session.user.emailVerified ?? false,
       }
-    };
+    : null;
 
-    initializeAuth();
-  }, []);
+  const isAuthenticated = user !== null;
+
+  // Invalidate React Query cache when auth state changes
+  useEffect(() => {
+    if (window.queryClient) {
+      window.queryClient.invalidateQueries(['hadith-favorites']);
+      window.queryClient.invalidateQueries(['hadith-bookmarks']);
+      window.queryClient.invalidateQueries(['hadith-favorites-count']);
+      window.queryClient.invalidateQueries(['hadith-bookmarks-count']);
+    }
+  }, [isAuthenticated]);
 
   const login = useCallback(async (): Promise<void> => {
     try {
-      setIsLoading(true);
-      setError(null);
-      
-      const userData = await backendAuth.signIn();
-      
-      // Store user data
-      setUser(userData);
-      
-      // Clear React Query cache to force refresh
-      if (window.queryClient) {
-        window.queryClient.invalidateQueries(['hadith-favorites']);
-        window.queryClient.invalidateQueries(['hadith-bookmarks']);
-        window.queryClient.invalidateQueries(['hadith-favorites-count']);
-        window.queryClient.invalidateQueries(['hadith-bookmarks-count']);
-        console.log('React Query cache cleared');
-      }
-      
-      toastPatterns.loginSuccess(userData.name);
+      // Store current location for redirect back after OAuth
+      localStorage.setItem('islamiovn_auth_redirect', window.location.pathname);
+
+      await authClient.signIn.social({
+        provider: 'google',
+        callbackURL: `${window.location.origin}/auth/callback`,
+      });
+      // Page will redirect — no further code runs here
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : AUTH_MESSAGES.LOGIN_ERROR;
-      setError(errorMessage);
       toast.error(errorMessage);
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
   const logout = useCallback(async (): Promise<void> => {
     try {
-      setIsLoading(true);
-      setError(null);
-      
-      await backendAuth.signOut();
-      
-      // Clear user data
-      setUser(null);
-      
+      await authClient.signOut();
       toastPatterns.logoutSuccess();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : AUTH_MESSAGES.LOGOUT_ERROR;
-      setError(errorMessage);
       toast.error(errorMessage);
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
-  const isAuthenticated = useMemo(() => user !== null, [user]);
-
-  const exchangeCodeForToken = useCallback(async (code: string): Promise<GoogleUser> => {
-    return await backendAuth.exchangeCodeForToken(code);
-  }, []);
-
-  // Listen for global login trigger events
+  // Listen for global login trigger events (used by other components)
   useEffect(() => {
     const handleGlobalLogin = () => {
       if (!isAuthenticated) {
@@ -194,23 +78,20 @@ export const AuthProvider = React.memo<AuthProviderProps>(({ children }) => {
     };
 
     window.addEventListener('triggerGoogleLogin', handleGlobalLogin);
-    
-    return () => {
-      window.removeEventListener('triggerGoogleLogin', handleGlobalLogin);
-    };
+    return () => window.removeEventListener('triggerGoogleLogin', handleGlobalLogin);
   }, [login, isAuthenticated]);
 
-  const contextValue = useMemo<AuthContextType>(() => ({
-    user,
-    isLoading,
-    isAuthenticated,
-    login,
-    logout,
-    error,
-    setUser,
-    setError,
-    exchangeCodeForToken,
-  }), [user, isLoading, isAuthenticated, login, logout, error, exchangeCodeForToken, setUser, setError]);
+  const contextValue = useMemo<AuthContextType>(
+    () => ({
+      user,
+      isLoading,
+      isAuthenticated,
+      login,
+      logout,
+      error: sessionError?.message ?? null,
+    }),
+    [user, isLoading, isAuthenticated, login, logout, sessionError]
+  );
 
   return (
     <AuthContext.Provider value={contextValue}>
