@@ -1,67 +1,61 @@
 // src/context/ThemeContext.tsx
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
 
-type Theme = 'dark' | 'light';
+export type Theme = 'dark' | 'light';
 
 interface ThemeContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
+  isDark: boolean;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+const STORAGE_KEY = 'islamiovn-theme';
+
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>(() => {
-    // Khôi phục theme từ localStorage nếu có
-    const savedTheme = localStorage.getItem('prayer-theme') as Theme;
-    if (savedTheme && ['dark', 'light', 'islamic'].includes(savedTheme)) {
-      return savedTheme;
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY) as Theme | null;
+      if (saved === 'dark' || saved === 'light') return saved;
+    } catch {
+      // localStorage not available
     }
-    
-    // Kiểm tra system preference
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches) {
       return 'dark';
     }
-    
     return 'light';
   });
 
+  const isDark = theme === 'dark';
+
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
-    localStorage.setItem('prayer-theme', newTheme);
+    try {
+      localStorage.setItem(STORAGE_KEY, newTheme);
+    } catch {
+      // ignore
+    }
   };
 
   const toggleTheme = () => {
-    setThemeState(prevTheme => {
-      let newTheme: Theme;
-      switch (prevTheme) {
-        case 'light':
-          newTheme = 'dark';
-          break;
-        case 'dark':
-          newTheme = 'light';
-          break;
-        default:
-          newTheme = 'dark';
-      }
-      localStorage.setItem('prayer-theme', newTheme);
-      return newTheme;
-    });
+    setTheme(theme === 'light' ? 'dark' : 'light');
   };
 
   useEffect(() => {
     const root = document.documentElement;
-    
-    // Xóa tất cả các class theme cũ
     root.classList.remove('light', 'dark');
-    
-    // Thêm class theme mới
     root.classList.add(theme);
   }, [theme]);
 
+  const value = useMemo(
+    () => ({ theme, setTheme, toggleTheme, isDark }),
+    [theme, isDark]
+  );
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Navigation } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTheme } from '@/context/ThemeContext';
 
 // Import types, constants, hooks và components
 import type { MasjidViet } from './types';
@@ -29,6 +30,7 @@ const MasjidLocator = React.memo(() => {
   // Custom hooks
   const { viTriNguoiDung, dangTaiViTri, loi: loiViTri, layViTriHienTai } = useGeolocation();
   const { masjids, dangTai, loi: loiMasjid, timKiemMasjidGanDay, xoaLoi } = useMasjidData();
+  const { toggleTheme } = useTheme();
 
   // Tự động hiển thị bản đồ khi có vị trí người dùng
   useEffect(() => {
@@ -43,18 +45,6 @@ const MasjidLocator = React.memo(() => {
       timKiemMasjidGanDay(viTriNguoiDung);
     }
   }, [viTriNguoiDung, timKiemMasjidGanDay]);
-
-  // Theme toggle handler
-  const toggleTheme = useCallback((): void => {
-    const isDark = document.documentElement.classList.contains('dark');
-    const newTheme = !isDark;
-    localStorage.setItem('theme', newTheme ? 'dark' : 'light');
-    if (newTheme) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, []);
 
   // Memoized handlers
   const handleMasjidClick = useCallback((masjid: MasjidViet) => {

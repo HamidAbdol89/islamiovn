@@ -26,7 +26,7 @@ const QuranReader = React.lazy(() => import('@/components/Utilities/Quran/QuranR
 const HadithApp = React.lazy(() => import('@/components/Utilities/Hadith/hadith'));
 const AuthCallback = React.lazy(() => import('@/components/Auth/AuthCallback'));
 const MasjidVietnamApp = React.lazy(() => import('@/components/Utilities/Masjid/MasjidVietNam/MasjidVietnam'));
-const AI = React.lazy(() => import('@/Pages/AI/AI'));
+
 
 const AnimatedRoutes: React.FC = () => {
   const location = useLocation();
@@ -103,14 +103,15 @@ const AnimatedRoutes: React.FC = () => {
           } 
         />
 
-             {/* AI Route với ultimater */}
+             {/* AI Route - Tạm thời disabled */}
              <Route 
           path={ROUTES.UTILITIES.AI} 
           element={
             <AnimatedPage>
-              <Suspense fallback={<LoadingSpinner />}>
-                <AI />
-              </Suspense>
+              <div className="p-6 text-center">
+                <h2 className="text-2xl font-bold mb-4">AI</h2>
+                <p className="text-muted-foreground">Tính năng AI sẽ được cập nhật sớm...</p>
+              </div>
             </AnimatedPage>
           } 
         />

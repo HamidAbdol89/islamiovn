@@ -6,7 +6,7 @@ import type { MasjidViet } from '../types';
 import { masjidFavoriteApi, type FavoriteUser } from '../services/masjidFavoriteApi';
 import { useAuth } from '@/context/AuthContext';
 import { devLog } from '@/utils/performance';
-import { makeRequest, requestManager } from '@/utils/RequestManager';
+import { makeRequest } from '@/utils/RequestManager';
 
 // 🎯 Enterprise-level types
 type ConflictResolutionStrategy = 'client-wins' | 'server-wins' | 'merge' | 'user-choice';
