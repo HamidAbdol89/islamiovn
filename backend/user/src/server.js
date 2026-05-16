@@ -42,7 +42,10 @@ app.use(express.urlencoded({ extended: true }));
 if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 
 // ─── Health check (no auth needed) ───────────────────────────────────────────
+// Returns 503 until DB is ready, 200 after bootstrap completes
+let isReady = false;
 app.get('/api/health', (req, res) => {
+  if (!isReady) return res.status(503).json({ status: 'starting' });
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
@@ -84,6 +87,7 @@ async function bootstrap() {
   websocketService.initialize(server);
 
   server.listen(PORT, () => {
+    isReady = true;
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`🌐 Frontend: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
