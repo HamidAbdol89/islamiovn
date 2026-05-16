@@ -3,7 +3,6 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import ErrorBoundary from '@/components/App/ErrorBoundary';
 import LoadingSkeleton from '@/components/App/LoadingSkeleton';
 import AnimatedRoutes from '@/components/App/AnimatedRoutes';
-import { InstallButton } from '@/components/PWA/InstallButton';
 
 // Preload components để tránh khựng khi chuyển tab
 const preloadComponents = () => {
@@ -47,8 +46,6 @@ const App: React.FC = () => {
             <AnimatedRoutes />
           </Suspense>
 
-          {/* Install Prompt */}
-          <InstallButton />
         </div>
       </Router>
     </ErrorBoundary>
