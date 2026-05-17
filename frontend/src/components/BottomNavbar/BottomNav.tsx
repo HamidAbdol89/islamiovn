@@ -2,205 +2,173 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { LucideIcon } from 'lucide-react';
-import { Home, BookOpen, Sparkles, Compass, User } from 'lucide-react';
+import {
+  House,
+  Book,
+  Compass,
+  Plus,
+  User,
+} from "phosphor-react";
+
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────
+// TYPES
+// ────────────────────────────────────────────────
 
 interface Tab {
   key: string;
   label: string;
-  icon: LucideIcon;
-  /** Đây là action chính của app — hiển thị dạng orb to ở giữa */
-  isPrimary?: boolean;
+  icon: any;
+  isOrb?: boolean;
 }
 
 interface BottomNavProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
-  /** Keys của các tab đang có thông báo chưa đọc */
   badgeTabs?: string[];
   className?: string;
 }
 
-// ─── Config ───────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────
+// CONFIG
+// ────────────────────────────────────────────────
 
 const TABS: Tab[] = [
-  { key: 'home',      label: 'Trang chủ', icon: Home },
-  { key: 'quran',     label: "Qur'an",    icon: BookOpen },
-  { key: 'tools',     label: 'Tiện ích',  icon: Sparkles, isPrimary: true },
-  { key: 'community', label: 'Khám phá',  icon: Compass },
-  { key: 'setting',   label: 'Hồ sơ',     icon: User },
+  { key: 'home', label: 'Trang chủ', icon: House },
+  { key: 'quran', label: "Qur'an", icon: Book },
+  { key: 'tools', label: 'Tiện ích', icon: Plus, isOrb: true },
+  { key: 'community', label: 'Khám phá', icon: Compass },
+  { key: 'setting', label: 'Hồ sơ', icon: User },
 ];
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+const NAV_H = 64;
 
-/** Icon button thường — smear effect khi active */
-function NavIcon({
+const ORB_D = 48;
+const ORB_FLOAT = ORB_D / 2 - 2;
+
+const ISLAMIC_GREEN = 'oklch(0.44 0.15 142.5)';
+
+// ────────────────────────────────────────────────
+// TAB ITEM
+// ────────────────────────────────────────────────
+
+function NavTab({
   tab,
   isActive,
   hasBadge,
   onClick,
   avatarUrl = null,
-}: {
-  tab: Tab;
-  isActive: boolean;
-  hasBadge: boolean;
-  onClick: () => void;
-  avatarUrl?: string | null;
-}) {
+}: any) {
   const Icon = tab.icon;
 
   return (
     <button
-      aria-label={tab.label}
-      aria-current={isActive ? 'page' : undefined}
       onClick={onClick}
       className={cn(
-        'relative flex h-14 w-14 items-center justify-center',
-        'rounded-full border-none bg-transparent outline-none',
-        'transition-transform duration-150 active:scale-75',
-        'focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 focus-visible:ring-offset-black',
+        'relative flex flex-1 h-full flex-col items-center justify-center',
+        'bg-transparent border-none outline-none',
+        'active:scale-90 transition-transform duration-150'
       )}
     >
-      {/* Smear — vòng sáng mờ lan ra khi active */}
-      <motion.span
-        animate={isActive
-          ? { width: 52, height: 52, opacity: 1 }
-          : { width: 0,  height: 0,  opacity: 0 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/20"
-        aria-hidden
-      />
-
       {avatarUrl ? (
         <img
           src={avatarUrl}
-          alt={tab.label}
-          className={cn(
-            'relative z-10 h-6 w-6 rounded-full object-cover transition-all duration-200',
-            isActive ? 'ring-2 ring-white' : 'ring-1 ring-white/20',
-          )}
+          className="h-[24px] w-[24px] rounded-full object-cover"
+          style={{ opacity: isActive ? 1 : 0.5 }}
         />
       ) : (
         <Icon
+          size={22}
+          weight={isActive ? "fill" : "regular"}
           className={cn(
-            'relative z-10 h-[22px] w-[22px] transition-colors duration-300',
-            isActive ? 'text-white' : 'text-white/55',
+            'transition-colors duration-200',
+            isActive ? 'text-primary' : 'text-muted-foreground'
           )}
-          strokeWidth={isActive ? 1.75 : 1.5}
         />
       )}
 
-      {/* Badge dot */}
+      {/* underline */}
       <AnimatePresence>
-        {hasBadge && (
-          <motion.span
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 600, damping: 22 }}
-            aria-label="Có thông báo mới"
-            className="absolute right-2.5 top-2.5 h-[7px] w-[7px] rounded-full bg-red-500 ring-[1.5px] ring-black"
+        {isActive && (
+          <motion.div
+            layoutId="underline"
+            className="absolute bottom-[8px] h-[4px] w-[22px] rounded-full bg-primary"
           />
         )}
       </AnimatePresence>
+
+      {/* badge */}
+      {hasBadge && (
+        <span className="absolute top-3 right-[calc(50%-14px)] h-[7px] w-[7px] rounded-full bg-red-500" />
+      )}
     </button>
   );
 }
 
-/** Orb — action chính, to hơn, nổi bật hơn */
+// ────────────────────────────────────────────────
+// ORB BUTTON
+// ────────────────────────────────────────────────
+
 function NavOrb({
   tab,
   isActive,
   hasBadge,
   onClick,
-}: {
-  tab: Tab;
-  isActive: boolean;
-  hasBadge: boolean;
-  onClick: () => void;
-}) {
+}: any) {
   const Icon = tab.icon;
 
   return (
-    <button
-      aria-label={tab.label}
-      aria-current={isActive ? 'page' : undefined}
-      onClick={onClick}
-      className={cn(
-        'relative mx-1 flex h-[52px] w-[52px] flex-shrink-0 items-center justify-center',
-        'rounded-full border-none outline-none',
-        'transition-transform duration-150 active:scale-85',
-        'focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black',
-        isActive
-          ? 'bg-[#AFA9EC]'   // lavender khi active
-          : 'bg-white',
-      )}
-      style={{ WebkitTapHighlightColor: 'transparent' }}
-    >
-      <Icon
-        className={cn(
-          'h-[20px] w-[20px] transition-colors duration-200',
-          isActive ? 'text-[#26215C]' : 'text-black',
-        )}
-        strokeWidth={1.75}
-      />
+    <div className="relative flex flex-1 justify-center items-center">
+      <motion.button
+        onClick={onClick}
+        className="absolute flex items-center justify-center rounded-full bg-primary"
+        style={{
+          width: ORB_D,
+          height: ORB_D,
+          top: -ORB_FLOAT,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          boxShadow:
+            `0 10px 25px ${ISLAMIC_GREEN}40, 0 0 40px ${ISLAMIC_GREEN}25`,
+        }}
+        whileTap={{ scale: 0.88 }}
+      >
+        {/* ICON (FIXED PHOSPHOR) */}
+        <Icon
+          size={18}
+          weight="fill"
+          className="text-primary-foreground"
+        />
 
-      <AnimatePresence>
-        {hasBadge && (
+        {/* glow pulse */}
+        {isActive && (
           <motion.span
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 600, damping: 22 }}
-            aria-label="Có thông báo mới"
-            className="absolute right-2 top-2 h-[7px] w-[7px] rounded-full bg-red-500 ring-[1.5px] ring-black"
+            className="absolute inset-0 rounded-full"
+            style={{ background: ISLAMIC_GREEN }}
+            initial={{ scale: 0.8, opacity: 0.4 }}
+            animate={{ scale: 1.8, opacity: 0 }}
+            transition={{
+              repeat: Infinity,
+              duration: 1.2,
+              ease: 'easeOut',
+            }}
           />
         )}
-      </AnimatePresence>
-    </button>
-  );
-}
 
-/** Scrubber dots — chỉ thị vị trí trang hiện tại */
-function ScrubberDots({
-  total,
-  activeIndex,
-  onDotClick,
-}: {
-  total: number;
-  activeIndex: number;
-  onDotClick: (i: number) => void;
-}) {
-  return (
-    <div
-      role="tablist"
-      aria-label="Chuyển trang"
-      className="flex items-center justify-center gap-1.5 pb-3 pt-1"
-    >
-      {Array.from({ length: total }).map((_, i) => (
-        <motion.button
-          key={i}
-          role="tab"
-          aria-selected={i === activeIndex}
-          aria-label={TABS[i].label}
-          onClick={() => onDotClick(i)}
-          animate={i === activeIndex
-            ? { width: 20, backgroundColor: '#ffffff' }
-            : { width: 4,  backgroundColor: '#1e1e1e' }}
-          transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-          className="h-1 rounded-full border-none outline-none focus-visible:ring-1 focus-visible:ring-white/40"
-          style={{ flexShrink: 0 }}
-        />
-      ))}
+        {/* badge */}
+        {hasBadge && (
+          <span className="absolute top-0 right-0 h-[7px] w-[7px] rounded-full bg-red-500" />
+        )}
+      </motion.button>
     </div>
   );
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────
+// MAIN
+// ────────────────────────────────────────────────
 
 const BottomNav: React.FC<BottomNavProps> = ({
   activeTab,
@@ -209,62 +177,54 @@ const BottomNav: React.FC<BottomNavProps> = ({
   className,
 }) => {
   const { user, isAuthenticated } = useAuth();
-  const activeIndex = TABS.findIndex((t) => t.key === activeTab);
-
-  const handleChange = (key: string) => {
-    onTabChange(key);
-  };
 
   return (
-    /**
-     * Wrapper không có nền, không có border — nav "không tồn tại" như một thanh riêng biệt.
-     * pointer-events-none để vùng trống hai bên orb vẫn click-through được.
-     */
     <div
       className={cn(
-        'pointer-events-none fixed bottom-0 left-0 right-0 z-50',
-        className,
+        'fixed bottom-0 left-0 right-0 z-50 px-4',
+        className
       )}
+      style={{
+        paddingBottom: 'env(safe-area-inset-bottom)',
+      }}
     >
-      <div className="pointer-events-auto pb-[max(8px,env(safe-area-inset-bottom))]">
-        {/* Scrubber dots */}
-        <ScrubberDots
-          total={TABS.length}
-          activeIndex={activeIndex}
-          onDotClick={(i) => handleChange(TABS[i].key)}
-        />
+      <div className="relative w-full pt-[24px]">
 
-        {/* Icon row — không có container, không có nền */}
-        <nav
-          aria-label="Điều hướng chính"
-          className="flex items-center justify-center"
-        >
+        {/* background bar */}
+        <div className="absolute inset-x-0 bottom-0 h-[64px] bg-card rounded-t-2xl" />
+
+        {/* nav */}
+        <nav className="relative flex w-full" style={{ height: NAV_H }}>
           {TABS.map((tab) => {
             const isActive = activeTab === tab.key;
             const hasBadge = badgeTabs.includes(tab.key);
 
-            /**
-             * Khi badge tab được chọn → xóa khỏi badgeTabs.
-             * Trong thực tế bạn quản lý state này ở parent và truyền vào.
-             */
-            const handleClick = () => handleChange(tab.key);
+            const onClick = () => onTabChange(tab.key);
 
-            return tab.isPrimary ? (
-              <NavOrb
+            if (tab.isOrb) {
+              return (
+                <NavOrb
+                  key={tab.key}
+                  tab={tab}
+                  isActive={isActive}
+                  hasBadge={hasBadge}
+                  onClick={onClick}
+                />
+              );
+            }
+
+            return (
+              <NavTab
                 key={tab.key}
                 tab={tab}
                 isActive={isActive}
                 hasBadge={hasBadge}
-                onClick={handleClick}
-              />
-            ) : (
-              <NavIcon
-                key={tab.key}
-                tab={tab}
-                isActive={isActive}
-                hasBadge={hasBadge}
-                onClick={handleClick}
-                avatarUrl={tab.key === 'setting' && isAuthenticated ? (user?.picture ?? null) : null}
+                onClick={onClick}
+                avatarUrl={
+                  tab.key === 'setting' && isAuthenticated
+                    ? user?.picture
+                    : null
+                }
               />
             );
           })}
@@ -275,21 +235,3 @@ const BottomNav: React.FC<BottomNavProps> = ({
 };
 
 export default BottomNav;
-
-// ─── Usage example ────────────────────────────────────────────────────────────
-//
-// const [tab, setTab] = useState('home');
-// const [badges, setBadges] = useState(['tools']);
-//
-// <BottomNav
-//   activeTab={tab}
-//   onTabChange={(key) => {
-//     setTab(key);
-//     setBadges((prev) => prev.filter((b) => b !== key)); // xóa badge khi vào tab
-//   }}
-//   badgeTabs={badges}
-// />
-//
-// Lưu ý: component này dùng dark background (#080808 hoặc tương đương).
-// Nếu app dùng light mode, đổi màu icon từ text-white/20 → text-black/15
-// và smear từ bg-white → bg-black.
