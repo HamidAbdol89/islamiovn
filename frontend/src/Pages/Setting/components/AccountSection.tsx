@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback, useState } from 'react';
-import { CaretDown, CaretUp, Check, EnvelopeSimple, SignIn, SignOut, User } from 'phosphor-react';
+import { CaretDown, CaretUp, EnvelopeSimple, SignIn, SignOut, User } from 'phosphor-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';

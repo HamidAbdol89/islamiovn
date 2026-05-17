@@ -1,7 +1,6 @@
 export { AuthSessionSync } from './AuthSessionSync'
 export { HadithUserHydrator } from './HadithUserHydrator'
 export { QuranHydrator } from './QuranHydrator'
-export { ThemeSync } from './ThemeSync'
 export {
   hydrateHadithUserLists,
   hydrateHadithCategories,

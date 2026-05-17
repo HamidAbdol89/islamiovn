@@ -4,12 +4,10 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  // Base — dùng radius từ CSS variable, bỏ rounded-md cứng
   "inline-flex items-center gap-1 border px-2.5 py-0.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 select-none",
   {
     variants: {
       variant: {
-        // Dùng primary từ CSS variable thay vì hardcode
         default:
           "border-transparent bg-primary text-primary-foreground shadow-sm hover:bg-primary/80",
 
@@ -22,24 +20,18 @@ const badgeVariants = cva(
         outline:
           "border-border text-foreground bg-transparent",
 
-        // Dùng accent từ CSS variable (moonlight aqua)
         accent:
           "border-transparent bg-accent text-accent-foreground shadow-sm hover:bg-accent/80",
 
-        // Glass variant — dùng glass-bg và glass-border từ CSS system
         glass:
           "border-white/10 bg-white/[0.045] text-foreground backdrop-blur-md",
 
-        // Verified — dùng primary teal thay vì hardcode #006400
-        // Vì app IslamioVN dùng teal làm màu chính, verified = ✓ trusted
         verified:
           "border-transparent bg-primary/20 text-primary shadow-sm",
 
-        // Prayer time badge — amber ấm, dùng cho trạng thái giờ cầu nguyện
         prayer:
           "border-transparent bg-amber-500/15 text-amber-300 shadow-sm",
 
-        // Muted — dùng cho tag thứ yếu
         muted:
           "border-transparent bg-muted text-muted-foreground",
       },
@@ -48,7 +40,6 @@ const badgeVariants = cva(
         default: "rounded-[calc(var(--radius)/3)] h-5",
         sm: "rounded-[calc(var(--radius)/4)] h-4 text-[10px] px-1.5",
         lg: "rounded-[calc(var(--radius)/2.5)] h-6 text-sm px-3",
-        // Pill — bo tròn hoàn toàn
         pill: "rounded-full h-5",
       },
     },

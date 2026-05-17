@@ -1,6 +1,6 @@
 // MasjidModal Component with Vietnamese localization and shadcn UI
 import React from 'react';
-import { MapPin, Phone, Globe, Calendar, Users, Clock, X } from 'lucide-react';
+import { MapPin, Phone, Globe, Calendar, Users, Clock} from 'lucide-react';
 import {
   Dialog,
   DialogContent,

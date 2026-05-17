@@ -40,9 +40,9 @@ const ScholarCard: React.FC<ScholarCardProps> = React.memo(({
             <h3 className="font-bold text-base line-clamp-1">{scholar.name}</h3>
             <p className="text-sm line-clamp-2 text-muted-foreground">{scholar.title}</p>
             
-            <Badge variant="orange" className="text-[10px] px-2 py-0.5">
-  Nổi bật
-</Badge>
+            <Badge variant="accent" className="text-[10px] px-2 py-0.5">
+              Nổi bật
+            </Badge>
 
           </div>
         </div>

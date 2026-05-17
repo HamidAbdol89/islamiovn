@@ -9,7 +9,7 @@ const SettingHeader: React.FC = () => (
     transition={{ duration: 0.3, ease: 'easeOut' }}
   >
     {/* Gradient icon mark */}
-     <img src="/logo.png" alt="Islam.io logo" className="w-[60px] h-[60px]" />
+     <img src="/logo.png" alt="Islam.io logo" className="w-[80px] h-[80px]" />
     <p className="text-xs text-muted-foreground">Islam.io.vn</p>
   </motion.div>
 );
