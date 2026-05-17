@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import BottomNav from '@/components/BottomNavbar/BottomNav';
-import { ToolsBottomSheet } from '@/components/ToolsBottomSheet';
+import { ToolsBottomSheet } from '@/components/ToolsBottomVaul';
 import { getToolRoute, isToolId, type ToolId } from '@/features/tools';
 import { ROUTES, TAB_ROUTES } from '@/lib/routes';
 
