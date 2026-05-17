@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Navigation } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useTheme } from '@/context/ThemeContext';
 
 // Import types, constants, hooks và components
 import type { MasjidViet } from './types';
@@ -30,7 +29,6 @@ const MasjidLocator = React.memo(() => {
   // Custom hooks
   const { viTriNguoiDung, dangTaiViTri, loi: loiViTri, layViTriHienTai } = useGeolocation();
   const { masjids, dangTai, loi: loiMasjid, timKiemMasjidGanDay, xoaLoi } = useMasjidData();
-  const { toggleTheme } = useTheme();
 
   // Tự động hiển thị bản đồ khi có vị trí người dùng
   useEffect(() => {
@@ -126,7 +124,7 @@ const MasjidLocator = React.memo(() => {
     <div className="min-h-screen bg-background transition-smooth">
       <div className="container mx-auto px-4 py-6 max-w-7xl">
         {/* Header */}
-        <MasjidHeader onToggleTheme={toggleTheme} />
+        <MasjidHeader />
 
         {/* Control Panel */}
         <div className="mb-6 space-y-4">

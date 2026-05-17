@@ -7,7 +7,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import type { MasjidViet } from '../types';
@@ -52,14 +51,7 @@ const MasjidModal: React.FC<MasjidModalProps> = React.memo(({ masjid, isOpen, on
             alt={masjid.ten || 'Masjid'}
             className="w-full h-full object-cover"
           />
-          <Button
-            variant="secondary"
-            size="icon"
-            onClick={onClose}
-            className="absolute top-4 right-4 h-8 w-8 bg-background/90 hover:bg-background border-border"
-          >
-            <X className="h-4 w-4" />
-          </Button>
+        
         </div>
         
         <DialogHeader>

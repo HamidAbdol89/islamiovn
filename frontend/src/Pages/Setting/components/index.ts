@@ -1,7 +1,6 @@
 export { default as SettingHeader }          from './SettingHeader';
 export { default as SettingSection }         from './SettingSection';
 export { default as SettingItem }            from './SettingItem';
-export { default as ThemeSelector }          from './ThemeSelector';
 export { default as AccountSection }         from './AccountSection';
 export { default as CustomizationSection }   from './CustomizationSection';
 export { default as SavedItemsSection }      from './SavedItemsSection';

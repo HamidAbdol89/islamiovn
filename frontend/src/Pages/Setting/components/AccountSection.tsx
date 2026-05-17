@@ -124,14 +124,19 @@ const SignedInCard: React.FC = () => {
         </Avatar>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <p className="text-sm font-semibold text-foreground truncate">{user.name}</p>
-            {user.verified_email && (
-              <span className="flex-shrink-0 w-4 h-4 rounded-full bg-primary flex items-center justify-center">
-                <Check className="w-2.5 h-2.5 text-primary-foreground" />
-              </span>
-            )}
-          </div>
+          <div className="flex items-center gap-2 min-w-0">
+  <p className="text-sm font-semibold text-foreground truncate">
+    {user.name}
+  </p>
+
+  {user.verified_email && (
+    <img
+      src="/icons/verify.png"
+      alt="Verified"
+      className="w-4 h-4 flex-shrink-0 object-contain"
+    />
+  )}
+</div>
           <div className="flex items-center gap-1 mt-0.5">
             <EnvelopeSimple className="w-3 h-3 text-muted-foreground flex-shrink-0" />
             <p className="text-xs text-muted-foreground truncate">{user.email}</p>

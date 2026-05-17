@@ -89,9 +89,7 @@ export interface UseMapManagerReturn {
 }
 
 // Component props
-export interface MasjidHeaderProps {
-  onToggleTheme: () => void;
-}
+export interface MasjidHeaderProps {}
 
 export interface MasjidSearchProps {
   tuKhoa: string;

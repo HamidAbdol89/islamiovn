@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react';
-import BackButton from "@/components/ui/BackButton"; 
-import { 
-  MapPin, 
-  RefreshCw, 
+import BackButton from "@/components/ui/BackButton";
+import {
+  MapPin,
+  RefreshCw,
   Compass,
   AlertCircle,
   Check,
   ArrowUp,
   Navigation
 } from 'lucide-react';
-import { useTheme } from "@/context/ThemeContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -47,7 +46,6 @@ const QiblahCompass = () => {
   const [position, setPosition] = useState<Position | null>(null);
   const [qiblahDirection, setQiblahDirection] = useState<number>(0);
   const [compassHeading, setCompassHeading] = useState<number>(0);
-  const { theme } = useTheme();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
   const [locationInfo, setLocationInfo] = useState<LocationInfo | null>(null);
@@ -416,11 +414,7 @@ const QiblahCompass = () => {
 
     {/* Qiblah compass */}
 <div className="relative mb-6">
-  <div className={`w-80 h-80 mx-auto rounded-full border-8 ${
-    theme === 'dark' 
-      ? 'bg-gray-800 border-gray-700' 
-      : 'bg-white border-gray-200'
-  } shadow-2xl relative overflow-hidden`}>
+  <div className={`w-80 h-80 mx-auto rounded-full border-8 bg-white border-gray-200 shadow-2xl relative overflow-hidden`}>
             
             <div className="relative w-full h-full">
               {/* Cardinal directions */}
@@ -495,9 +489,7 @@ const QiblahCompass = () => {
               </div>
 
               {/* Compass center */}
-              <div className={`absolute top-1/2 left-1/2 w-6 h-6 rounded-full transform -translate-x-1/2 -translate-y-1/2 border-2 ${
-                theme === 'dark' ? 'bg-gray-700 border-gray-500' : 'bg-white border-gray-300'
-              } shadow-lg`} />
+              <div className={`absolute top-1/2 left-1/2 w-6 h-6 rounded-full transform -translate-x-1/2 -translate-y-1/2 border-2 bg-white border-gray-300 shadow-lg`} />
 
               {/* Kaaba icon */}
               <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
@@ -612,9 +604,7 @@ const QiblahCompass = () => {
         </Card>
 
         {/* Technical info */}
-        <div className={`p-3 rounded-xl text-xs ${
-          theme === 'dark' ? 'bg-muted' : 'bg-muted/50'
-        } opacity-60`}>
+        <div className={`p-3 rounded-xl text-xs bg-muted/50 opacity-60`}>
           <p>🧭 La bàn: {compassHeading.toFixed(1)}° | 🎯 Qiblah: {qiblahDirection.toFixed(1)}° | 📍 GPS: ±{accuracy}m</p>
         </div>
       </div>

@@ -1,30 +1,35 @@
 const { verifyIdToken } = require('../lib/firebaseAdmin');
 
-/**
- * Require a valid Firebase ID token.
- * Attaches req.user = { id, email, name, picture }
- */
 const authenticateToken = async (req, res, next) => {
   try {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader?.split(' ')[1];
+    const authHeader = req.headers.authorization;
 
-    if (!token) {
-      return res.status(401).json({ success: false, message: 'Authentication required' });
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        success: false,
+        message: 'Missing Authorization token',
+      });
     }
+
+    const token = authHeader.split(' ')[1];
 
     const decoded = await verifyIdToken(token);
 
     req.user = {
       id: decoded.uid,
-      email: decoded.email ?? '',
-      name: decoded.name ?? '',
-      picture: decoded.picture ?? '',
+      email: decoded.email || '',
+      name: decoded.name || '',
+      picture: decoded.picture || '',
     };
 
     next();
   } catch (error) {
-    return res.status(401).json({ success: false, message: 'Invalid or expired token' });
+    console.error('Auth error:', error);
+
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid or expired Firebase token',
+    });
   }
 };
 

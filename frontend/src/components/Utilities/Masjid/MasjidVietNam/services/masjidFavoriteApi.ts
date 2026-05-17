@@ -1,8 +1,8 @@
 /**
- * Masjid Favorites API — uses Better Auth session cookie (credentials: 'include').
  * No JWT in localStorage.
  */
 import type { MasjidViet } from '../types';
+import { getAuth } from "firebase/auth";
 
 const RAW_BASE = import.meta.env.VITE_API_URL_USER as string | undefined;
 // Strip trailing /api if present so we can append paths cleanly
@@ -60,12 +60,35 @@ const handleApiError = async (response: Response) => {
 };
 
 /** Authenticated fetch — sends Better Auth session cookie automatically */
-const authFetch = (url: string, options: RequestInit = {}) =>
-  fetch(url, { ...options, credentials: 'include' });
+const authFetch = async (url: string, options: RequestInit = {}) => {
+  const auth = getAuth();
+  const user = auth.currentUser;
+
+  if (!user) {
+    throw new Error("User not logged in");
+  }
+
+  const token = await user.getIdToken();
+
+  return fetch(url, {
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+};
 
 /** Public fetch — no credentials needed */
 const publicFetch = (url: string, options: RequestInit = {}) =>
-  fetch(url, { ...options, credentials: 'omit' });
+  fetch(url, {
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+      "Content-Type": "application/json",
+    },
+  });
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' };
 

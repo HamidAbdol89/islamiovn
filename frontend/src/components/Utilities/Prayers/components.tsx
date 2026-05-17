@@ -322,8 +322,6 @@ interface SettingsModalProps {
   onDateChange: (date: string) => void;
   calculationMethod: number;
   onMethodChange: (method: number) => void;
-  isDarkMode: boolean;
-  onDarkModeToggle: () => void;
   onLocationRequest: () => void;
 }
 

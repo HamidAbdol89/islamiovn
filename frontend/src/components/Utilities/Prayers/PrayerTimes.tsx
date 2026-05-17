@@ -13,7 +13,6 @@ import {
 } from './components';
 import { useLocation, usePrayerTimes, useNextPrayer } from './hooks';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { useTheme } from '@/context/ThemeContext';
 import { registerServiceWorker } from '@/utils/registerServiceWorker';
 
 // Lazy load components for better performance
@@ -34,10 +33,6 @@ const PRAYER_NAMES_VI = {
 } as const;
 
 const PrayerTimesCalculator = memo(() => {
-  // Sử dụng theme context thay vì localStorage riêng
-  const { theme, toggleTheme } = useTheme();
-  const isDarkMode = useMemo(() => theme === 'dark', [theme]);
-  
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [calculationMethod, setCalculationMethod] = useLocalStorage('prayer-calculation-method', 1);
   const [showSettings, setShowSettings] = useState(false);
@@ -117,11 +112,6 @@ const PrayerTimesCalculator = memo(() => {
       setHasAskedLocation(true);
     }
   }, [hasAskedLocation, setHasAskedLocation]);
-
-  // Apply dark mode to document
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', isDarkMode);
-  }, [isDarkMode]);
 
   // Memoized event handlers to prevent unnecessary re-renders
   const handleLocationRequest = useCallback(() => {
@@ -219,8 +209,6 @@ const PrayerTimesCalculator = memo(() => {
         onDateChange={setSelectedDate}
         calculationMethod={calculationMethod}
         onMethodChange={setCalculationMethod}
-        isDarkMode={isDarkMode}
-        onDarkModeToggle={toggleTheme}
         onLocationRequest={handleLocationPermissionOpen}
       />
 

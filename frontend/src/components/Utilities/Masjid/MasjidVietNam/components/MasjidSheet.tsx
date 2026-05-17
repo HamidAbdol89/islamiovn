@@ -54,7 +54,7 @@ const MasjidSheet: React.FC<MasjidSheetProps> = React.memo(({
               <div className="flex-1">
                 {masjid.vung && (
                   <Badge
-                    variant="secondary"
+                    variant="accent"
                     className={cn('text-sm border mb-3', regionBadgeColor)}
                   >
                     {masjid.vung}
@@ -265,8 +265,7 @@ const MasjidSheet: React.FC<MasjidSheetProps> = React.memo(({
               <div className="flex flex-col sm:flex-row gap-3">
                 {masjid.diaChi && (
                   <Button
-                    variant="default"
-                    className="flex-1"
+                    variant="sacred"
                     onClick={() => {
                       const query = encodeURIComponent(`${masjid.ten} ${masjid.diaChi} ${masjid.thanhPho}`);
                       window.open(`https://www.google.com/maps/search/${query}`, '_blank');
@@ -279,7 +278,6 @@ const MasjidSheet: React.FC<MasjidSheetProps> = React.memo(({
                 {masjid.soDienThoai && (
                   <Button
                     variant="secondary"
-                    className="flex-1"
                     onClick={() => window.open(`tel:${masjid.soDienThoai}`, '_self')}
                   >
                     <Phone className="w-4 h-4 mr-2" />

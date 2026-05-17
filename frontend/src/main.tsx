@@ -4,9 +4,8 @@ import App from "./App.tsx";
 import "./index.css";
 import "./styles/mobile-scroll.css";
 import "./styles/scrollbar.css";
-import { ThemeProvider } from "@/context/ThemeContext";
 import { AuthProvider } from "@/context/AuthContext";
-import { HelmetProvider } from 'react-helmet-async'; 
+import { HelmetProvider } from 'react-helmet-async';
 import { Toaster } from 'sonner';
 import { HadithUserHydrator } from "@/hydration/HadithUserHydrator";
 import { QuranHydrator } from "@/hydration/QuranHydrator";
@@ -32,10 +31,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <AuthProvider>
         <HadithUserHydrator />
         <QuranHydrator />
-        <ThemeProvider>
-          <Toaster richColors position="top-center" theme="system" />
-          <App />
-        </ThemeProvider>
+        <Toaster richColors position="top-center" theme="system" />
+        <App />
       </AuthProvider>
     </HelmetProvider>
   </React.StrictMode>
