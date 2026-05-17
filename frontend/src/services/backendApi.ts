@@ -57,12 +57,10 @@ class ApiService {
       // No user logged in — continue without token
     }
 
-    const config: RequestInit = {
-      ...options,
-      headers,
-      // Send Better Auth session cookie automatically
-      credentials: 'include',
-    };
+ const config: RequestInit = {
+  ...options,
+  headers,
+};
 
     const response = await fetch(url, config);
 
@@ -131,12 +129,15 @@ class ApiService {
   }
 
   async exportUserData(): Promise<Blob> {
-    const response = await fetch(`${this.baseURL}/users/export`, {
-      credentials: 'include',
-    });
-    if (!response.ok) throw new Error('Export failed');
-    return response.blob();
-  }
+  const response = await fetch(`${this.baseURL}/users/export`, {
+    headers: {
+      Authorization: `Bearer ${await auth.currentUser?.getIdToken()}`,
+      'Content-Type': 'application/json',
+    },
+  });
+  if (!response.ok) throw new Error('Export failed');
+  return response.blob();
+}
 
   // ─── Bookmarks ──────────────────────────────────────────────────────────────
   createBookmark(data: BookmarkData) {

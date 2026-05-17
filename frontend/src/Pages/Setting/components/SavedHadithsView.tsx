@@ -1,6 +1,7 @@
 import { useMemo, useCallback, memo, useEffect, useRef } from 'react'
 import { Heart, Bookmark } from 'lucide-react'
 import { motion } from 'motion/react'
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { Input } from '@/components/ui/input'
 import {
@@ -162,96 +163,111 @@ export default function SavedHadithsView({
     [hadiths, isAuthenticated, toggleBookmarkOptimistic]
   )
 
-  return (
-    <div className="p-4">
-      <div className="flex gap-3 mb-3">
-        <button onClick={onBack}>←</button>
-        <h1 className="font-semibold">Saved Hadiths</h1>
-      </div>
+ return (
+  <div className="p-4 space-y-4">
+    {/* Header */}
+    <div className="flex items-center gap-3">
+      <button onClick={onBack} className="text-lg">
+        ←
+      </button>
+      <h1 className="font-semibold text-lg">Hadiths đã lưu</h1>
+    </div>
 
-      <Input
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search hadith..."
-      />
+    {/* Search */}
+    <Input
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+      placeholder="Tìm hadith..."
+      className="w-full"
+    />
 
-      <div className="flex gap-2 my-3">
-        <button onClick={() => setTab('favorites')}>
-          Favorites ({favorites.length})
-        </button>
+    {/* Tabs */}
+    <Tabs
+      value={tab}
+      onValueChange={(value) =>
+        setTab(value as "favorites" | "bookmarks")
+      }
+    >
+      <TabsList className="w-full grid grid-cols-2">
+        <TabsTrigger value="favorites" className="text-xs sm:text-sm">
+          Yêu thích ({favorites.length})
+        </TabsTrigger>
 
-        <button onClick={() => setTab('bookmarks')}>
-          Bookmarks ({bookmarks.length})
-        </button>
-      </div>
+        <TabsTrigger value="bookmarks" className="text-xs sm:text-sm">
+          Đánh dấu ({bookmarks.length})
+        </TabsTrigger>
+      </TabsList>
+    </Tabs>
 
-      <div className="space-y-2">
-        {filtered.map((h) => (
-          <HadithCard
-            key={h.id}
-            hadith={h}
-            isFav={favorites.includes(h.id)}
-            isBookmarked={bookmarks.includes(h.id)}
-            onOpen={(hadith: HadithDetail) => setSelectedId(hadith.id)}
-            onFav={handleFav}
-            onBm={handleBm}
-          />
-        ))}
-      </div>
+    {/* List */}
+    <div className="space-y-3 pb-10">
+      {filtered.map((h) => (
+        <HadithCard
+          key={h.id}
+          hadith={h}
+          isFav={favorites.includes(h.id)}
+          isBookmarked={bookmarks.includes(h.id)}
+          onOpen={(hadith: HadithDetail) => setSelectedId(hadith.id)}
+          onFav={handleFav}
+          onBm={handleBm}
+        />
+      ))}
+    </div>
 
-      <Sheet
-        open={selectedId !== null}
-        onOpenChange={(open) => {
-          if (!open) setSelectedId(null)
-        }}
+    {/* Sheet */}
+    <Sheet
+      open={selectedId !== null}
+      onOpenChange={(open) => {
+        if (!open) setSelectedId(null);
+      }}
+    >
+      <SheetContent
+        side="right"
+        className="w-full sm:max-w-xl overflow-y-auto"
       >
-        <SheetContent
-          side="right"
-          className="w-full sm:max-w-xl overflow-y-auto"
-        >
-          {selected && (
-            <div className="space-y-5 p-4">
-              <SheetHeader>
-                <SheetTitle>
-                  {selected.title?.replace(/{/g, '')}
-                </SheetTitle>
-                <SheetDescription>
-                  {selected.attribution}
-                </SheetDescription>
-              </SheetHeader>
+        {selected && (
+          <div className="space-y-5 p-4">
+            <SheetHeader>
+              <SheetTitle>
+                {selected.title?.replace(/{/g, "")}
+              </SheetTitle>
+              <SheetDescription>
+                {selected.attribution}
+              </SheetDescription>
+            </SheetHeader>
 
+            <div
+              className="text-sm leading-relaxed"
+              dangerouslySetInnerHTML={{
+                __html: selected.hadeeth,
+              }}
+            />
+
+            {selected.explanation && (
               <div
-                className="text-sm leading-relaxed"
+                className="text-muted-foreground text-sm"
                 dangerouslySetInnerHTML={{
-                  __html: selected.hadeeth,
+                  __html: selected.explanation,
                 }}
               />
+            )}
 
-              {selected.explanation && (
-                <div
-                  className="text-muted-foreground text-sm"
-                  dangerouslySetInnerHTML={{
-                    __html: selected.explanation,
-                  }}
-                />
-              )}
-
-              {selected.fawaed?.length > 0 && (
-                <ul className="space-y-2">
-                  {selected.fawaed.map((f, i) => (
-                    <li key={i} className="text-sm flex gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2" />
-                      <span
-                        dangerouslySetInnerHTML={{ __html: f }}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-        </SheetContent>
-      </Sheet>
-    </div>
-  )
+            {selected.fawaed?.length > 0 && (
+              <ul className="space-y-3">
+                {selected.fawaed.map((f, i) => (
+                  <li key={i} className="text-sm flex gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
+                    <span
+                      dangerouslySetInnerHTML={{ __html: f }}
+                    />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </SheetContent>
+    </Sheet>
+  </div>
+);
 }
