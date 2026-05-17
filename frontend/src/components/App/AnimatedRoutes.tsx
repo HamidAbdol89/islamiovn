@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/lib/routes';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'motion/react';
 import LoadingSpinner from './LoadingSkeleton';
 import AnimatedPage from './AnimatedPage';
 import MainLayout from './MainLayout';

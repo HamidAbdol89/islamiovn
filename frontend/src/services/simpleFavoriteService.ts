@@ -1,5 +1,5 @@
 import { favoriteService } from './favoriteService';
-import { useAuth } from '@/context/AuthContext';
+import { useAuthStore, selectIsAuthenticated } from '@/stores/authStore';
 
 export interface SimpleFavorite {
   id: string;
@@ -114,7 +114,7 @@ export const simpleFavoriteService = new SimpleFavoriteService();
 
 // Custom hook for using the simple favorite service
 export function useSimpleFavoriteService() {
-  const { isAuthenticated } = useAuth();
+  const isAuthenticated = useAuthStore(selectIsAuthenticated);
   
   return {
     getFavorites: (type?: string) => 

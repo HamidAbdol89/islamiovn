@@ -198,3 +198,17 @@
 .animate-slideUp {
   animation: slideUp 0.25s ease-in forwards;
 }
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  overscroll-behavior: none;
+}
+
+img {
+  user-select: none;
+  -webkit-user-drag: none;
+}

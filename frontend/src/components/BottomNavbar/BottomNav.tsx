@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   House,
   Book,
@@ -27,6 +27,8 @@ interface Tab {
 interface BottomNavProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  onToolsClick?: () => void;
+  toolsSheetOpen?: boolean;
   badgeTabs?: string[];
   className?: string;
 }
@@ -121,26 +123,33 @@ function NavOrb({
 
   return (
     <div className="relative flex flex-1 justify-center items-center">
-      <motion.button
-        onClick={onClick}
-        className="absolute flex items-center justify-center rounded-full bg-primary"
-        style={{
-          width: ORB_D,
-          height: ORB_D,
-          top: -ORB_FLOAT,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          boxShadow:
-            `0 10px 25px ${ISLAMIC_GREEN}40, 0 0 40px ${ISLAMIC_GREEN}25`,
-        }}
-        whileTap={{ scale: 0.88 }}
-      >
-        {/* ICON (FIXED PHOSPHOR) */}
-        <Icon
-          size={18}
-          weight="fill"
-          className="text-primary-foreground"
-        />
+   <motion.button
+  onClick={onClick}
+  className="absolute flex items-center justify-center rounded-full bg-primary left-1/2"
+  style={{
+    width: ORB_D,
+    height: ORB_D,
+    top: -ORB_FLOAT,
+    x: '-50%',
+    boxShadow:
+      `0 10px 25px ${ISLAMIC_GREEN}40, 0 0 40px ${ISLAMIC_GREEN}25`,
+  }}
+  whileTap={{ scale: 0.88 }}
+>
+        {/* ICON (IMAGE OR PHOSPHOR) */}
+        {tab.imgUrl ? (
+          <img 
+            src={tab.imgUrl} 
+            alt={tab.label}
+            className="w-[28px] h-[28px] object-contain drop-shadow-sm filter brightness-0 invert" 
+          />
+        ) : (
+          <Icon
+            size={18}
+            weight="fill"
+            className="text-primary-foreground"
+          />
+        )}
 
         {/* glow pulse */}
         {isActive && (
@@ -173,6 +182,8 @@ function NavOrb({
 const BottomNav: React.FC<BottomNavProps> = ({
   activeTab,
   onTabChange,
+  onToolsClick,
+  toolsSheetOpen = false,
   badgeTabs = [],
   className,
 }) => {
@@ -196,10 +207,17 @@ const BottomNav: React.FC<BottomNavProps> = ({
         {/* nav */}
         <nav className="relative flex w-full" style={{ height: NAV_H }}>
           {TABS.map((tab) => {
-            const isActive = activeTab === tab.key;
+            const isActive =
+              tab.key === 'tools' ? toolsSheetOpen : activeTab === tab.key;
             const hasBadge = badgeTabs.includes(tab.key);
 
-            const onClick = () => onTabChange(tab.key);
+            const onClick = () => {
+              if (tab.key === 'tools' && onToolsClick) {
+                onToolsClick();
+                return;
+              }
+              onTabChange(tab.key);
+            };
 
             if (tab.isOrb) {
               return (

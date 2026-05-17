@@ -1,23 +1,31 @@
-import { useState } from 'react';
+"use client"
+
+import { useState } from "react"
+import { Drawer } from "vaul"
+
+import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Separator } from "@/components/ui/separator"
+
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Separator } from "@/components/ui/separator";
-import { BookOpen, Heart, Bookmark, Info, Star, ZoomIn, ZoomOut, Type, Share2, Copy, MessageCircle } from 'lucide-react';
-import { 
+  Heart,
+  Bookmark,
+  ZoomIn,
+  ZoomOut,
+  Type,
+  Share2,
+  Copy,
+  MessageCircle,
+} from "lucide-react"
+
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import type { HadithDetailSheetProps } from '../types';
-import { VIETNAMESE_TEXT } from '../constants';
+} from "@/components/ui/dropdown-menu"
+
+import type { HadithDetailSheetProps } from "../types"
 
 const HadithDetailSheet = ({
   selectedHadith,
@@ -28,250 +36,232 @@ const HadithDetailSheet = ({
   onToggleFavorite,
   onToggleBookmark,
 }: HadithDetailSheetProps) => {
-  const [fontSize, setFontSize] = useState<number>(1); // 1 = 100%, 1.1 = 110%, etc.
+  const [fontSize, setFontSize] = useState<number>(1)
 
-  const increaseFontSize = () => {
-    setFontSize(prev => Math.min(prev + 0.1, 1.5)); // Max 150%
-  };
+  const increaseFontSize = () =>
+    setFontSize((p) => Math.min(p + 0.1, 1.5))
 
-  const decreaseFontSize = () => {
-    setFontSize(prev => Math.max(prev - 0.1, 0.8)); // Min 80%
-  };
+  const decreaseFontSize = () =>
+    setFontSize((p) => Math.max(p - 0.1, 0.8))
 
-  const resetFontSize = () => {
-    setFontSize(1); // Reset to 100%
-  };
+  const resetFontSize = () => setFontSize(1)
 
-  // Share functionality
-  const shareHadith = async (method: 'copy' | 'whatsapp' | 'telegram') => {
-    if (!selectedHadith) return;
-    
+  const shareHadith = async (
+    method: "copy" | "whatsapp" | "telegram"
+  ) => {
+    if (!selectedHadith) return
+
     const shareText = `📖 ${selectedHadith.title.replace(/{/g, "")}
 
-${selectedHadith.hadeeth.replace(/<[^>]*>/g, '')}
+${selectedHadith.hadeeth.replace(/<[^>]*>/g, "")}
 
 📚 ${selectedHadith.attribution}
 
-🔗 Từ islam.io.vn`;
-    
+🔗 Từ islam.io.vn`
+
     try {
-      switch (method) {
-        case 'copy':
-          await navigator.clipboard.writeText(shareText);
-          // You can add toast notification here when available
-          console.log('Đã sao chép hadith vào clipboard');
-          break;
-        case 'whatsapp':
-          window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
-          break;
-        case 'telegram':
-          window.open(`https://t.me/share/url?text=${encodeURIComponent(shareText)}`, '_blank');
-          break;
+      if (method === "copy") {
+        await navigator.clipboard.writeText(shareText)
       }
-    } catch (error) {
-      console.error('Không thể chia sẻ hadith:', error);
+
+      if (method === "whatsapp") {
+        window.open(
+          `https://wa.me/?text=${encodeURIComponent(shareText)}`
+        )
+      }
+
+      if (method === "telegram") {
+        window.open(
+          `https://t.me/share/url?text=${encodeURIComponent(shareText)}`
+        )
+      }
+    } catch (e) {
+      console.error(e)
     }
-  };
+  }
 
   return (
-    <Sheet open={!!selectedHadith} onOpenChange={onClose}>
-      <SheetContent
-        side="right"
-        className="
-          w-screen h-screen max-w-none 
-          sm:w-[800px] md:w-[1024px] lg:w-[1280px] 
-          p-4 sm:p-6 overflow-y-auto
-        "
-      >
-        <SheetHeader className="pt-8 pb-4">
-          <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
-            <div className="flex-1 min-w-0">
-              <SheetTitle className="text-lg sm:text-xl line-clamp-3 mb-2 pr-2 mt-2">
-                {selectedHadith?.title?.replace(/{/g, "")}
-              </SheetTitle>
+    <Drawer.Root
+      open={!!selectedHadith}
+      onOpenChange={(open) => {
+        if (!open) onClose()
+      }}
+    >
+      <Drawer.Portal>
+        {/* overlay */}
+        <Drawer.Overlay className="fixed inset-0 bg-black/50" />
 
-              {selectedHadith?.attribution && (
-                <SheetDescription className="text-sm sm:text-base">
-                  {selectedHadith.attribution}
-                </SheetDescription>
-              )}
-            </div>
-            <div className="flex gap-2 self-start">
-              {/* Font size controls */}
-              <div className="flex items-center gap-1 mr-2 bg-muted rounded-md p-1">
+        {/* sheet */}
+        <Drawer.Content
+          className="
+            fixed bottom-0 left-0 right-0
+            max-h-[92vh]
+            bg-background
+            rounded-t-2xl
+            border-t
+            flex flex-col
+          "
+        >
+          {/* handle */}
+          <div className="mx-auto mt-2 mb-2 h-1.5 w-12 rounded-full bg-muted" />
+
+          {/* HEADER */}
+          <div className="px-4 pt-2 pb-3">
+            <h2 className="text-base font-semibold leading-snug line-clamp-2">
+              {selectedHadith?.title?.replace(/{/g, "")}
+            </h2>
+
+            <p className="text-sm text-muted-foreground">
+              {selectedHadith?.attribution}
+            </p>
+
+            {/* toolbar */}
+            <div className="flex items-center gap-1 mt-3">
+              <Button variant="ghost" size="icon" onClick={decreaseFontSize}>
+                <ZoomOut className="h-4 w-4" />
+              </Button>
+
+              <Button variant="ghost" size="icon" onClick={resetFontSize}>
+                <Type className="h-4 w-4" />
+              </Button>
+
+              <Button variant="ghost" size="icon" onClick={increaseFontSize}>
+                <ZoomIn className="h-4 w-4" />
+              </Button>
+
+              <div className="ml-auto flex gap-1">
                 <Button
                   variant="ghost"
-                  size="sm"
-                  onClick={decreaseFontSize}
-                  className="h-7 w-7 p-0"
-                  title="Giảm cỡ chữ"
+                  size="icon"
+                  onClick={() => {
+                    if (!selectedHadith) return
+                    onToggleFavorite(selectedHadith.id)
+                  }}
                 >
-                  <ZoomOut className="h-3 w-3" />
+                  <Heart
+                    className={`h-4 w-4 ${
+                      selectedHadith &&
+                      favorites.includes(Number(selectedHadith.id))
+                        ? "fill-red-500 text-red-500"
+                        : ""
+                    }`}
+                  />
                 </Button>
-                
+
                 <Button
                   variant="ghost"
-                  size="sm"
-                  onClick={resetFontSize}
-                  className="h-7 w-7 p-0"
-                  title="Cỡ chữ mặc định"
+                  size="icon"
+                  onClick={() => {
+                    if (!selectedHadith) return
+                    onToggleBookmark(selectedHadith.id)
+                  }}
                 >
-                  <Type className="h-3 w-3" />
+                  <Bookmark
+                    className={`h-4 w-4 ${
+                      selectedHadith &&
+                      bookmarks.includes(Number(selectedHadith.id))
+                        ? "fill-blue-500 text-blue-500"
+                        : ""
+                    }`}
+                  />
                 </Button>
-                
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={increaseFontSize}
-                  className="h-7 w-7 p-0"
-                  title="Tăng cỡ chữ"
-                >
-                  <ZoomIn className="h-3 w-3" />
-                </Button>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <Share2 className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => shareHadith("copy")}>
+                      <Copy className="mr-2 h-4 w-4" />
+                      Copy
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      onClick={() => shareHadith("whatsapp")}
+                    >
+                      <MessageCircle className="mr-2 h-4 w-4" />
+                      WhatsApp
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      onClick={() => shareHadith("telegram")}
+                    >
+                      <MessageCircle className="mr-2 h-4 w-4" />
+                      Telegram
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
-              
-              {selectedHadith && (
-                <>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onToggleFavorite(selectedHadith.id)}
-                    // disabled={loadingBookmarks}
-                    className="h-8 w-8 p-0"
-                    title="Thêm vào yêu thích"
-                  >
-                    <Heart 
-                      className={`h-4 w-4 ${
-favorites.includes(selectedHadith.id)
-                          ? 'fill-red-500 text-red-500' 
-                          : 'text-muted-foreground'
-                      }`} 
-                    />
-                   
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onToggleBookmark(selectedHadith.id)}
-                    // disabled={loadingBookmarks}
-                    className="h-8 w-8 p-0"
-                    title="Đánh dấu"
-                  >
-                    <Bookmark 
-                      className={`h-4 w-4 ${
-bookmarks.includes(selectedHadith.id)
-                          ? 'fill-blue-500 text-blue-500' 
-                          : 'text-muted-foreground'
-                      }`} 
-                    />
-                  
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        title="Chia sẻ hadith"
-                      >
-                        <Share2 className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => shareHadith('copy')}>
-                        <Copy className="mr-2 h-4 w-4" />
-                        Sao chép
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => shareHadith('whatsapp')}>
-                        <MessageCircle className="mr-2 h-4 w-4" />
-                        WhatsApp
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => shareHadith('telegram')}>
-                        <MessageCircle className="mr-2 h-4 w-4" />
-                        Telegram
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </>
-              )}
             </div>
           </div>
-        </SheetHeader>
-        
-        <div className="flex-1 space-y-6 mt-4">
-          {isLoading ? (
-            <div className="space-y-4">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-32 w-full" />
-            </div>
-          ) : selectedHadith && (
-            <div className="space-y-6">
-              {/* Hadith Content */}
-              <div>
-                <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2 text-sm sm:text-base">
-                  <BookOpen className="h-4 w-4 flex-shrink-0" />
-                  {VIETNAMESE_TEXT.CONTENT.HADITH_CONTENT}
-                </h3>
-                <div className="bg-muted/50 p-3 sm:p-4 rounded-lg border-l-4 border-primary">
-                  <div 
-                    className="text-foreground leading-relaxed"
+
+          {/* CONTENT */}
+          <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-6">
+            {isLoading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-2/3" />
+                <Skeleton className="h-24 w-full" />
+              </div>
+            ) : (
+              selectedHadith && (
+                <>
+                  {/* HADITH */}
+                  <div
+                    className="bg-muted/40 p-3 rounded-lg text-sm leading-relaxed"
                     style={{ fontSize: `${fontSize}rem` }}
-                    dangerouslySetInnerHTML={{ 
-                      __html: selectedHadith.hadeeth || VIETNAMESE_TEXT.CONTENT.NO_CONTENT
+                    dangerouslySetInnerHTML={{
+                      __html: selectedHadith.hadeeth,
                     }}
                   />
-                </div>
-              </div>
 
-              {selectedHadith.explanation && (
-                <>
-                  <Separator />
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2 text-sm sm:text-base">
-                      <Info className="h-4 w-4 flex-shrink-0" />
-                      {VIETNAMESE_TEXT.CONTENT.EXPLANATION}
-                    </h3>
-                    <div 
-                      className="text-muted-foreground leading-relaxed bg-card p-3 sm:p-4 rounded-lg border"
-                      style={{ fontSize: `${fontSize}rem` }}
-                      dangerouslySetInnerHTML={{ __html: selectedHadith.explanation }}
-                    />
-                  </div>
-                </>
-              )}
+                  {/* EXPLANATION */}
+                  {selectedHadith.explanation && (
+                    <>
+                      <Separator />
 
-              {selectedHadith.fawaed && selectedHadith.fawaed.length > 0 && (
-                <>
-                  <Separator />
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2 text-sm sm:text-base">
-                      <Star className="h-4 w-4 flex-shrink-0" />
-                      {VIETNAMESE_TEXT.CONTENT.BENEFITS}
-                    </h3>
-                    <div className="bg-accent/50 p-3 sm:p-4 rounded-lg border">
-                      <ul className="space-y-2 sm:space-y-3">
-                        {selectedHadith.fawaed.map((fayda: string, index: number) => (
-                          <li 
-                            key={index} 
-                            className="text-accent-foreground leading-relaxed flex items-start gap-2"
+                      <div
+                        className="text-sm text-muted-foreground"
+                        style={{ fontSize: `${fontSize}rem` }}
+                        dangerouslySetInnerHTML={{
+                          __html: selectedHadith.explanation,
+                        }}
+                      />
+                    </>
+                  )}
+
+                  {/* FAWAED */}
+                  {selectedHadith.fawaed?.length > 0 && (
+                    <>
+                      <Separator />
+
+                      <ul className="space-y-2">
+                        {selectedHadith.fawaed.map((f, i) => (
+                          <li
+                            key={i}
+                            className="flex gap-2 text-sm"
                             style={{ fontSize: `${fontSize}rem` }}
                           >
-                            <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0" />
-                            <div dangerouslySetInnerHTML={{ __html: fayda }} />
+                            <span className="mt-2 w-1.5 h-1.5 rounded-full bg-primary" />
+                            <span
+                              dangerouslySetInnerHTML={{ __html: f }}
+                            />
                           </li>
                         ))}
                       </ul>
-                    </div>
-                  </div>
+                    </>
+                  )}
                 </>
-              )}
-            </div>
-          )}
-        </div>
-      </SheetContent>
-    </Sheet>
-  );
-};
+              )
+            )}
+          </div>
+        </Drawer.Content>
+      </Drawer.Portal>
+    </Drawer.Root>
+  )
+}
 
-export default HadithDetailSheet;
+export default HadithDetailSheet

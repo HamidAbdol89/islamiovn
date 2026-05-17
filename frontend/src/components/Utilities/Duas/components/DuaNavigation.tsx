@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { BookOpen, Heart } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { Button } from '@/components/ui/button';
 import { DuaView } from '../types';
 import { VIETNAMESE_TEXT } from '../constants';

@@ -1,7 +1,7 @@
 // SettingsPanel.tsx - Settings panel component for QuranReader
 import React from 'react';
 import { Languages, Palette, Info, Volume2, Type, ZoomIn, ZoomOut } from 'lucide-react';
-import { quranStorageUtils } from './utils/storage';
+import { useQuranStore } from '@/stores/quranStore';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -24,7 +24,8 @@ const SettingsPanel: React.FC<SettingsPanelProps> = React.memo(({
   languages,
   uiText
 }) => {
-  const [fontSize, setFontSize] = React.useState(() => quranStorageUtils.getFontSize());
+  const fontSize = useQuranStore((s) => s.fontSize);
+  const setStoreFontSize = useQuranStore((s) => s.setFontSize);
   const handleLanguageClick = React.useCallback((languageCode: string) => {
     onLanguageChange(languageCode);
   }, [onLanguageChange]);
@@ -34,26 +35,24 @@ const SettingsPanel: React.FC<SettingsPanelProps> = React.memo(({
   }, [onVolumeChange]);
 
   // Font size handlers
-  const increaseFontSize = React.useCallback(() => {
-    const newSize = Math.min(fontSize + 0.1, 2.0); // Max 200%
-    setFontSize(newSize);
-    quranStorageUtils.setFontSize(newSize);
-    // Apply to document root for immediate effect
+  const applyFontSize = React.useCallback((newSize: number) => {
+    setStoreFontSize(newSize);
     document.documentElement.style.setProperty('--quran-font-size', `${newSize}rem`);
-  }, [fontSize]);
+  }, [setStoreFontSize]);
+
+  const increaseFontSize = React.useCallback(() => {
+    const newSize = Math.min(fontSize + 0.1, 2.0);
+    applyFontSize(newSize);
+  }, [fontSize, applyFontSize]);
 
   const decreaseFontSize = React.useCallback(() => {
-    const newSize = Math.max(fontSize - 0.1, 0.6); // Min 60%
-    setFontSize(newSize);
-    quranStorageUtils.setFontSize(newSize);
-    document.documentElement.style.setProperty('--quran-font-size', `${newSize}rem`);
-  }, [fontSize]);
+    const newSize = Math.max(fontSize - 0.1, 0.6);
+    applyFontSize(newSize);
+  }, [fontSize, applyFontSize]);
 
   const resetFontSize = React.useCallback(() => {
-    setFontSize(1.0);
-    quranStorageUtils.setFontSize(1.0);
-    document.documentElement.style.setProperty('--quran-font-size', '1rem');
-  }, []);
+    applyFontSize(1.0);
+  }, [applyFontSize]);
 
   // Apply font size on mount
   React.useEffect(() => {

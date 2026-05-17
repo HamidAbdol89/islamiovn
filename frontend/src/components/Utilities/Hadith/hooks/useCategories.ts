@@ -1,12 +1,24 @@
-import { useQuery } from '@tanstack/react-query';
-import { hadithApi } from '../api';
-import { QUERY_KEYS, CACHE_CONFIG } from '../constants';
+import { useEffect, useRef } from 'react'
+import { useHadithStore } from '@/stores/hadithStore'
+import { hydrateHadithCategories } from '@/hydration/hadithHydration'
 
 export const useCategories = () => {
-  return useQuery({
-    queryKey: QUERY_KEYS.categories,
-    queryFn: hadithApi.getCategories,
-    staleTime: CACHE_CONFIG.categories.staleTime,
-    gcTime: CACHE_CONFIG.categories.gcTime,
-  });
-};
+  const categories = useHadithStore((s) => s.categories)
+  const isLoading = useHadithStore((s) => s.categoriesLoading)
+  const errorMessage = useHadithStore((s) => s.categoriesError)
+  const categoriesHydrated = useHadithStore((s) => s.categoriesHydrated)
+  const didHydrate = useRef(false)
+
+  useEffect(() => {
+    if (categoriesHydrated || didHydrate.current) return
+    didHydrate.current = true
+    void hydrateHadithCategories()
+  }, [categoriesHydrated])
+
+  return {
+    data: categories,
+    isLoading,
+    error: errorMessage ? new Error(errorMessage) : null,
+    refetch: () => hydrateHadithCategories(true),
+  }
+}

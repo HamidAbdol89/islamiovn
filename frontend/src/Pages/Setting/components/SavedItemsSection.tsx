@@ -1,92 +1,69 @@
-import React, { useMemo, useCallback } from 'react';
-import { Heart } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
+import React, { useCallback } from 'react';
+import { BookOpen, Heart } from 'phosphor-react';
 import SettingSection from './SettingSection';
 import SettingItem from './SettingItem';
 import { SECTION_TITLES, SETTING_LABELS } from './constants';
 import type { SavedItemCounts, ViewType } from './types';
 
-interface SavedItemBadgeProps {
-  readonly count: number;
-  readonly type: 'favorite' | 'bookmark';
+interface CountBadgesProps {
+  favorites: number;
+  bookmarks: number;
 }
 
-const SavedItemBadge = React.memo<SavedItemBadgeProps>(({ count, type }) => {
-  const badgeClassName = useMemo(() => 
-    `text-white text-xs px-1.5 py-0.5 rounded-full ${
-      type === 'favorite' ? 'bg-red-500' : 'bg-blue-500'
-    }`,
-    [type]
-  );
+const CountBadges = React.memo<CountBadgesProps>(({ favorites, bookmarks }) => (
+  <span className="flex items-center gap-1.5">
+    {favorites > 0 && (
+      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-destructive/10 text-destructive">
+        {favorites}
+      </span>
+    )}
+    {bookmarks > 0 && (
+      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+        {bookmarks}
+      </span>
+    )}
+  </span>
+));
+CountBadges.displayName = 'CountBadges';
 
-  if (count === 0) return null;
-
-  return (
-    <span className={badgeClassName}>
-      {count}
-    </span>
-  );
-});
-
-SavedItemBadge.displayName = 'SavedItemBadge';
-
-interface SavedItemsSectionProps {
-  readonly counts: SavedItemCounts;
-  readonly onViewChange: (view: ViewType) => void;
+interface Props {
+  counts: SavedItemCounts;
+  onViewChange: (view: ViewType) => void;
 }
 
-const SavedItemsSection = React.memo<SavedItemsSectionProps>(({ counts, onViewChange }) => {
-  const handleHadithClick = useCallback(() => {
-    onViewChange('saved-hadiths');
-  }, [onViewChange]);
-
-  const handleQuranClick = useCallback(() => {
-    onViewChange('saved-quran');
-  }, [onViewChange]);
-
-  const hadithBadges = useMemo(() => {
-    const hasItems = counts.hadithFavorites > 0 || counts.hadithBookmarks > 0;
-    if (!hasItems) return null;
-
-    return (
-      <div className="flex items-center gap-1">
-        <SavedItemBadge count={counts.hadithFavorites} type="favorite" />
-        <SavedItemBadge count={counts.hadithBookmarks} type="bookmark" />
-      </div>
-    );
-  }, [counts.hadithFavorites, counts.hadithBookmarks]);
-
-  const quranBadges = useMemo(() => {
-    const hasItems = counts.quranFavorites > 0 || counts.quranBookmarks > 0;
-    if (!hasItems) return null;
-
-    return (
-      <div className="flex items-center gap-1">
-        <SavedItemBadge count={counts.quranFavorites} type="favorite" />
-        <SavedItemBadge count={counts.quranBookmarks} type="bookmark" />
-      </div>
-    );
-  }, [counts.quranFavorites, counts.quranBookmarks]);
+const SavedItemsSection = React.memo<Props>(({ counts, onViewChange }) => {
+  const goHadiths = useCallback(() => onViewChange('saved-hadiths'), [onViewChange]);
+  const goQuran   = useCallback(() => onViewChange('saved-quran'),   [onViewChange]);
 
   return (
-    <SettingSection title={SECTION_TITLES.SAVED}>
+    <SettingSection title={SECTION_TITLES.SAVED} delay={0.15}>
       <SettingItem
         icon={Heart}
         label={SETTING_LABELS.SAVED_HADITH}
-        onClick={handleHadithClick}
-        rightContent={hadithBadges}
+        iconVariant="red"
+        onClick={goHadiths}
+        rightContent={
+          <CountBadges
+            favorites={counts.hadithFavorites}
+            bookmarks={counts.hadithBookmarks}
+          />
+        }
       />
-      <Separator />
       <SettingItem
-        icon={Heart}
+        icon={BookOpen}
         label={SETTING_LABELS.SAVED_QURAN}
-        onClick={handleQuranClick}
-        rightContent={quranBadges}
+        iconVariant="amber"
+        onClick={goQuran}
+        rightContent={
+          <CountBadges
+            favorites={counts.quranFavorites}
+            bookmarks={counts.quranBookmarks}
+          />
+        }
       />
     </SettingSection>
   );
 });
 
 SavedItemsSection.displayName = 'SavedItemsSection';
-
 export default SavedItemsSection;

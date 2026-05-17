@@ -1,422 +1,303 @@
-import { useState, useMemo, useCallback, memo } from 'react';
-import { ArrowLeft, Heart, Bookmark, Share2, Copy, MessageCircle, Search } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { useMemo, useCallback, memo } from 'react';
+import {
+  ArrowLeft, Bookmark, ChatTeardrop, Copy, Heart,
+  MagnifyingGlass, ShareNetwork,
+} from 'phosphor-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { 
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { quranStorageUtils, type QuranFavorite, type QuranBookmark } from '@/components/Utilities/Quran/utils/storage';
+import {
+  Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle,
+} from '@/components/ui/sheet';
+import {
+  DropdownMenu, DropdownMenuContent,
+  DropdownMenuItem, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import type { QuranFavorite, QuranBookmark } from '@/components/Utilities/Quran/utils/storage';
+import { motion } from 'motion/react';
+import { useQuranStore, selectIsQuranFavorite, selectIsQuranBookmarked, quranAyahKey } from '@/stores/quranStore';
+import { useUiStore } from '@/stores/uiStore';
+import { useQuranActions } from '@/hooks/useQuranActions';
+import { toast } from '@/lib/toast';
 
-interface SavedQuranViewProps {
-  onBack: () => void;
+interface Props { onBack: () => void }
+type QuranItem = QuranFavorite | QuranBookmark;
+
+async function shareAyah(item: QuranItem, method: 'copy' | 'whatsapp' | 'telegram') {
+  const text = `🕌 ${item.surahName} - Ayah ${item.ayahNumber}\n\n${item.ayahText}${item.translation ? `\n\n📖 ${item.translation}` : ''}\n\n🔗 islam.io.vn`;
+  if (method === 'copy')     { await navigator.clipboard.writeText(text); }
+  if (method === 'whatsapp') window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  if (method === 'telegram') window.open(`https://t.me/share/url?text=${encodeURIComponent(text)}`, '_blank');
 }
 
-type ViewType = 'favorites' | 'bookmarks';
+const EmptyState = ({ icon: Icon, title, desc }: { icon: React.ElementType; title: string; desc: string }) => (
+  <div className="flex flex-col items-center gap-3 py-16 px-6 text-center">
+    <motion.div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center">
+      <Icon className="w-7 h-7 text-muted-foreground" />
+    </motion.div>
+    <motion.div>
+      <p className="font-semibold text-foreground text-sm">{title}</p>
+      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{desc}</p>
+    </motion.div>
+  </div>
+);
 
-const SavedQuranView = memo<SavedQuranViewProps>(({ onBack }) => {
-  const [viewType, setViewType] = useState<ViewType>('favorites');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedItem, setSelectedItem] = useState<QuranFavorite | QuranBookmark | null>(null);
-
-  // Get saved items from localStorage
-  const favorites = quranStorageUtils.getFavorites();
-  const bookmarks = quranStorageUtils.getBookmarks();
-  const currentItems = viewType === 'favorites' ? favorites : bookmarks;
-
-  // Filter items based on search query
-  const filteredItems = useMemo(() => {
-    if (!searchQuery.trim()) return currentItems;
-    
-    const query = searchQuery.toLowerCase();
-    return currentItems.filter(item => 
-      item.surahName.toLowerCase().includes(query) ||
-      item.ayahText.toLowerCase().includes(query) ||
-      (item.translation && item.translation.toLowerCase().includes(query))
-    );
-  }, [currentItems, searchQuery]);
-
-  // Share functionality
-  const shareAyah = useCallback(async (item: QuranFavorite | QuranBookmark, method: 'copy' | 'whatsapp' | 'telegram') => {
-    const shareText = `🕌 ${item.surahName} - Ayah ${item.ayahNumber}
-
-${item.ayahText}
-
-${item.translation ? `📖 ${item.translation}
-
-` : ''}🔗 Từ islam.io.vn`;
-    
-    try {
-      switch (method) {
-        case 'copy':
-          await navigator.clipboard.writeText(shareText);
-          console.log('Đã sao chép ayah vào clipboard');
-          break;
-        case 'whatsapp':
-          window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
-          break;
-        case 'telegram':
-          window.open(`https://t.me/share/url?text=${encodeURIComponent(shareText)}`, '_blank');
-          break;
-      }
-    } catch (error) {
-      console.error('Không thể chia sẻ ayah:', error);
-    }
-  }, []);
-
-  const handleItemClick = useCallback((item: QuranFavorite | QuranBookmark) => {
-    setSelectedItem(item);
-  }, []);
-
-  const toggleFavorite = useCallback((surahNumber: number, ayahNumber: number) => {
-    if (quranStorageUtils.isFavorite(surahNumber, ayahNumber)) {
-      quranStorageUtils.removeFavorite(surahNumber, ayahNumber);
-    }
-    // Refresh by reloading (simple approach)
-    if (viewType === 'favorites') {
-      window.location.reload();
-    }
-  }, [viewType]);
-
-  const toggleBookmark = useCallback((surahNumber: number, ayahNumber: number) => {
-    if (quranStorageUtils.isBookmarked(surahNumber, ayahNumber)) {
-      quranStorageUtils.removeBookmark(surahNumber, ayahNumber);
-    }
-    // Refresh by reloading (simple approach)
-    if (viewType === 'bookmarks') {
-      window.location.reload();
-    }
-  }, [viewType]);
-
-  const QuranItemCard = memo(({ item }: { item: QuranFavorite | QuranBookmark }) => (
-    <Card className="hover:shadow-md transition-shadow cursor-pointer">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-3">
-          <CardTitle 
-            className="text-sm font-medium line-clamp-2 flex-1"
-            onClick={() => handleItemClick(item)}
-          >
-            {item.surahName} - Ayah {item.ayahNumber}
-          </CardTitle>
-          <div className="flex gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleFavorite(item.surahNumber, item.ayahNumber);
-              }}
-              className="h-8 w-8 p-0"
-            >
-              <Heart 
-                className={`h-4 w-4 ${
-                  quranStorageUtils.isFavorite(item.surahNumber, item.ayahNumber)
-                    ? 'fill-red-500 text-red-500' 
-                    : 'text-muted-foreground'
-                }`} 
-              />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleBookmark(item.surahNumber, item.ayahNumber);
-              }}
-              className="h-8 w-8 p-0"
-            >
-              <Bookmark 
-                className={`h-4 w-4 ${
-                  quranStorageUtils.isBookmarked(item.surahNumber, item.ayahNumber)
-                    ? 'fill-blue-500 text-blue-500' 
-                    : 'text-muted-foreground'
-                }`} 
-              />
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => e.stopPropagation()}
-                  className="h-8 w-8 p-0"
-                >
-                  <Share2 className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => shareAyah(item, 'copy')}>
-                  <Copy className="mr-2 h-4 w-4" />
-                  Sao chép
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => shareAyah(item, 'whatsapp')}>
-                  <MessageCircle className="mr-2 h-4 w-4" />
-                  WhatsApp
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => shareAyah(item, 'telegram')}>
-                  <MessageCircle className="mr-2 h-4 w-4" />
-                  Telegram
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div 
-          className="text-2xl text-right font-arabic font-medium mb-3 cursor-pointer line-clamp-2"
-          onClick={() => handleItemClick(item)}
-          style={{ fontSize: 'var(--quran-font-size, 2rem)' }}
-        >
-          {item.ayahText}
-        </div>
-        {item.translation && (
-          <p 
-            className="text-sm text-muted-foreground line-clamp-2 cursor-pointer"
-            onClick={() => handleItemClick(item)}
-          >
-            {item.translation}
-          </p>
-        )}
-        <div className="flex items-center justify-between mt-3">
-          <Badge variant="secondary" className="text-xs">
-            {new Date(item.timestamp).toLocaleDateString('vi-VN')}
-          </Badge>
-        </div>
-      </CardContent>
-    </Card>
-  ));
-
-  QuranItemCard.displayName = 'QuranItemCard';
+const QuranCard = memo(({
+  item, onOpen, onToggleFav, onToggleBm,
+}: {
+  item: QuranItem;
+  onOpen: (i: QuranItem) => void;
+  onToggleFav: (surah: number, ayah: number) => void;
+  onToggleBm:  (surah: number, ayah: number) => void;
+}) => {
+  const isFav = useQuranStore(selectIsQuranFavorite(item.surahNumber, item.ayahNumber));
+  const isBm  = useQuranStore(selectIsQuranBookmarked(item.surahNumber, item.ayahNumber));
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-4 sm:p-6 max-w-6xl">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onBack}
-              className="h-9 w-9 p-0"
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-card border border-border rounded-[var(--radius)] overflow-hidden hover:shadow-md transition-shadow"
+    >
+      <motion.div className="px-4 pt-4 pb-2 flex items-start gap-2">
+        <button type="button" onClick={() => onOpen(item)} className="flex-1 text-left text-sm font-semibold text-foreground">
+          {item.surahName}
+          <span className="font-normal text-muted-foreground ml-1">· Ayah {item.ayahNumber}</span>
+        </button>
+        <motion.div className="flex gap-0.5 flex-shrink-0">
+          <button type="button" onClick={() => onToggleFav(item.surahNumber, item.ayahNumber)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted">
+            <Heart className={`w-4 h-4 ${isFav ? 'fill-destructive text-destructive' : 'text-muted-foreground'}`} />
+          </button>
+          <button type="button" onClick={() => onToggleBm(item.surahNumber, item.ayahNumber)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted">
+            <Bookmark className={`w-4 h-4 ${isBm ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />
+          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button type="button" className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted">
+                <ShareNetwork className="w-4 h-4 text-muted-foreground" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => shareAyah(item, 'copy')}><Copy className="mr-2 w-4 h-4" />Sao chép</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => shareAyah(item, 'whatsapp')}><ChatTeardrop className="mr-2 w-4 h-4" />WhatsApp</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => shareAyah(item, 'telegram')}><ChatTeardrop className="mr-2 w-4 h-4" />Telegram</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </motion.div>
+      </motion.div>
+
+      <button type="button" onClick={() => onOpen(item)} className="w-full text-left px-4 pb-4">
+        <p
+          className="text-right font-arabic text-xl leading-loose text-foreground line-clamp-2 mb-2"
+          style={{ fontSize: 'var(--quran-font-size, 1.5rem)' }}
+        >
+          {item.ayahText}
+        </p>
+        {item.translation && (
+          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{item.translation}</p>
+        )}
+        <Badge variant="secondary" className="mt-2 text-[11px]">
+          {new Date(item.timestamp).toLocaleDateString('vi-VN')}
+        </Badge>
+      </button>
+    </motion.div>
+  );
+});
+QuranCard.displayName = 'QuranCard';
+
+const SavedQuranView = memo<Props>(({ onBack }) => {
+  const { toggleFavoriteOptimistic, toggleBookmarkOptimistic } = useQuranActions();
+
+  const favorites = useQuranStore((s) => s.favorites);
+  const bookmarks = useQuranStore((s) => s.bookmarks);
+
+  const tab = useUiStore((s) => s.savedQuranTab);
+  const search = useUiStore((s) => s.savedQuranSearch);
+  const selectedKey = useUiStore((s) => s.savedQuranSelectedKey);
+  const setTab = useUiStore((s) => s.setSavedQuranTab);
+  const setSearch = useUiStore((s) => s.setSavedQuranSearch);
+  const setSelectedKey = useUiStore((s) => s.setSavedQuranSelectedKey);
+
+  const currentItems = tab === 'favorites' ? favorites : bookmarks;
+
+  const selected = useMemo(() => {
+    if (!selectedKey) return null;
+    return (
+      favorites.find((f) => quranAyahKey(f.surahNumber, f.ayahNumber) === selectedKey) ??
+      bookmarks.find((b) => quranAyahKey(b.surahNumber, b.ayahNumber) === selectedKey) ??
+      null
+    );
+  }, [selectedKey, favorites, bookmarks]);
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return currentItems;
+    const q = search.toLowerCase();
+    return currentItems.filter(i =>
+      i.surahName.toLowerCase().includes(q) ||
+      i.ayahText.toLowerCase().includes(q) ||
+      (i.translation?.toLowerCase().includes(q) ?? false)
+    );
+  }, [currentItems, search]);
+
+  const handleToggleFav = useCallback(
+    async (surah: number, ayah: number) => {
+      const item = currentItems.find(
+        (i) => i.surahNumber === surah && i.ayahNumber === ayah
+      );
+      if (!item) return;
+
+      const ok = await toggleFavoriteOptimistic({
+        surahNumber: surah,
+        ayahNumber: ayah,
+        surahName: item.surahName,
+        ayahText: item.ayahText,
+        translation: item.translation,
+      });
+      if (!ok) toast.error('Không thể cập nhật yêu thích');
+    },
+    [currentItems, toggleFavoriteOptimistic]
+  );
+
+  const handleToggleBm = useCallback(
+    async (surah: number, ayah: number) => {
+      const item = currentItems.find(
+        (i) => i.surahNumber === surah && i.ayahNumber === ayah
+      );
+      if (!item) return;
+
+      const ok = await toggleBookmarkOptimistic({
+        surahNumber: surah,
+        ayahNumber: ayah,
+        surahName: item.surahName,
+        ayahText: item.ayahText,
+        translation: item.translation,
+      });
+      if (!ok) toast.error('Không thể cập nhật đánh dấu');
+    },
+    [currentItems, toggleBookmarkOptimistic]
+  );
+
+  return (
+    <motion.div className="min-h-screen bg-background">
+      <motion.div className="mx-auto max-w-2xl px-4 pb-10">
+
+        <motion.div className="flex items-center gap-3 pt-6 pb-5">
+          <button
+            type="button"
+            onClick={onBack}
+            className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-muted transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <motion.div>
+            <h1 className="text-lg font-semibold text-foreground">Quran đã lưu</h1>
+            <p className="text-xs text-muted-foreground">Yêu thích và đánh dấu</p>
+          </motion.div>
+        </motion.div>
+
+        <motion.div className="flex gap-2 mb-4">
+          {(['favorites', 'bookmarks'] as const).map(t => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setTab(t)}
+              className={[
+                'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all',
+                tab === t
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'bg-muted text-muted-foreground hover:text-foreground',
+              ].join(' ')}
             >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <h1 className="text-xl font-semibold">Quran đã lưu</h1>
-              <p className="text-sm text-muted-foreground">
-                Xem lại các ayah bạn đã yêu thích và đánh dấu
-              </p>
-            </div>
-          </div>
-        </div>
+              {t === 'favorites' ? <Heart className="w-3.5 h-3.5" /> : <Bookmark className="w-3.5 h-3.5" />}
+              {t === 'favorites' ? `Yêu thích (${favorites.length})` : `Đánh dấu (${bookmarks.length})`}
+            </button>
+          ))}
+        </motion.div>
 
-        {/* View Type Tabs */}
-        <div className="flex gap-2 mb-4">
-          <Button
-            variant={viewType === 'favorites' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setViewType('favorites')}
-            className="flex items-center gap-2"
-          >
-            <Heart className="h-4 w-4" />
-            Yêu thích ({favorites.length})
-          </Button>
-          <Button
-            variant={viewType === 'bookmarks' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setViewType('bookmarks')}
-            className="flex items-center gap-2"
-          >
-            <Bookmark className="h-4 w-4" />
-            Đánh dấu ({bookmarks.length})
-          </Button>
-        </div>
-
-        {/* Search */}
-        <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <motion.div className="relative mb-5">
+          <MagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Tìm kiếm ayah..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={search}
+            onChange={e => setSearch(e.target.value)}
             className="pl-10"
           />
-        </div>
+        </motion.div>
 
-        {/* Content */}
         {currentItems.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-              {viewType === 'favorites' ? (
-                <Heart className="h-8 w-8 text-muted-foreground" />
-              ) : (
-                <Bookmark className="h-8 w-8 text-muted-foreground" />
-              )}
-            </div>
-            <h3 className="text-lg font-medium mb-2">
-              {viewType === 'favorites' ? 'Chưa có ayah yêu thích' : 'Chưa có ayah đánh dấu'}
-            </h3>
-            <p className="text-muted-foreground">
-              {viewType === 'favorites' 
-                ? 'Hãy thêm ayah vào danh sách yêu thích để xem lại sau'
-                : 'Hãy đánh dấu ayah để đọc lại sau'
-              }
-            </p>
-          </div>
-        ) : filteredItems.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">
-              {searchQuery ? 'Không tìm thấy ayah phù hợp' : 'Không có ayah nào'}
-            </p>
-          </div>
+          <EmptyState
+            icon={tab === 'favorites' ? Heart : Bookmark}
+            title={tab === 'favorites' ? 'Chưa có ayah yêu thích' : 'Chưa có ayah đánh dấu'}
+            desc={tab === 'favorites' ? 'Thêm ayah vào yêu thích để xem lại sau' : 'Đánh dấu ayah để đọc lại sau'}
+          />
+        ) : filtered.length === 0 ? (
+          <EmptyState icon={MagnifyingGlass} title="Không tìm thấy" desc={`Không có kết quả cho "${search}"`} />
         ) : (
-          <>
-            <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredItems.map((item, index) => (
-                <QuranItemCard key={`${item.surahNumber}-${item.ayahNumber}-${index}`} item={item} />
-              ))}
-            </div>
-            
-            <div className="text-center py-6">
-              <p className="text-sm text-muted-foreground">
-                Hiển thị {filteredItems.length} ayah
-                {searchQuery && ` cho "${searchQuery}"`}
-              </p>
-            </div>
-          </>
+          <motion.div className="grid gap-3 sm:grid-cols-2">
+            {filtered.map((item) => (
+              <QuranCard
+                key={quranAyahKey(item.surahNumber, item.ayahNumber)}
+                item={item}
+                onOpen={(i) => setSelectedKey(quranAyahKey(i.surahNumber, i.ayahNumber))}
+                onToggleFav={handleToggleFav}
+                onToggleBm={handleToggleBm}
+              />
+            ))}
+          </motion.div>
         )}
-      </div>
+        {filtered.length > 0 && (
+          <p className="text-center text-xs text-muted-foreground pt-6">
+            {filtered.length} ayah{search ? ` cho "${search}"` : ''}
+          </p>
+        )}
+      </motion.div>
 
-      {/* Ayah Detail Sheet */}
-      <Sheet open={!!selectedItem} onOpenChange={() => setSelectedItem(null)}>
-        <SheetContent
-          side="right"
-          className="w-screen h-screen max-w-none sm:w-[800px] md:w-[1024px] lg:w-[1280px] p-4 sm:p-6 overflow-y-auto"
-        >
-          <SheetHeader className="pt-8 pb-4">
-            <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <SheetTitle className="text-lg sm:text-xl line-clamp-3 mb-2 pr-2 mt-2">
-                  {selectedItem?.surahName} - Ayah {selectedItem?.ayahNumber}
-                </SheetTitle>
-                <SheetDescription className="text-sm sm:text-base">
-                  {new Date(selectedItem?.timestamp || 0).toLocaleDateString('vi-VN', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </SheetDescription>
-              </div>
-              <div className="flex gap-2 self-start">
-                {selectedItem && (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => toggleFavorite(selectedItem.surahNumber, selectedItem.ayahNumber)}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Heart 
-                        className={`h-4 w-4 ${
-                          quranStorageUtils.isFavorite(selectedItem.surahNumber, selectedItem.ayahNumber)
-                            ? 'fill-red-500 text-red-500' 
-                            : 'text-muted-foreground'
-                        }`} 
-                      />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => toggleBookmark(selectedItem.surahNumber, selectedItem.ayahNumber)}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Bookmark 
-                        className={`h-4 w-4 ${
-                          quranStorageUtils.isBookmarked(selectedItem.surahNumber, selectedItem.ayahNumber)
-                            ? 'fill-blue-500 text-blue-500' 
-                            : 'text-muted-foreground'
-                        }`} 
-                      />
-                    </Button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <Share2 className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => shareAyah(selectedItem, 'copy')}>
-                          <Copy className="mr-2 h-4 w-4" />
-                          Sao chép
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => shareAyah(selectedItem, 'whatsapp')}>
-                          <MessageCircle className="mr-2 h-4 w-4" />
-                          WhatsApp
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => shareAyah(selectedItem, 'telegram')}>
-                          <MessageCircle className="mr-2 h-4 w-4" />
-                          Telegram
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </>
-                )}
-              </div>
-            </div>
+      <Sheet
+        open={selectedKey !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedKey(null);
+        }}
+      >
+        <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto">
+          <SheetHeader className="pt-6 pb-4">
+            <SheetTitle>{selected?.surahName} · Ayah {selected?.ayahNumber}</SheetTitle>
+            <SheetDescription>
+              {selected && new Date(selected.timestamp).toLocaleDateString('vi-VN', { year: 'numeric', month: 'long', day: 'numeric' })}
+            </SheetDescription>
           </SheetHeader>
-          
-          {selectedItem && (
-            <div className="flex-1 space-y-6 mt-4">
-              {/* Arabic Text */}
-              <div>
-                <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2 text-sm sm:text-base">
-                  Nội dung Ayah
-                </h3>
-                <div className="bg-muted/50 p-3 sm:p-4 rounded-lg border-l-4 border-primary">
-                  <div 
-                    className="text-foreground leading-loose text-right font-arabic font-medium"
-                    style={{ fontSize: 'var(--quran-font-size, 2.5rem)' }}
-                  >
-                    {selectedItem.ayahText}
-                  </div>
-                </div>
-              </div>
 
-              {selectedItem.translation && (
+          {selected && (
+            <motion.div className="space-y-5 pb-8">
+              <motion.div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Nội dung Ayah</p>
+                <motion.div className="bg-muted/50 rounded-xl p-4 border-l-2 border-primary">
+                  <p
+                    className="text-right font-arabic leading-loose text-foreground"
+                    style={{ fontSize: 'var(--quran-font-size, 2rem)' }}
+                  >
+                    {selected.ayahText}
+                  </p>
+                </motion.div>
+              </motion.div>
+
+              {selected.translation && (
                 <>
                   <Separator />
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2 text-sm sm:text-base">
-                      Bản dịch
-                    </h3>
-                    <div className="text-muted-foreground leading-relaxed bg-card p-3 sm:p-4 rounded-lg border">
-                      {selectedItem.translation}
-                    </div>
-                  </div>
+                  <motion.div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Bản dịch</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed bg-card p-4 rounded-xl border">
+                      {selected.translation}
+                    </p>
+                  </motion.div>
                 </>
               )}
-            </div>
+            </motion.div>
           )}
         </SheetContent>
       </Sheet>
-    </div>
+    </motion.div>
   );
 });
 
 SavedQuranView.displayName = 'SavedQuranView';
-
 export default SavedQuranView;

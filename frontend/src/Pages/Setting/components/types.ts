@@ -1,3 +1,5 @@
+import type React from 'react';
+
 export interface ThemeOption {
   readonly id: string;
   readonly name: string;
@@ -31,7 +33,6 @@ export interface SettingNavigationProps {
   readonly onViewChange: (view: ViewType) => void;
 }
 
-/** Normalized user shape used throughout the app */
 export interface AppUser {
   readonly id: string;
   readonly email: string;

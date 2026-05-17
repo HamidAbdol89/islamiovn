@@ -1,13 +1,18 @@
 import React from 'react';
+import { motion } from 'motion/react';
 
-const SettingHeader: React.FC = () => {
-  return (
-    <div className="container mx-auto p-4 sm:p-6 max-w-4xl flex justify-center">
-      <img src="/logo.png" alt="Biểu tượng" className="h-32 w-auto" />
-    </div>
-  );
-};
+const SettingHeader: React.FC = () => (
+  <motion.div
+    className="flex flex-col items-center gap-1.5 py-8"
+    initial={{ opacity: 0, y: -12 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.3, ease: 'easeOut' }}
+  >
+    {/* Gradient icon mark */}
+     <img src="/logo.png" alt="Islam.io logo" className="w-[60px] h-[60px]" />
+    <p className="text-xs text-muted-foreground">Islam.io.vn</p>
+  </motion.div>
+);
 
 SettingHeader.displayName = 'SettingHeader';
-
 export default React.memo(SettingHeader);

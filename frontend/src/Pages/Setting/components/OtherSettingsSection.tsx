@@ -1,6 +1,5 @@
 import React, { useCallback } from 'react';
-import { Cloud, Download, Share2, Shield } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
+import { Cloud, Download, ShareNetwork, Shield } from 'phosphor-react';
 import SettingSection from './SettingSection';
 import SettingItem from './SettingItem';
 import { SECTION_TITLES, SETTING_LABELS, SHARE_DATA, MESSAGES } from './constants';
@@ -10,55 +9,38 @@ const OtherSettingsSection: React.FC = () => {
     const shareData = {
       title: SHARE_DATA.title,
       text: SHARE_DATA.text,
-      url: window.location.origin
+      url: window.location.origin,
     };
-
     try {
       if (navigator.share && navigator.canShare(shareData)) {
         await navigator.share(shareData);
       } else {
-        // Fallback: copy to clipboard
-        await navigator.clipboard.writeText(`${shareData.title}\n\n${shareData.text}\n\n${shareData.url}`);
+        await navigator.clipboard.writeText(
+          `${shareData.title}\n\n${shareData.text}\n\n${shareData.url}`
+        );
         alert(MESSAGES.SHARE_SUCCESS);
       }
-    } catch (error) {
-      console.error('Error sharing:', error);
-      // Fallback: copy to clipboard
+    } catch {
       try {
-        await navigator.clipboard.writeText(`${shareData.title}\n\n${shareData.text}\n\n${shareData.url}`);
+        await navigator.clipboard.writeText(
+          `${shareData.title}\n\n${shareData.text}\n\n${shareData.url}`
+        );
         alert(MESSAGES.SHARE_SUCCESS);
-      } catch (clipboardError) {
+      } catch {
         alert(MESSAGES.SHARE_ERROR);
       }
     }
   }, []);
 
   return (
-    <SettingSection title={SECTION_TITLES.OTHER}>
-      <SettingItem
-        icon={Cloud}
-        label={SETTING_LABELS.BACKUP_RESTORE}
-      />
-      <Separator />
-      <SettingItem
-        icon={Download}
-        label={SETTING_LABELS.EXPORT_PRAYER_TIMES}
-      />
-      <Separator />
-      <SettingItem
-        icon={Share2}
-        label={SETTING_LABELS.SHARE_APP}
-        onClick={handleShareApp}
-      />
-      <Separator />
-      <SettingItem
-        icon={Shield}
-        label={SETTING_LABELS.PRIVACY_POLICY}
-      />
+    <SettingSection title={SECTION_TITLES.OTHER} delay={0.25}>
+      <SettingItem icon={Cloud}     label={SETTING_LABELS.BACKUP_RESTORE}       iconVariant="teal" />
+      <SettingItem icon={Download}  label={SETTING_LABELS.EXPORT_PRAYER_TIMES}  iconVariant="green" />
+      <SettingItem icon={ShareNetwork} label={SETTING_LABELS.SHARE_APP}            iconVariant="amber" onClick={handleShareApp} />
+      <SettingItem icon={Shield}    label={SETTING_LABELS.PRIVACY_POLICY}       iconVariant="gray" />
     </SettingSection>
   );
 };
 
 OtherSettingsSection.displayName = 'OtherSettingsSection';
-
 export default React.memo(OtherSettingsSection);

@@ -1,7 +1,7 @@
 // AnimatedPage.tsx
 import React from 'react';
-import { motion } from 'framer-motion';
-import type { Transition } from 'framer-motion';
+import { motion } from 'motion/react';
+import type { Transition } from 'motion/react';
 interface AnimatedPageProps {
   children: React.ReactNode;
 }

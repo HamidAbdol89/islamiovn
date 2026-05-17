@@ -1,10 +1,7 @@
 import React, { useCallback, useState, useEffect, useMemo, memo } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import IconTab from '@/Pages/Home/IconTab';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import BottomNav from '@/components/BottomNavbar/BottomNav';
-import { ROUTES, TAB_ROUTES, UTILITY_ROUTES } from '@/lib/routes';
+import { ROUTES } from '@/lib/routes';
 import { ChevronRight, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -38,19 +35,7 @@ CarouselSlide.displayName = 'CarouselSlide';
 
 const Utilities: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [activeTab, setActiveTab] = useState('home');
-
-  // Determine active tab based on path
-  useEffect(() => {
-    const path = location.pathname;
-    if (path === ROUTES.HOME) setActiveTab('home');
-    else if (path.startsWith(ROUTES.NEWS)) setActiveTab('news');
-    else if (path.startsWith(ROUTES.CHAT)) setActiveTab('chat');
-    else if (path.startsWith(ROUTES.VIDEO)) setActiveTab('video');
-    else if (path.startsWith(ROUTES.SETTING)) setActiveTab('setting');
-  }, [location]);
 
   // Auto-advance carousel
   const carouselLength = useMemo(() => CAROUSEL_IMAGES.length, []);
@@ -63,27 +48,9 @@ const Utilities: React.FC = () => {
     return () => clearInterval(interval);
   }, [carouselLength]);
 
-  // Memoized navigation handlers
-  const handleNavigateToUtility = useCallback((utilityName: string) => {
-    const route = UTILITY_ROUTES[utilityName as keyof typeof UTILITY_ROUTES];
-    if (route) {
-      navigate(route);
-    }
-  }, [navigate]);
-
   const handleExploreMasjids = useCallback(() => {
     navigate(ROUTES.UTILITIES.MASJID_VIET_NAM);
   }, [navigate]);
-
-  const handleTabChange = useCallback((tab: string) => {
-    setActiveTab(tab);
-    const route = TAB_ROUTES[tab as keyof typeof TAB_ROUTES];
-    if (route) {
-      navigate(route);
-    }
-  }, [navigate]);
-
-  const utilityCount = useMemo(() => Object.keys(UTILITY_ROUTES).length, []);
 
   return (
     <div className="min-h-screen w-full bg-background flex flex-col relative pb-16">
@@ -144,27 +111,7 @@ const Utilities: React.FC = () => {
             </CardContent>
           </Card>
         </div>
-
-        {/* Utilities Grid */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-foreground">Tiện ích</h2>
-            <Badge variant="secondary">{utilityCount} công cụ</Badge>
-          </div>
-          <Card>
-            <CardContent className="p-3">
-              <IconTab
-                onUtilityClick={handleNavigateToUtility}
-                activeUtility={undefined}
-                mode="grid"
-              />
-            </CardContent>
-          </Card>
-        </div>
       </main>
-
-      {/* Bottom Navigation */}
-      <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
     </div>
   );
 };

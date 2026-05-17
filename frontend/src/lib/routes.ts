@@ -1,7 +1,6 @@
 // lib/routes.ts - Quản lý routes tập trung
 export const ROUTES = {
   HOME: '/',
-  NEWS: '/tin-tuc',
   VIDEO: '/video',
   SETTING: '/cai-dat',
   CHAT: '/chat',
@@ -24,12 +23,12 @@ export const ROUTES = {
 };
 
 export const TAB_ROUTES = {
-  'home': ROUTES.HOME,
-  'news': ROUTES.NEWS,
-  'chat': ROUTES.CHAT,
-  'video': ROUTES.VIDEO,
-  'setting': ROUTES.SETTING,
-};
+  home: ROUTES.HOME,
+  quran: ROUTES.UTILITIES.QURAN_READER,
+  setting: ROUTES.SETTING,
+  chat: ROUTES.CHAT,
+  video: ROUTES.VIDEO,
+} as const;
 
 export const UTILITY_ROUTES = {
   'quranreader': ROUTES.UTILITIES.QURAN_READER,

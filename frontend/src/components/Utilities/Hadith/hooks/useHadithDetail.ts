@@ -1,13 +1,30 @@
-import { useQuery } from '@tanstack/react-query';
-import { hadithApi } from '@/components/Utilities/Hadith/api';
-import { QUERY_KEYS, CACHE_CONFIG } from '../constants';
+import { useEffect, useRef } from 'react'
+import { useHadithStore } from '@/stores/hadithStore'
+import { hydrateHadithDetail } from '@/hydration/hadithHydration'
 
 export const useHadithDetail = (hadithId: number | null) => {
-  return useQuery({
-    queryKey: QUERY_KEYS.hadithDetail(hadithId!),
-    queryFn: () => hadithApi.getHadithDetail(hadithId!),
-    enabled: !!hadithId,
-    staleTime: CACHE_CONFIG.hadithDetail.staleTime,
-    gcTime: CACHE_CONFIG.hadithDetail.gcTime,
-  });
-};
+  const hadithDetails = useHadithStore((s) => s.hadithDetails)
+  const loadingId = useHadithStore((s) => s.hadithDetailLoadingId)
+  const didHydrate = useRef<number | null>(null)
+
+  useEffect(() => {
+    if (!hadithId) return
+    if (hadithDetails[hadithId]) return
+    if (didHydrate.current === hadithId) return
+
+    didHydrate.current = hadithId
+    void hydrateHadithDetail(hadithId)
+  }, [hadithId, hadithDetails])
+
+  useEffect(() => {
+    if (!hadithId) {
+      didHydrate.current = null
+    }
+  }, [hadithId])
+
+  return {
+    data: hadithId ? hadithDetails[hadithId] : undefined,
+    isLoading:
+      hadithId !== null && loadingId === hadithId && !hadithDetails[hadithId],
+  }
+}

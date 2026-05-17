@@ -1,13 +1,39 @@
-import { useQuery } from '@tanstack/react-query';
-import { hadithApi } from '../api';
-import { QUERY_KEYS, CACHE_CONFIG } from '../constants';
+import { useEffect, useRef, useState } from 'react'
+import { useHadithStore, listCacheKey } from '@/stores/hadithStore'
+import { hydrateHadithListPage } from '@/hydration/hadithHydration'
+import type { ApiResponse, HadithSummary } from '../types'
 
 export const useHadiths = (categoryId: number | null, page: number) => {
-  return useQuery({
-    queryKey: QUERY_KEYS.hadiths(categoryId!, page),
-    queryFn: () => hadithApi.getHadiths(categoryId!, page),
-    enabled: !!categoryId,
-    staleTime: CACHE_CONFIG.hadiths.staleTime,
-    gcTime: CACHE_CONFIG.hadiths.gcTime,
-  });
-};
+  const hadithListCache = useHadithStore((s) => s.hadithListCache)
+  const hadithListLoadingKey = useHadithStore((s) => s.hadithListLoadingKey)
+  const [error, setError] = useState<Error | null>(null)
+  const didHydrate = useRef<string | null>(null)
+
+  const cacheKey =
+    categoryId !== null ? listCacheKey(categoryId, page) : null
+  const data = cacheKey ? hadithListCache[cacheKey] : undefined
+  const isLoading =
+    cacheKey !== null && hadithListLoadingKey === cacheKey && !data
+
+  useEffect(() => {
+    if (categoryId === null) return
+    const key = listCacheKey(categoryId, page)
+    if (hadithListCache[key] || didHydrate.current === key) return
+
+    didHydrate.current = key
+    setError(null)
+
+    void hydrateHadithListPage(categoryId, page).then((result) => {
+      if (!result) {
+        setError(new Error('Failed to load hadiths'))
+      }
+    })
+  }, [categoryId, page, hadithListCache])
+
+  return {
+    data: data as ApiResponse<HadithSummary> | undefined,
+    isLoading,
+    error,
+    isError: !!error,
+  }
+}

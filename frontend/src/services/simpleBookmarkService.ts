@@ -1,5 +1,5 @@
 import { hadithBookmarkService } from './hadithBookmarkService';
-import { useAuth } from '@/context/AuthContext';
+import { useAuthStore, selectIsAuthenticated } from '@/stores/authStore';
 
 export interface SimpleBookmark {
   id: string;
@@ -128,7 +128,7 @@ export const simpleBookmarkService = new SimpleBookmarkService();
 
 // Custom hook for using the simple bookmark service
 export function useSimpleBookmarkService() {
-  const { isAuthenticated } = useAuth();
+  const isAuthenticated = useAuthStore(selectIsAuthenticated);
   
   return {
     getBookmarks: (type?: string) => 

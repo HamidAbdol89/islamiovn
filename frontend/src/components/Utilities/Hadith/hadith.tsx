@@ -1,11 +1,10 @@
-import { useState, useEffect, useMemo, useCallback, memo } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useEffect, useMemo, useCallback, memo } from 'react';
 
-// Internal imports
 import { useCategories, useHadithDetail, useBatchHadiths } from './hooks';
-import { useSimpleBookmarkService } from '@/services/simpleBookmarkService';
-import { useSimpleFavoriteService } from '@/services/simpleFavoriteService';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
+import { useHadithStore } from '@/stores/hadithStore';
+import { useUiStore } from '@/stores/uiStore';
+import { useHadithActions } from '@/hooks/useHadithActions';
 import {
   LoadingSkeleton,
   CategoryCard,
@@ -18,23 +17,35 @@ import {
 import type { Category, HadithSummary } from './types';
 
 const HadithApp = memo(() => {
-  const queryClient = useQueryClient();
   const { isAuthenticated } = useAuth();
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [selectedHadithId, setSelectedHadithId] = useState<number | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [favorites, setFavorites] = useState<number[]>([]);
-  const [bookmarks, setBookmarks] = useState<number[]>([]);
-  const [loadingBookmarks, setLoadingBookmarks] = useState(false);
-  
-  // Use simple services
-  const favoriteService = useSimpleFavoriteService();
-  const bookmarkService = useSimpleBookmarkService();
-  // React Query hooks
-  const { data: categories, isLoading: categoriesLoading, error: categoriesError } = useCategories();
-  const { data: selectedHadith, isLoading: hadithDetailLoading } = useHadithDetail(selectedHadithId);
-  
-  // Batch loading hook - auto load all hadiths for selected category
+  const { toggleFavoriteOptimistic, toggleBookmarkOptimistic } = useHadithActions();
+
+  const favorites = useHadithStore((s) => s.favorites);
+  const bookmarks = useHadithStore((s) => s.bookmarks);
+  const hydratedUserId = useHadithStore((s) => s.hydratedUserId);
+  const loadingBookmarks = isAuthenticated && hydratedUserId === null;
+
+  const selectedCategoryId = useUiStore((s) => s.hadithSelectedCategoryId);
+  const selectedHadithId = useUiStore((s) => s.hadithSelectedHadithId);
+  const currentPage = useUiStore((s) => s.hadithCurrentPage);
+  const setHadithSelectedCategoryId = useUiStore((s) => s.setHadithSelectedCategoryId);
+  const setHadithSelectedHadithId = useUiStore((s) => s.setHadithSelectedHadithId);
+  const setHadithCurrentPage = useUiStore((s) => s.setHadithCurrentPage);
+
+  const {
+    data: categories,
+    isLoading: categoriesLoading,
+    error: categoriesError,
+    refetch: refetchCategories,
+  } = useCategories();
+  const { data: selectedHadith, isLoading: hadithDetailLoading } =
+    useHadithDetail(selectedHadithId);
+
+  const selectedCategory = useMemo(
+    () => categories?.find((c) => c.id === selectedCategoryId) ?? null,
+    [categories, selectedCategoryId]
+  );
+
   const {
     hadiths: allHadiths,
     isLoading: isLoadingHadiths,
@@ -42,216 +53,160 @@ const HadithApp = memo(() => {
     loadAllHadiths,
   } = useBatchHadiths();
 
-  // Auto load all hadiths when category is selected
   useEffect(() => {
     if (selectedCategory) {
-      console.log(`Loading all hadiths for category: ${selectedCategory.title} (ID: ${selectedCategory.id})`);
       loadAllHadiths(selectedCategory.id);
     }
   }, [selectedCategory, loadAllHadiths]);
 
-  // Load bookmarks and favorites (only for authenticated users)
-  useEffect(() => {
-    const loadBookmarks = async () => {
-      if (!isAuthenticated) {
-        setFavorites([]);
-        setBookmarks([]);
-        return;
-      }
-      
-      setLoadingBookmarks(true);
-      try {
-        const [favoritesData, bookmarksData] = await Promise.all([
-          favoriteService.getFavorites('hadith'),
-          bookmarkService.getBookmarks('hadith')
-        ]);
-        
-        const favoriteIds = favoritesData.map(f => parseInt(f.itemId));
-        const bookmarkIds = bookmarksData.map(b => parseInt(b.itemId));
-        
-        console.log('🔴 Favorites loaded:', favoriteIds);
-        console.log('🔵 Bookmarks loaded:', bookmarkIds);
-        
-        setFavorites(favoriteIds);
-        setBookmarks(bookmarkIds);
-      } catch (error) {
-        console.error('Failed to load bookmarks:', error);
-        // Set empty arrays on error to avoid showing stale data
-        setFavorites([]);
-        setBookmarks([]);
-      } finally {
-        setLoadingBookmarks(false);
-      }
-    };
-
-    loadBookmarks();
-  }, [isAuthenticated]); // Only depend on isAuthenticated
-
-  // Pagination for displaying hadiths
   const HADITHS_PER_PAGE = 20;
   const totalHadiths = allHadiths.length;
   const totalPages = Math.ceil(totalHadiths / HADITHS_PER_PAGE);
-  
+
   const displayHadiths = useMemo(() => {
     const startIndex = (currentPage - 1) * HADITHS_PER_PAGE;
     const endIndex = startIndex + HADITHS_PER_PAGE;
-    console.log(`Displaying hadiths: ${startIndex + 1}-${Math.min(endIndex, totalHadiths)} of ${totalHadiths} total`);
     return allHadiths.slice(startIndex, endIndex);
-  }, [allHadiths, currentPage, totalHadiths]);
+  }, [allHadiths, currentPage]);
 
   const loading = categoriesLoading || isLoadingHadiths;
   const error = categoriesError?.message || hadithsError || null;
 
-  // Memoized handlers
-  const handleCategorySelect = useCallback((category: Category) => {
-    setSelectedCategory(category);
-    setSelectedHadithId(null);
-    setCurrentPage(1);
-  }, []);
+  const handleCategorySelect = useCallback(
+    (category: Category) => {
+      setHadithSelectedCategoryId(category.id);
+      setHadithSelectedHadithId(null);
+      setHadithCurrentPage(1);
+    },
+    [setHadithSelectedCategoryId, setHadithSelectedHadithId, setHadithCurrentPage]
+  );
 
-  const handleHadithSelect = useCallback((hadith: HadithSummary) => {
-    setSelectedHadithId(hadith.id);
-  }, []);
+  const handleHadithSelect = useCallback(
+    (hadith: HadithSummary) => {
+      setHadithSelectedHadithId(hadith.id);
+    },
+    [setHadithSelectedHadithId]
+  );
 
-  const handlePageChange = useCallback((page: number) => {
-    setCurrentPage(page);
-  }, []);
+  const handlePageChange = useCallback(
+    (page: number) => {
+      setHadithCurrentPage(page);
+    },
+    [setHadithCurrentPage]
+  );
 
-  const toggleFavorite = useCallback(async (hadithId: number) => {
-    console.log('🔴 Toggle favorite called for hadith:', hadithId);
-    
-    if (!isAuthenticated) {
-      // Show login message
-      alert('Vui lòng đăng nhập để sử dụng chức năng yêu thích');
-      return;
-    }
-    
-    try {
-      // Try to find hadith from allHadiths first, then from selectedHadith
-      let hadith = allHadiths.find(h => h.id === hadithId);
-      if (!hadith && selectedHadith && selectedHadith.id === hadithId) {
+  const resolveHadith = useCallback(
+    (normalizedHadithId: number) => {
+      let hadith = allHadiths.find((h) => Number(h.id) === normalizedHadithId);
+      if (
+        !hadith &&
+        selectedHadith &&
+        Number(selectedHadith.id) === normalizedHadithId
+      ) {
         hadith = selectedHadith;
       }
-      
-      if (!hadith) {
-        console.error('Hadith not found for ID:', hadithId);
+      return hadith;
+    },
+    [allHadiths, selectedHadith]
+  );
+
+  const toggleFavorite = useCallback(
+    async (hadithId: number | string) => {
+      const normalizedHadithId = Number(hadithId);
+
+      if (Number.isNaN(normalizedHadithId)) return;
+
+      if (!isAuthenticated) {
+        alert('Vui lòng đăng nhập để sử dụng chức năng yêu thích');
         return;
       }
 
-      const hadithData = {
-        type: 'hadith' as const,
-        itemId: hadithId.toString(),
-        title: hadith.title || `Hadith ${hadithId}`,
-        content: hadith.hadeeth || hadith.title || `Hadith ${hadithId}`,
+      const hadith = resolveHadith(normalizedHadithId);
+      if (!hadith) return;
+
+      const ok = await toggleFavoriteOptimistic(normalizedHadithId, {
+        type: 'hadith',
+        itemId: normalizedHadithId.toString(),
+        title: hadith.title || `Hadith ${normalizedHadithId}`,
+        content: hadith.hadeeth || hadith.title || `Hadith ${normalizedHadithId}`,
         metadata: {
           category: selectedCategory?.title || 'Unknown',
-          hadithNumber: hadithId.toString()
-        }
-      };
-
-      const result = await favoriteService.toggleFavorite(hadithData);
-      console.log('🔴 Toggle favorite result:', result);
-      
-      // Update local state based on result
-      const isNowFavorited = result?.isFavorited || false;
-      console.log('🔴 Is now favorited:', isNowFavorited);
-      
-      setFavorites(prev => {
-        const newFavorites = isNowFavorited 
-          ? [...prev, hadithId]
-          : prev.filter(id => id !== hadithId);
-        console.log('🔴 New favorites state:', newFavorites);
-        return newFavorites;
+          hadithNumber: normalizedHadithId.toString(),
+        },
       });
-    } catch (error) {
-      console.error('Failed to toggle favorite:', error);
-      if (error instanceof Error && error.message.includes('đăng nhập')) {
-        alert(error.message);
-      }
-    }
-  }, [allHadiths, selectedCategory, selectedHadith, isAuthenticated]);
 
-  const toggleBookmark = useCallback(async (hadithId: number) => {
-    if (!isAuthenticated) {
-      // Show login message
-      alert('Vui lòng đăng nhập để sử dụng chức năng đánh dấu');
-      return;
-    }
-    
-    try {
-      // Try to find hadith from allHadiths first, then from selectedHadith
-      let hadith = allHadiths.find(h => h.id === hadithId);
-      if (!hadith && selectedHadith && selectedHadith.id === hadithId) {
-        hadith = selectedHadith;
+      if (!ok) {
+        console.error('Failed to toggle favorite');
       }
-      
-      if (!hadith) {
-        console.error('Hadith not found for ID:', hadithId);
+    },
+    [isAuthenticated, resolveHadith, selectedCategory, toggleFavoriteOptimistic]
+  );
+
+  const toggleBookmark = useCallback(
+    async (hadithId: number | string) => {
+      const normalizedHadithId = Number(hadithId);
+
+      if (Number.isNaN(normalizedHadithId)) return;
+
+      if (!isAuthenticated) {
+        alert('Vui lòng đăng nhập để sử dụng chức năng đánh dấu');
         return;
       }
 
-      const hadithData = {
-        type: 'hadith' as const,
-        itemId: hadithId.toString(),
-        title: hadith.title || `Hadith ${hadithId}`,
-        content: hadith.hadeeth || hadith.title || `Hadith ${hadithId}`,
+      const hadith = resolveHadith(normalizedHadithId);
+      if (!hadith) return;
+
+      const ok = await toggleBookmarkOptimistic(normalizedHadithId, {
+        type: 'hadith',
+        itemId: normalizedHadithId.toString(),
+        title: hadith.title || `Hadith ${normalizedHadithId}`,
+        content: hadith.hadeeth || hadith.title || `Hadith ${normalizedHadithId}`,
         category: selectedCategory?.title || 'Unknown',
         metadata: {
-          hadithNumber: hadithId.toString()
-        }
-      };
-
-      const isNowBookmarked = await bookmarkService.toggleBookmark(hadithData);
-      
-      // Update local state based on result
-      setBookmarks(prev => {
-        const newBookmarks = isNowBookmarked 
-          ? [...prev, hadithId]
-          : prev.filter(id => id !== hadithId);
-        return newBookmarks;
+          hadithNumber: normalizedHadithId.toString(),
+        },
       });
-    } catch (error) {
-      console.error('Failed to toggle bookmark:', error);
-      if (error instanceof Error && error.message.includes('đăng nhập')) {
-        alert(error.message);
+
+      if (!ok) {
+        console.error('Failed to toggle bookmark');
       }
-    }
-  }, [allHadiths, selectedCategory, selectedHadith, isAuthenticated]);
+    },
+    [isAuthenticated, resolveHadith, selectedCategory, toggleBookmarkOptimistic]
+  );
 
   const goBack = useCallback(() => {
     if (selectedHadithId) {
-      setSelectedHadithId(null);
-    } else if (selectedCategory) {
-      setSelectedCategory(null);
+      setHadithSelectedHadithId(null);
+    } else if (selectedCategoryId) {
+      setHadithSelectedCategoryId(null);
     }
-  }, [selectedHadithId, selectedCategory]);
+  }, [
+    selectedHadithId,
+    selectedCategoryId,
+    setHadithSelectedHadithId,
+    setHadithSelectedCategoryId,
+  ]);
 
   const retryCategories = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ['hadith-categories'] });
-  }, [queryClient]);
+    refetchCategories();
+  }, [refetchCategories]);
 
-
-
-  // Error display component
   if (error && !loading) {
-    return (
-      <ErrorDisplay error={error} onRetry={retryCategories} />
-    );
+    return <ErrorDisplay error={error} onRetry={retryCategories} />;
   }
 
-  // Categories view
   if (!selectedCategory) {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto p-4 sm:p-6 max-w-6xl">
           <HadithHeader selectedCategory={null} onBack={goBack} />
-          
+
           {loading ? (
             <LoadingSkeleton />
           ) : (
             <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {categories?.map((category) => (
-                <CategoryCard 
+                <CategoryCard
                   key={category.id}
                   category={category}
                   onClick={handleCategorySelect}
@@ -264,13 +219,11 @@ const HadithApp = memo(() => {
     );
   }
 
-
-  // Hadiths list view
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-4 sm:p-6 max-w-6xl">
-        <HadithHeader 
-          selectedCategory={selectedCategory} 
+        <HadithHeader
+          selectedCategory={selectedCategory}
           currentPage={currentPage}
           totalPages={totalPages}
           onBack={goBack}
@@ -280,14 +233,13 @@ const HadithApp = memo(() => {
           <LoadingSkeleton count={9} />
         ) : (
           <>
-            {/* Hadith Grid */}
             <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-6 sm:mb-8">
               {displayHadiths.map((hadith) => (
-                <HadithCard 
+                <HadithCard
                   key={hadith.id}
                   hadith={hadith}
-                  isFavorite={favorites.includes(hadith.id)}
-                  isBookmarked={bookmarks.includes(hadith.id)}
+                  isFavorite={favorites.includes(Number(hadith.id))}
+                  isBookmarked={bookmarks.includes(Number(hadith.id))}
                   isAuthenticated={isAuthenticated}
                   loadingBookmarks={loadingBookmarks}
                   onClick={handleHadithSelect}
@@ -295,18 +247,17 @@ const HadithApp = memo(() => {
               ))}
             </div>
 
-            {/* Pagination */}
-            <Pagination 
+            <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
               onPageChange={handlePageChange}
             />
 
-            {/* Show total count */}
             {totalHadiths > 0 && (
               <div className="text-center py-4">
                 <p className="text-sm text-muted-foreground">
-                  Hiển thị {displayHadiths.length} trong tổng số {totalHadiths} hadith
+                  Hiển thị {displayHadiths.length} trong tổng số {totalHadiths}{' '}
+                  hadith
                 </p>
               </div>
             )}
@@ -314,7 +265,7 @@ const HadithApp = memo(() => {
         )}
       </div>
 
-      <HadithDetailSheet 
+      <HadithDetailSheet
         key={`${selectedHadith?.id}-${favorites.length}-${bookmarks.length}`}
         selectedHadith={selectedHadith || null}
         isLoading={hadithDetailLoading}
@@ -322,7 +273,7 @@ const HadithApp = memo(() => {
         bookmarks={bookmarks}
         isAuthenticated={isAuthenticated}
         loadingBookmarks={loadingBookmarks}
-        onClose={() => setSelectedHadithId(null)}
+        onClose={() => setHadithSelectedHadithId(null)}
         onToggleFavorite={toggleFavorite}
         onToggleBookmark={toggleBookmark}
       />

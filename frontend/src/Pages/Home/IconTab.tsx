@@ -1,70 +1,33 @@
 import React, { useState, useMemo, useCallback, memo } from 'react';
-import { ROUTES } from '@/lib/routes';
-
-import prayerIcon from '@/assets/icon/prayer.png';
-import compassIcon from '@/assets/icon/compass.png';
-import bookIcon from '@/assets/icon/quran.png';
-import buildingIcon from '@/assets/icon/building.png';
-import tasbihIcon from '@/assets/icon/tasbih.png';
-import doaIcon from '@/assets/icon/doa.png';
-import hadihIcon from '@/assets/icon/hadih.png';
-import nameIcon from '@/assets/icon/99.png';
-import podcastIcon from '@/assets/icon/podcast.png';
-import studyIcon from '@/assets/icon/study.png';
-import zakatIcon from '@/assets/icon/zakat.png';
-import scheduleIcon from '@/assets/icon/schedule.png';
+import { APP_TOOLS, type AppTool } from '@/features/tools';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 
-type UtilityId = 
-  | 'prayers' 
-  | 'qiblah' 
-  | 'calendar' 
-  | 'quranreader' 
-  | 'masjid' 
-  | 'tasbih' 
-  | 'dua' 
-  | 'hadith' 
-  | 'nameallah' 
-  | 'podcast' 
-  | 'study' 
-  | 'zakat';
-
-interface UtilityItem {
-  id: UtilityId;
-  label: string;
-  iconUrl: string;
-  route: string;
-  isAvailable: boolean; 
-  description?: string; 
-  accentColor: string;
-}
-
 interface IconTabProps {
   onUtilityClick: (utilityId: string) => void;
-  activeUtility?: string; 
-  mode?: 'compact' | 'grid' | 'expanded'; 
+  activeUtility?: string;
+  mode?: 'compact' | 'grid' | 'expanded';
 }
 
-// Memoized utility button component with optimized re-renders
-const UtilityButton = memo<{ 
-  utility: UtilityItem; 
+const UtilityButton = memo<{
+  utility: AppTool;
   isActive: boolean;
-  onUtilityClick: (utility: UtilityItem) => void;
+  onUtilityClick: (utility: AppTool) => void;
 }>(({ utility, isActive, onUtilityClick }) => {
   const isDisabled = !utility.isAvailable;
   const [isPressed, setIsPressed] = useState(false);
 
-  // Memoized click handler to prevent recreation
-  const handleClick = useCallback((e: React.MouseEvent) => {
-    if (isDisabled) return;
-    e.stopPropagation();
-    onUtilityClick(utility);
-  }, [isDisabled, utility, onUtilityClick]);
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (isDisabled) return;
+      e.stopPropagation();
+      onUtilityClick(utility);
+    },
+    [isDisabled, utility, onUtilityClick],
+  );
 
-  // Memoized touch handlers for better mobile experience
   const handleTouchStart = useCallback(() => {
     if (isDisabled) return;
     setIsPressed(true);
@@ -74,39 +37,42 @@ const UtilityButton = memo<{
     setIsPressed(false);
   }, []);
 
-  // Memoized class names to prevent recalculation
-  const buttonClasses = useMemo(() => cn(
-    "group relative flex flex-col items-center w-full h-auto p-1.5 rounded-lg",
-    "transition-all duration-150 ease-out",
-    isPressed ? 'scale-95 opacity-80' : '',
-    isDisabled && 'cursor-not-allowed opacity-50',
-    isActive && 'bg-primary/10'
-  ), [isPressed, isDisabled, isActive]);
+  const buttonClasses = useMemo(
+    () =>
+      cn(
+        'group relative flex h-auto w-full flex-col items-center rounded-lg p-1.5',
+        'transition-all duration-150 ease-out',
+        isPressed ? 'scale-95 opacity-80' : '',
+        isDisabled && 'cursor-not-allowed opacity-50',
+        isActive && 'bg-primary/10',
+      ),
+    [isPressed, isDisabled, isActive],
+  );
 
-  const iconContainerClasses = useMemo(() => cn(
-    "relative w-11 h-11 rounded-xl flex items-center justify-center mb-1",
-    "transition-all duration-150",
-    isActive && 'ring-2 ring-primary/50',
-    isDisabled 
-      ? 'bg-muted' 
-      : 'bg-transparent'
-  ), [isActive, isDisabled, utility]);
-  
-  
+  const iconContainerClasses = useMemo(
+    () =>
+      cn(
+        'relative mb-1 flex h-11 w-11 items-center justify-center rounded-xl',
+        'transition-all duration-150',
+        isActive && 'ring-2 ring-primary/50',
+        isDisabled ? 'bg-muted' : 'bg-transparent',
+      ),
+    [isActive, isDisabled],
+  );
 
-  const iconClasses = useMemo(() => cn(
-    "w-8 h-8 object-contain transition-transform duration-150",
-    isDisabled && 'grayscale opacity-70'
-  ), [isDisabled]);
+  const iconClasses = useMemo(
+    () => cn('h-8 w-8 object-contain transition-transform duration-150', isDisabled && 'grayscale opacity-70'),
+    [isDisabled],
+  );
 
-  const labelClasses = useMemo(() => cn(
-    "text-xs font-medium text-center leading-tight max-w-14",
-    isActive 
-      ? 'text-primary font-semibold' 
-      : isDisabled
-        ? 'text-muted-foreground'
-        : 'text-foreground'
-  ), [isActive, isDisabled]);
+  const labelClasses = useMemo(
+    () =>
+      cn(
+        'max-w-14 text-center text-xs font-medium leading-tight',
+        isActive ? 'font-semibold text-primary' : isDisabled ? 'text-muted-foreground' : 'text-foreground',
+      ),
+    [isActive, isDisabled],
+  );
 
   return (
     <TooltipProvider>
@@ -124,51 +90,29 @@ const UtilityButton = memo<{
             size="icon"
             className={buttonClasses}
           >
-            {/* Icon Container */}
             <div className={iconContainerClasses}>
               <img
-                src={utility.iconUrl} 
+                src={utility.iconUrl}
                 alt={utility.label}
                 className={iconClasses}
                 loading="lazy"
                 draggable={false}
               />
-              
-              {/* Coming Soon Badge */}
               {isDisabled && (
-                <Badge 
-                  variant="secondary" 
-                  className="absolute -top-1 -right-1 px-1 py-0 h-4 text-[8px]"
-                >
+                <Badge variant="secondary" className="absolute -right-1 -top-1 h-4 px-1 py-0 text-[8px]">
                   !
                 </Badge>
               )}
             </div>
-            
-            {/* Label */}
-            <span className={labelClasses}>
-              {utility.label}
-            </span>
-            
-            {/* Active Indicator */}
-            {isActive && (
-              <div className="absolute -bottom-0.5 w-2 h-0.5 bg-primary rounded-full" />
-            )}
-            
-            {/* Coming Soon Label */}
+            <span className={labelClasses}>{utility.label}</span>
+            {isActive && <div className="absolute -bottom-0.5 h-0.5 w-2 rounded-full bg-primary" />}
             {isDisabled && (
-              <span className="absolute -bottom-2 text-[8px] text-muted-foreground font-medium">
-                Sắp ra mắt
-              </span>
+              <span className="absolute -bottom-2 text-[8px] font-medium text-muted-foreground">Sắp ra mắt</span>
             )}
           </Button>
         </TooltipTrigger>
-        {/* Only show tooltip on non-touch devices */}
         {utility.description && (
-          <TooltipContent 
-            side="bottom" 
-            className="text-xs max-w-[140px] text-center hidden md:block"
-          >
+          <TooltipContent side="bottom" className="hidden max-w-[140px] text-center text-xs md:block">
             <p>{utility.description}</p>
           </TooltipContent>
         )}
@@ -176,7 +120,6 @@ const UtilityButton = memo<{
     </TooltipProvider>
   );
 }, (prevProps, nextProps) => {
-  // Custom comparison function for better memoization
   return (
     prevProps.utility.id === nextProps.utility.id &&
     prevProps.isActive === nextProps.isActive &&
@@ -187,138 +130,18 @@ const UtilityButton = memo<{
 
 UtilityButton.displayName = 'UtilityButton';
 
-// Memoized utilities data to prevent recreation
-const UTILITIES_DATA: UtilityItem[] = [
-  {
-    id: 'prayers',
-    label: 'Cầu Nguyện',
-    iconUrl: prayerIcon,
-    route: ROUTES.UTILITIES.PRAYERS,
-    isAvailable: true,
-    description: 'Giờ cầu nguyện hàng ngày và lịch trình',
-    accentColor: 'primary'
-  },
-  {
-    id: 'qiblah',
-    label: 'Qiblah',
-    iconUrl: compassIcon,
-    route: ROUTES.UTILITIES.QIBLAH,
-    isAvailable: true,
-    description: 'Tìm hướng Qiblah để cầu nguyện',
-    accentColor: 'purple'
-  },
-  {
-    id: 'calendar',
-    label: 'Lịch Hijri',
-    iconUrl: scheduleIcon,
-    route: ROUTES.UTILITIES.CALENDAR,
-    isAvailable: true,
-    description: 'Lịch Hijri và các sự kiện quan trọng',
-    accentColor: 'orange'
-  },
-  {
-    id: 'quranreader',
-    label: 'Kinh Qur\'an',
-    iconUrl: bookIcon,
-    route: ROUTES.UTILITIES.QURAN_READER,
-    isAvailable: true,
-    description: 'Đọc và nghe Kinh Qur\'an',
-    accentColor: 'cyan'
-  },
-  {
-    id: 'masjid',
-    label: 'Masjid',
-    iconUrl: buildingIcon,
-    route: ROUTES.UTILITIES.MASJID,
-    isAvailable: true,
-    description: 'Tìm nhà thờ Hồi giáo gần bạn',
-    accentColor: 'rose'
-  },
-  {
-    id: 'tasbih',
-    label: 'Tasbih',
-    iconUrl: tasbihIcon,
-    route: ROUTES.UTILITIES.TASBIH,
-    isAvailable: true,
-    description: 'Đếm tràng hạt Tasbih kỹ thuật số',
-    accentColor: 'yellow'
-  },
-  {
-    id: 'dua',
-    label: 'Dua',
-    iconUrl: doaIcon,
-    route: ROUTES.UTILITIES.DUAS,
-    isAvailable: true,
-    description: 'Bộ sưu tập các lời cầu nguyện',
-    accentColor: 'violet'
-  },
-  {
-    id: 'hadith',
-    label: 'Hadith',
-    iconUrl: hadihIcon,
-    route: ROUTES.UTILITIES.HADITH,
-    isAvailable: true,
-    description: 'Đọc và tìm hiểu Hadith',
-    accentColor: 'blue'
-  },
-  {
-    id: 'nameallah',
-    label: '99 Tên Allah',
-    iconUrl: nameIcon,
-    route: ROUTES.UTILITIES.NAMEALLAH,
-    isAvailable: true,
-    description: '99 tên đẹp nhất của Allah',
-    accentColor: 'emerald'
-  },
-  {
-    id: 'podcast',
-    label: 'Podcast',
-    iconUrl: podcastIcon,
-    route: ROUTES.UTILITIES.PODCAST,
-    isAvailable: true,
-    description: 'Nghe podcast Hồi giáo',
-    accentColor: 'sky'
-  },
-  {
-    id: 'study',
-    label: 'Học Tập',
-    iconUrl: studyIcon,
-    route: ROUTES.UTILITIES.STUDY,
-    isAvailable: false,
-    description: 'Tài liệu học tập Hồi giáo',
-    accentColor: 'pink'
-  },
-  {
-    id: 'zakat',
-    label: 'Zakat',
-    iconUrl: zakatIcon,
-    route: ROUTES.UTILITIES.ZAKAT,
-    isAvailable: true,
-    description: 'Tính toán Zakat của bạn',
-    accentColor: 'lime'
-  }
-];
-
-const IconTab: React.FC<IconTabProps> = ({
-  onUtilityClick,
-  activeUtility,
-}) => {
-
-  // Memoized click handler with better error handling
-  const handleUtilityClick = useCallback((utility: UtilityItem) => {
-    if (!utility.isAvailable) {
-      return;
-    }
-    
-    onUtilityClick(utility.id);
-  }, [onUtilityClick]);
-
-  // Memoized grid classes - static so no need for useMemo
-  const gridClasses = "grid grid-cols-4 gap-2 p-1";
+const IconTab: React.FC<IconTabProps> = ({ onUtilityClick, activeUtility }) => {
+  const handleUtilityClick = useCallback(
+    (utility: AppTool) => {
+      if (!utility.isAvailable) return;
+      onUtilityClick(utility.id);
+    },
+    [onUtilityClick],
+  );
 
   return (
-    <div className={gridClasses}>
-      {UTILITIES_DATA.map((utility) => (
+    <div className="grid grid-cols-4 gap-2 p-1">
+      {APP_TOOLS.map((utility) => (
         <UtilityButton
           key={utility.id}
           utility={utility}
@@ -330,7 +153,6 @@ const IconTab: React.FC<IconTabProps> = ({
   );
 };
 
-// Memoize the entire component with custom comparison
 export default memo(IconTab, (prevProps, nextProps) => {
   return (
     prevProps.activeUtility === nextProps.activeUtility &&
