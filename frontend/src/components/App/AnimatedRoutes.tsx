@@ -9,8 +9,7 @@ import NotFound from './NotFound';
 
 // Lazy load components
 const Utilities = React.lazy(() => import('@/Pages/Home/Utilities'));
-const News = React.lazy(() => import('@/Pages/News/News'));
-
+      
 
 const Prayers = React.lazy(() => import('@/components/Utilities/Prayers/PrayerTimes'));
 const Qiblah = React.lazy(() => import('@/components/Utilities/Qiblah/QiblahFinder'));
@@ -50,16 +49,6 @@ const AnimatedRoutes: React.FC = () => {
           </MainLayout>
         } />
         
-        {/* News Route với BottomNav */}
-        <Route path={ROUTES.NEWS} element={
-          <MainLayout>
-            <AnimatedPage>
-              <Suspense fallback={<LoadingSpinner />}>
-               <News/>
-              </Suspense>
-            </AnimatedPage>
-          </MainLayout>
-        } />
 
 <Route path={ROUTES.CHAT} element={
           <MainLayout>
